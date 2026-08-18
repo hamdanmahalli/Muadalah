@@ -7,49 +7,157 @@ use App\Models\PlotJadwal;
 use App\Models\Kelas;
 use App\Models\Pelajaran;
 use App\Models\Guru;
+use App\Models\JadwalHarian;
+use App\Models\Periode;
 
 class PlotJadwalController extends Controller
 {
     public function index(Request $request)
     {
         $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
-        $kelas_id = $request->kelas_id; // Menangkap jika ada kelas yang dipilih
+        $kelas_id = $request->kelas_id; 
         
         $pelajarans = [];
         $gurus = [];
         $plotAktif = [];
+        
+        $kapasitasMaksimal = \App\Models\HariOperasional::where('is_active', true)->sum('max_jam');
+        $totalTarget = 0;
+        $totalTerjadwal = 0;
+        $terjadwalPerMapel = collect();
 
-        // Jika user sudah memilih kelas, kita panggil semua pelajaran dan guru
+        $periodeAktif = Periode::where('is_active', true)->first();
+        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+
         if ($kelas_id) {
-            $pelajarans = Pelajaran::orderBy('kode_pelajaran', 'asc')->get();
+            // HANYA MENGAMBIL PELAJARAN YANG STATUSNYA AKTIF
+            $pelajarans = Pelajaran::where('status', 'Aktif')->orderBy('kode_pelajaran', 'asc')->get(); 
             $gurus = Guru::where('status', 'Aktif')->orderBy('nama_guru', 'asc')->get();
-            
-            // Mengambil data plot lama jika sudah pernah disimpan
             $plotAktif = PlotJadwal::where('kelas_id', $kelas_id)->get()->keyBy('pelajaran_id');
+            
+            $totalTarget = $plotAktif->sum('beban_jam');
+            
+            $totalTerjadwal = JadwalHarian::where('kelas_id', $kelas_id)
+                                          ->where('tahun_ajaran', $tahunAjaran)
+                                          ->count();
+                                          
+            $terjadwalPerMapel = JadwalHarian::where('kelas_id', $kelas_id)
+                                          ->where('tahun_ajaran', $tahunAjaran)
+                                          ->selectRaw('pelajaran_id, count(id) as total')
+                                          ->groupBy('pelajaran_id')
+                                          ->pluck('total', 'pelajaran_id');
         }
 
-        return view('plot-jadwal', compact('kelas', 'kelas_id', 'pelajarans', 'gurus', 'plotAktif'));
+        return view('plot-jadwal', compact(
+            'kelas', 'kelas_id', 'pelajarans', 'gurus', 'plotAktif', 
+            'kapasitasMaksimal', 'totalTarget', 'totalTerjadwal', 'terjadwalPerMapel'
+        ));
     }
 
     public function store(Request $request)
     {
         $kelas_id = $request->kelas_id;
-        $plots = $request->plots; // Menangkap array data dari tabel
+        $pelajaran_id = $request->pelajaran_id;
+        $beban_jam = (int) ($request->beban_jam ?? 0);
+        $guru_id = $request->guru_id ?: null;
+        $force_update = $request->input('force_update') == 'true';
 
-        // Kita loop/putar semua baris pelajaran yang dikirim dari form
-        if($plots) {
-            foreach($plots as $pelajaran_id => $data) {
-                // Perbarui data jika sudah ada, atau buat baru jika belum ada
-                PlotJadwal::updateOrCreate(
-                    ['kelas_id' => $kelas_id, 'pelajaran_id' => $pelajaran_id],
-                    [
-                        'guru_id' => $data['guru_id'] ?: null, 
-                        'beban_jam' => $data['beban_jam'] ?? 0
-                    ]
-                );
+        $kapasitasMaksimal = \App\Models\HariOperasional::where('is_active', true)->sum('max_jam');
+        $periodeAktif = Periode::where('is_active', true)->first();
+        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+
+        // 1. CEK OVERLOAD KAPASITAS
+        $existingPlots = PlotJadwal::where('kelas_id', $kelas_id)->get();
+        $totalLain = $existingPlots->where('pelajaran_id', '!=', $pelajaran_id)->sum('beban_jam');
+        $totalPlotBaru = $totalLain + $beban_jam;
+
+        if ($totalPlotBaru > $kapasitasMaksimal) {
+            return response()->json([
+                'status' => 'error_overload',
+                'pesan' => "<b>KAPASITAS OVERLOAD!</b><br>Total beban jam ({$totalPlotBaru} Jam) melebihi kapasitas kelas ({$kapasitasMaksimal} Jam)."
+            ]);
+        }
+
+        // 2. CEK BENTROK GURU
+        $konfirmasiBentrok = [];
+        $jadwalDihapus = [];
+
+        if ($guru_id) {
+            $jadwalEksisting = JadwalHarian::where('kelas_id', $kelas_id)
+                                           ->where('pelajaran_id', $pelajaran_id);
+            if ($tahunAjaran) $jadwalEksisting->where('tahun_ajaran', $tahunAjaran);
+            $jadwalEksisting = $jadwalEksisting->get();
+
+            foreach ($jadwalEksisting as $jadwal) {
+                $bentrok = JadwalHarian::with('kelas')
+                                       ->where('hari', $jadwal->hari)
+                                       ->where('jam_ke', $jadwal->jam_ke)
+                                       ->where('tahun_ajaran', $tahunAjaran)
+                                       ->where('guru_id', $guru_id)
+                                       ->where('kelas_id', '!=', $kelas_id)
+                                       ->first();
+
+                if ($bentrok) {
+                    $guruInfo = Guru::find($guru_id);
+                    $pelajaranInfo = Pelajaran::find($pelajaran_id);
+                    
+                    if (!$force_update) {
+                        $konfirmasiBentrok[] = "Hari <b>{$jadwal->hari} Jam Ke-{$jadwal->jam_ke}</b>: Ust. {$guruInfo->nama_guru} sedang mengajar di <b>Kelas {$bentrok->kelas->nama_kelas}</b>.<br><span class='text-red-600 font-bold text-xs'>➜ Jadwal {$pelajaranInfo->nama_pelajaran} di kelas ini akan DIHAPUS.</span>";
+                    } else {
+                        $jadwalDihapus[] = $jadwal->id;
+                    }
+                }
             }
         }
 
-        return redirect()->back()->with('sukses', 'Plotting Jadwal Kelas berhasil disimpan!');
+        if (count($konfirmasiBentrok) > 0 && !$force_update) {
+            return response()->json([
+                'status' => 'error_bentrok',
+                'pesan' => "Guru yang Anda pilih mengalami bentrok jadwal. Apakah Anda setuju MENGHAPUS jadwal pelajaran (milik guru sebelumnya) di kelas ini?",
+                'rincian' => $konfirmasiBentrok,
+                'pelajaran_id' => $pelajaran_id,
+                'guru_id' => $guru_id,
+                'beban_jam' => $beban_jam
+            ]);
+        }
+
+        // 3. EKSEKUSI HAPUS JADWAL BENTROK (JIKA TU SETUJU)
+        if (count($jadwalDihapus) > 0) {
+            JadwalHarian::whereIn('id', $jadwalDihapus)->delete();
+        }
+
+        // 4. SIMPAN TARGET MENGAJAR (PLOT)
+        PlotJadwal::updateOrCreate(
+            ['kelas_id' => $kelas_id, 'pelajaran_id' => $pelajaran_id],
+            ['guru_id' => $guru_id, 'beban_jam' => $beban_jam]
+        );
+
+        // 5. SINKRONKAN JADWAL HARIAN
+        $queryJadwal = JadwalHarian::where('kelas_id', $kelas_id)
+                                   ->where('pelajaran_id', $pelajaran_id);
+        if ($tahunAjaran) $queryJadwal->where('tahun_ajaran', $tahunAjaran);
+        $queryJadwal->update(['guru_id' => $guru_id]);
+
+        // 6. HITUNG STATISTIK BARU UNTUK UI
+        $allPlots = PlotJadwal::where('kelas_id', $kelas_id)->get();
+        $totalTarget = $allPlots->sum('beban_jam');
+        $totalTerjadwal = JadwalHarian::where('kelas_id', $kelas_id)
+                                      ->where('tahun_ajaran', $tahunAjaran)
+                                      ->count();
+        $terjadwalMapel = JadwalHarian::where('kelas_id', $kelas_id)
+                                      ->where('pelajaran_id', $pelajaran_id)
+                                      ->where('tahun_ajaran', $tahunAjaran)
+                                      ->count();
+
+        return response()->json([
+            'status' => 'success',
+            'kapasitasMaksimal' => $kapasitasMaksimal, // BARIS BARU: Mengirim kapasitas untuk JavaScript
+            'totalTarget' => $totalTarget,
+            'totalTerjadwal' => $totalTerjadwal,
+            'sisaBelum' => $totalTarget - $totalTerjadwal,
+            'terjadwalMapel' => $terjadwalMapel,
+            'beban_jam' => $beban_jam,
+            'pelajaran_id' => $pelajaran_id
+        ]);
     }
 }

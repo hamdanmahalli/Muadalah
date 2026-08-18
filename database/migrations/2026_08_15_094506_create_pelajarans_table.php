@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('pelajarans', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_pelajaran')->unique(); // Kode seperti 14, 8, 6 (Tidak boleh kembar)
+            $table->string('kode_pelajaran')->unique();
             $table->string('nama_pelajaran');
-            $table->string('nama_kitab')->nullable();   // Boleh kosong jika tidak ada kitab spesifik
+            $table->string('nama_kitab')->nullable();
+            $table->string('status')->default('Aktif'); // FITUR BARU: Laci Status
             $table->timestamps();
         });
     }
