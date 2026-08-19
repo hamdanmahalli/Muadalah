@@ -60,6 +60,18 @@
                             <i class="fas fa-calendar-check w-6"></i> Jadwal Saya
                         </a>
                         @endcan
+
+                        @can('akses_jadwal_saya')
+                        <a href="/pabrik-barcode" class="flex items-center px-6 py-3 {{ request()->is('pabrik-barcode') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
+                            <i class="fas fa-calendar-check w-6"></i> Cetak Barcode
+                        </a>
+                        @endcan
+
+                        @can('akses_jadwal_saya')
+                        <a href="/scan-kelas" class="flex items-center px-6 py-3 {{ request()->is('scan-kelas') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
+                            <i class="fas fa-calendar-check w-6"></i> Scan Hadir
+                        </a>
+                        @endcan
                     </nav>
 
                     @canany(['akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas'])

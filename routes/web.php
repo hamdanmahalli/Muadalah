@@ -40,6 +40,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/cek-kehadiran-terbaru', [JadwalController::class, 'cekKehadiranTerbaru']);
     });
 
+    // Pabrik Barcode
+    Route::get('/pabrik-barcode', [\App\Http\Controllers\BarcodeController::class, 'index']);
+    Route::get('/pabrik-barcode/cetak/{kelas_id}', [\App\Http\Controllers\BarcodeController::class, 'cetak']);
+
     Route::middleware(['can:akses_laporan'])->group(function () {
         Route::get('/laporan', [JadwalController::class, 'laporanKehadiran']);
         Route::get('/laporan/cetak', [JadwalController::class, 'cetakPdf']);
@@ -100,5 +104,10 @@ Route::middleware('auth')->group(function () {
     // ==========================================================
     Route::middleware(['can:akses_jadwal_saya'])->group(function () {
         Route::get('/jadwal-saya', [JadwalController::class, 'jadwalSaya']);
+
+        // Fitur Scanner Kelas
+        Route::get('/scan-kelas', [\App\Http\Controllers\ScanController::class, 'index']);
+        Route::post('/scan-proses', [\App\Http\Controllers\ScanController::class, 'proses']);
     });
+        
 });

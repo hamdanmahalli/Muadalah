@@ -7,6 +7,8 @@ use App\Models\Guru;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\GuruExport;
 use App\Imports\GuruImport;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class GuruController extends Controller
 {
@@ -47,12 +49,26 @@ class GuruController extends Controller
             'status' => 'required|string'
         ]);
 
-        // Menyimpan SEMUA isian form ke database
-        Guru::create($request->all());
+        // 1. Simpan Data Guru ke tabel gurus
+        $guru = Guru::create($request->all());
 
-        return redirect()->back()->with('sukses', 'Data Guru berhasil ditambahkan!');
+        // 2. Otomatis Buat Akun User Baru (Username = NIG, Password = 123456)
+        $user = User::create([
+            'lembaga'  => 'PONDOK',
+            'username' => $guru->nig, // Username menggunakan KODE NIG
+            'name'     => $guru->nama_guru,
+            'email'    => $guru->nig . '@pesantren.com', // Email sintetis agar unik
+            'hp'       => $guru->no_hp,
+            'status'   => 'Aktif',
+            'password' => Hash::make('123456'), // Password bawaan disamakan
+        ]);
+
+        // 3. Berikan Role "Dewan Guru" secara otomatis
+        $user->assignRole('Dewan Guru');
+
+        return redirect()->back()->with('sukses', 'Data Guru berhasil disimpan! Akun otomatis terbuat (Username: ' . $guru->nig . ' | Password: 123456)');
     }
-
+    
     public function update(Request $request, $id)
     {
         $guru = Guru::findOrFail($id);
