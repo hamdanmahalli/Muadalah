@@ -70,9 +70,9 @@ class ScanController extends Controller
             $jamAwal = $jadwalBlok->first()->jam_ke;
             $jamAkhir = $jadwalBlok->last()->jam_ke;
 
-            // Catatan: Pastikan model/tabel HariOperasional punya kolom 'hari', 'jam_ke', 'jam_mulai', 'jam_selesai'
-            $waktuMulai = HariOperasional::where('hari', $hariIni)->where('jam_ke', $jamAwal)->value('jam_mulai');
-            $waktuSelesai = HariOperasional::where('hari', $hariIni)->where('jam_ke', $jamAkhir)->value('jam_selesai');
+            // PERBAIKAN PRESISI: Mengambil data waktu dari tabel MasterJam (bukan HariOperasional)
+            $waktuMulai = \App\Models\MasterJam::where('jam_ke', $jamAwal)->value('jam_mulai');
+            $waktuSelesai = \App\Models\MasterJam::where('jam_ke', $jamAkhir)->value('jam_selesai');
 
             if ($waktuMulai && $waktuSelesai) {
                 $batasBawah = Carbon::parse($waktuMulai)->subMinutes(5)->format('H:i:s');

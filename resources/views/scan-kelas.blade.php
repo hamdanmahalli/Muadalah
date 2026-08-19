@@ -10,15 +10,17 @@
         </div>
 
         <div class="p-6">
-            <div id="reader" class="w-full bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 overflow-hidden min-h-[300px]"></div>
             
-            <div id="pesan-area" class="hidden mt-6 p-4 rounded-xl text-center font-bold text-sm shadow-sm">
+            <div id="pesan-area" class="hidden mb-6 p-4 rounded-xl text-center font-bold text-sm shadow-sm">
                 <span id="pesan-teks"></span>
             </div>
+
+            <div id="reader" class="w-full bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 overflow-hidden min-h-[300px]"></div>
 
             <div class="mt-6 text-center">
                 <a href="/jadwal-saya" class="text-gray-500 hover:text-emerald-600 font-semibold text-sm transition"><i class="fas fa-arrow-left mr-1"></i> Kembali ke Jadwal Saya</a>
             </div>
+            
         </div>
     </div>
 </div>
@@ -39,7 +41,7 @@
             
             tampilkanPesan('Memproses data...', 'bg-blue-100', 'text-blue-700');
 
-            // Tembak data ke Mesin Laravel (Titik 1)
+            // Tembak data ke Mesin Laravel
             fetch('/scan-proses', {
                 method: 'POST',
                 headers: {
@@ -52,7 +54,7 @@
             .then(data => {
                 if (data.status === 'success') {
                     tampilkanPesan('<i class="fas fa-check-circle mr-2 text-xl"></i>' + data.pesan, 'bg-emerald-100', 'text-emerald-700');
-                    // Getar HP jika sukses (didukung beberapa browser)
+                    // Getar HP jika sukses
                     if (navigator.vibrate) navigator.vibrate(200);
                 } else {
                     tampilkanPesan('<i class="fas fa-exclamation-triangle mr-2 text-xl"></i>' + data.pesan, 'bg-red-100', 'text-red-700');
@@ -72,7 +74,8 @@
         }
 
         function tampilkanPesan(teks, bgClass, textClass) {
-            pesanArea.className = `mt-6 p-4 rounded-xl text-center font-bold text-sm shadow-sm ${bgClass} ${textClass}`;
+            // KECERDASAN UI: Menggunakan mb-6 (margin-bottom) agar memberi jarak ke kamera di bawahnya
+            pesanArea.className = `mb-6 p-4 rounded-xl text-center font-bold text-sm shadow-sm ${bgClass} ${textClass}`;
             pesanTeks.innerHTML = teks;
             pesanArea.classList.remove('hidden');
         }
