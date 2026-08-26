@@ -61,7 +61,7 @@ class JadwalHarianController extends Controller
         $plotAktif = [];
         $mode = null;
 
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
 
         // Data Default untuk Pencarian Atas
@@ -137,7 +137,7 @@ class JadwalHarianController extends Controller
             'pelajaran_id' => 'required'
         ]);
 
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         if(!$periodeAktif) return redirect()->back()->with('error_popup', 'DITOLAK!<br>Anda belum mengaktifkan Periode di Master Periode.');
         $tahunAjaran = $periodeAktif->tahun_ajaran;
 
@@ -324,5 +324,234 @@ class JadwalHarianController extends Controller
                 ->delete();
         }
         return redirect()->back()->with('sukses', 'Jadwal Blok berhasil dikosongkan!');
+    }
+
+    public function prosesDragDrop(Request $request)
+    {
+        $request->validate([
+            'source_id' => 'required|exists:jadwal_harians,id',
+            'target_hari' => 'required|string',
+            'target_jam' => 'required', 
+            'target_id' => 'nullable', 
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+                
+                $sourceRecord = \App\Models\JadwalHarian::find($request->source_id);
+                if (!$sourceRecord) {
+                    throw new \Exception("Jadwal sumber tidak ditemukan.");
+                }
+
+                $sourceHari = $sourceRecord->hari;
+                $kelasId = $sourceRecord->kelas_id;
+                $guruId = $sourceRecord->guru_id;
+                $pelajaranId = $sourceRecord->pelajaran_id;
+
+                // Tentukan rentang jam target dari request (bisa "3-4" atau "3")
+                $targetJamInput = $request->target_jam;
+                $targetJamArray = [];
+                if (strpos($targetJamInput, '-') !== false) {
+                    list($start, $end) = explode('-', $targetJamInput);
+                    $targetJamArray = range((int)$start, (int)$end);
+                } else {
+                    $targetJamArray = [(int)$targetJamInput];
+                }
+
+                // Cari semua jam_ke yang tergabung dalam blok jadwal sumber ini
+                $sourceJamList = \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                    ->where('hari', $sourceHari)
+                    ->where('kelas_id', $kelasId)
+                    ->where('pelajaran_id', $pelajaranId)
+                    ->where('guru_id', $guruId)
+                    ->pluck('jam_ke')
+                    ->toArray();
+
+                sort($sourceJamList);
+                
+                $sourceJamGroup = [];
+                $tempGroup = [];
+                foreach ($sourceJamList as $jKe) {
+                    if (empty($tempGroup) || $jKe == end($tempGroup) + 1) {
+                        $tempGroup[] = $jKe;
+                    } else {
+                        if (in_array($sourceRecord->jam_ke, $tempGroup)) {
+                            $sourceJamGroup = $tempGroup;
+                            break;
+                        }
+                        $tempGroup = [$jKe];
+                    }
+                }
+                if (empty($sourceJamGroup) && in_array($sourceRecord->jam_ke, $tempGroup)) {
+                    $sourceJamGroup = $tempGroup;
+                }
+                if (empty($sourceJamGroup)) {
+                    $sourceJamGroup = [$sourceRecord->jam_ke];
+                }
+
+                $sourceIds = \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                    ->where('hari', $sourceHari)
+                    ->where('kelas_id', $kelasId)
+                    ->where('pelajaran_id', $pelajaranId)
+                    ->where('guru_id', $guruId)
+                    ->whereIn('jam_ke', $sourceJamGroup)
+                    ->pluck('id')
+                    ->toArray();
+
+                $targetHari = $request->target_hari;
+                $targetId = $request->target_id;
+
+                if (!empty($targetId)) {
+                    // ==============================================================
+                    // SKENARIO 1: SWAP (TUKAR POSISI ANTAR BLOK)
+                    // ==============================================================
+                    $targetRecord = \Illuminate\Support\Facades\DB::table('jadwal_harians')->where('id', $targetId)->first();
+                    if (!$targetRecord) {
+                        throw new \Exception("Jadwal target tidak ditemukan.");
+                    }
+                    
+                    $targetKelId = $targetRecord->kelas_id;
+                    $targetGuruId = $targetRecord->guru_id;
+                    $targetPelId = $targetRecord->pelajaran_id;
+
+                    $targetJamList = \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                        ->where('hari', $targetHari)
+                        ->where('kelas_id', $targetKelId)
+                        ->where('pelajaran_id', $targetPelId)
+                        ->where('guru_id', $targetGuruId)
+                        ->pluck('jam_ke')
+                        ->toArray();
+                    sort($targetJamList);
+
+                    $targetJamGroup = [];
+                    $tempGroup2 = [];
+                    foreach ($targetJamList as $jKe) {
+                        if (empty($tempGroup2) || $jKe == end($tempGroup2) + 1) {
+                            $tempGroup2[] = $jKe;
+                        } else {
+                            if (in_array($targetRecord->jam_ke, $tempGroup2)) {
+                                $targetJamGroup = $tempGroup2;
+                                break;
+                            }
+                            $tempGroup2 = [$jKe];
+                        }
+                    }
+                    if (empty($targetJamGroup) && in_array($targetRecord->jam_ke, $tempGroup2)) {
+                        $targetJamGroup = $tempGroup2;
+                    }
+                    if (empty($targetJamGroup)) {
+                        $targetJamGroup = [$targetRecord->jam_ke];
+                    }
+
+                    $targetIds = \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                        ->where('hari', $targetHari)
+                        ->where('kelas_id', $targetKelId)
+                        ->where('pelajaran_id', $targetPelId)
+                        ->where('guru_id', $targetGuruId)
+                        ->whereIn('jam_ke', $targetJamGroup)
+                        ->pluck('id')
+                        ->toArray();
+
+                    // LANGKAH A: Pindahkan Source ke Ruang Transit (Jam 999)
+                    \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                        ->whereIn('id', $sourceIds)
+                        ->update(['jam_ke' => 999, 'hari' => 'TRANSIT']);
+
+                    // LANGKAH B: Pindahkan Target ke posisi Source asli
+                    foreach ($targetIds as $index => $tId) {
+                        $newJam = $sourceJamGroup[$index] ?? $sourceJamGroup[0];
+                        \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                            ->where('id', $tId)
+                            ->update([
+                                'hari' => $sourceHari,
+                                'jam_ke' => $newJam
+                            ]);
+                    }
+
+                    // LANGKAH C: Pindahkan Source dari Transit ke posisi Target asli
+                    foreach ($sourceIds as $index => $sId) {
+                        $newJam = $targetJamGroup[$index] ?? $targetJamGroup[0];
+                        \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                            ->where('id', $sId)
+                            ->update([
+                                'hari' => $targetHari,
+                                'jam_ke' => $newJam
+                            ]);
+                    }
+
+                } else {
+                    // ==============================================================
+                    // SKENARIO 2: MOVE KE KOTAK KOSONG
+                    // ==============================================================
+                    foreach ($sourceIds as $index => $sId) {
+                        $newJam = $targetJamArray[$index] ?? $targetJamArray[0];
+                        \Illuminate\Support\Facades\DB::table('jadwal_harians')
+                            ->where('id', $sId)
+                            ->update([
+                                'hari' => $targetHari,
+                                'jam_ke' => $newJam
+                            ]);
+                    }
+                }
+            });
+
+            return response()->json([
+                'status' => 'success', 
+                'pesan' => 'Blok jadwal berhasil ' . (!empty($request->target_id) ? 'ditukar seutuhnya!' : 'dipindahkan seutuhnya!')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error', 
+                'pesan' => 'Gagal memproses blok jadwal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    // ==========================================================
+    // 1. FUNGSI: Menampilkan Form Mutasi Guru
+    // ==========================================================
+    public function formMutasi($id)
+    {
+        // Ambil data jadwal lama beserta relasinya
+        $jadwal = \App\Models\JadwalHarian::with(['guru', 'pelajaran', 'kelas'])->findOrFail($id);
+        
+        // Ambil daftar guru pengganti (kecuali guru yang sedang menjabat)
+        $semuaGuru = \App\Models\Guru::where('id', '!=', $jadwal->guru_id)
+                        ->orderBy('nama_guru', 'asc')
+                        ->get();
+
+        return view('admin.jadwal-mutasi', compact('jadwal', 'semuaGuru'));
+    }
+
+    // ==========================================================
+    // 2. FUNGSI: Eksekusi Pergantian Guru (Effective-Dated)
+    // ==========================================================
+    public function mutasiGuru(Request $request, $jadwal_id)
+    {
+        $request->validate([
+            'guru_baru_id' => 'required|exists:gurus,id',
+            'tanggal_efektif' => 'required|date'
+        ]);
+
+        $jadwalLama = \App\Models\JadwalHarian::findOrFail($jadwal_id);
+        $tanggalEfektif = $request->tanggal_efektif;
+        
+        // Tanggal terakhir guru lama mengajar adalah 1 hari sebelum tanggal efektif
+        $kemarin = \Carbon\Carbon::parse($tanggalEfektif)->subDay()->format('Y-m-d');
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($jadwalLama, $request, $tanggalEfektif, $kemarin) {
+            // 1. Tutup masa berlaku jadwal guru lama
+            $jadwalLama->update(['berlaku_sampai' => $kemarin]);
+
+            // 2. Kloning (Duplikat) jadwal untuk guru baru
+            $jadwalBaru = $jadwalLama->replicate();
+            $jadwalBaru->guru_id = $request->guru_baru_id;
+            $jadwalBaru->berlaku_mulai = $tanggalEfektif;
+            $jadwalBaru->berlaku_sampai = null; // Aktif sampai akhir semester/tidak terhingga
+            $jadwalBaru->save();
+        });
+
+        // Redirect kembali ke halaman daftar jadwal
+        return redirect('/jadwal-harian')->with('sukses', 'Mutasi guru berhasil diproses! Riwayat absen guru lama tetap aman.');
     }
 }

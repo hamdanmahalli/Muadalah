@@ -16,7 +16,7 @@ class MasterImportController extends Controller
     public function index()
     {
         // Ambil info periode aktif untuk ditampilkan di layar
-        $periodeAktif = Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         return view('master-import', compact('periodeAktif'));
     }
 
@@ -147,7 +147,7 @@ class MasterImportController extends Controller
     {
         $request->validate(['file' => 'required|mimes:xlsx,xls,csv']);
         
-        $periodeAktif = Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         if(!$periodeAktif) {
             return redirect()->back()->with('error', "Gagal! Anda belum mengaktifkan Periode di Master Periode.");
         }

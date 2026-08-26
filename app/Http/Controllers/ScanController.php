@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\JadwalHarian;
-use App\Models\HariOperasional;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -24,101 +23,198 @@ class ScanController extends Controller
         try {
             $qr_data = $request->qr_data;
             
-            // 1. Validasi Format Barcode (Harus berawalan SP-)
+            // ========================================================
+            // 💡 KECERDASAN BUATAN (SMART HUB ROUTER)
+            // ========================================================
+            
+            // 1. Identifikasi Guru Pen-scan (Ditaruh di atas karena kedua jalur butuh info ini)
+            $user = auth()->user();
+            $guruSAYA = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+            
+            if (!$guruSAYA) {
+                return response()->json(['status' => 'error', 'pesan' => 'Akun Anda belum terhubung dengan data Master Guru.']);
+            }
+
+            // ========================================================
+            // JALUR A: SCAN QR AGENDA / KEGIATAN HRIS
+            // ========================================================
+            if (strpos($qr_data, 'AGENDA-') === 0) {
+                
+                // Cari data acara berdasarkan kode unik
+                $agenda = \App\Models\AgendaKegiatan::where('qr_token', $qr_data)->first();
+                
+                if (!$agenda) {
+                    return response()->json(['status' => 'error', 'pesan' => 'QR Code Agenda tidak valid atau acara tidak ditemukan!']);
+                }
+
+                // Cek apakah admin sudah menutup absen untuk acara ini
+                if (!$agenda->is_open) {
+                    return response()->json(['status' => 'error', 'pesan' => 'Absensi untuk kegiatan ini sudah ditutup oleh TU.']);
+                }
+
+                // Proteksi Anti-Double Scan (Mencegah absen ganda)
+                $sudahHadir = \App\Models\KehadiranKegiatan::where('agenda_kegiatan_id', $agenda->id)
+                                ->where('guru_id', $guruSAYA->id)
+                                ->exists();
+
+                if ($sudahHadir) {
+                    return response()->json(['status' => 'success', 'pesan' => 'Anda sudah tercatat hadir pada kegiatan ini sebelumnya.']);
+                }
+
+                // Rekam Kehadiran Kegiatan ke Database
+                \App\Models\KehadiranKegiatan::create([
+                    'agenda_kegiatan_id' => $agenda->id,
+                    'guru_id' => $guruSAYA->id,
+                    'waktu_hadir' => \Carbon\Carbon::now(),
+                    'metode' => 'Scan QR'
+                ]);
+
+                return response()->json(['status' => 'success', 'pesan' => 'Kehadiran Kegiatan: ' . $agenda->nama_kegiatan . ' berhasil dicatat!']);
+            }
+
+
+            // ========================================================
+            // JALUR B: SCAN QR KELAS / JADWAL MENGAJAR (Logika Asli)
+            // ========================================================
             $parts = explode('-', $qr_data);
             if (count($parts) != 3 || $parts[0] != 'SP') {
-                return response()->json(['status' => 'error', 'pesan' => 'Barcode tidak valid / bukan milik sistem SmartPesantren!']);
+                return response()->json(['status' => 'error', 'pesan' => 'Barcode tidak dikenali / bukan dari SmartPesantren!']);
             }
 
             $kelas_id = $parts[1];
             $token = $parts[2];
 
-            // 2. Validasi Kriptografi (Anti Barcode Bekas)
-            $tanggalKunci = Carbon::now()->startOfWeek(Carbon::SATURDAY)->format('Y-m-d');
-            $teksRahasia = $kelas_id . '|' . $tanggalKunci . '|' . env('APP_KEY');
-            $tokenValid = hash('md5', $teksRahasia);
-
-            if ($token !== $tokenValid) {
+            // 2. Validasi Kriptografi Token Kelas
+            $tanggalKunci = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::SATURDAY)->format('Y-m-d');
+            $teksRahasia = $kelas_id . '|' . $tanggalKunci . '|' . config('app.key');
+            if ($token !== hash_hmac('sha256', $teksRahasia, config('app.key'))) {
                 return response()->json(['status' => 'error', 'pesan' => 'BARCODE KADALUARSA! Silakan scan barcode terbaru minggu ini.']);
             }
 
-            // 3. Identifikasi Guru
-            $user = auth()->user();
-            $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
-            if (!$guru) {
-                return response()->json(['status' => 'error', 'pesan' => 'Akun Anda belum terhubung dengan data Master Guru.']);
-            }
+            // 4. Identifikasi Hari dan Waktu Sekarang
+            $hariIni = map_hari(\Carbon\Carbon::now()->format('l'));
+            $tanggalSekarang = \Carbon\Carbon::now()->format('Y-m-d');
 
-            // 4. Cari Jadwal Blok Hari Ini di Kelas Tersebut
-            $mapHari = ['Sunday'=>'Minggu', 'Monday'=>'Senin', 'Tuesday'=>'Selasa', 'Wednesday'=>'Rabu', 'Thursday'=>'Kamis', 'Friday'=>'Jumat', 'Saturday'=>'Sabtu'];
-            $hariIni = $mapHari[Carbon::now()->format('l')];
-            $waktuSekarang = Carbon::now()->format('H:i:s');
+            // 5. AMBIL JADWAL YANG VALID PADA HARI INI (Konsep Effective-Dated)
+            $semuaJadwalRuanganIni = JadwalHarian::with(['guru', 'pelajaran'])
+                ->where('kelas_id', $kelas_id)
+                ->where('hari', $hariIni)
+                ->where(function ($query) use ($tanggalSekarang) {
+                    // Syarat 1: Mulai berlaku SEBELUM/SAAT hari ini, ATAU dari dulu (null)
+                    $query->whereNull('berlaku_mulai')
+                          ->orWhere('berlaku_mulai', '<=', $tanggalSekarang);
+                })
+                ->where(function ($query) use ($tanggalSekarang) {
+                    // Syarat 2: Berlaku sampai SESUDAH/SAAT hari ini, ATAU selamanya (null)
+                    $query->whereNull('berlaku_sampai')
+                          ->orWhere('berlaku_sampai', '>=', $tanggalSekarang);
+                })
+                ->get();
 
-            // Ambil jadwal guru ini, di kelas yang discan, pada hari ini
-            $jadwalBlok = JadwalHarian::where('guru_id', $guru->id)
-                                      ->where('kelas_id', $kelas_id)
-                                      ->where('hari', $hariIni)
-                                      ->orderBy('jam_ke', 'asc')
-                                      ->get();
+            // 6. KECERDASAN BLOK JAM: Filter mana jadwal yang sedang aktif "saat detik ini"
+            $masterJams = \App\Models\MasterJam::all()->keyBy('jam_ke');
+            $jadwalAktif = [];
+            $jamKeDitemukan = [];
+            
+            foreach ($semuaJadwalRuanganIni as $j) {
+                $masterJam = $masterJams[$j->jam_ke] ?? null;
+                if ($masterJam) {
+                    $batasBawah = \Carbon\Carbon::parse($masterJam->jam_mulai)->subMinutes(15)->format('H:i:s');
+                    $batasAtas = \Carbon\Carbon::parse($masterJam->jam_selesai)->addMinutes(15)->format('H:i:s');
 
-            if ($jadwalBlok->isEmpty()) {
-                return response()->json(['status' => 'error', 'pesan' => 'Maaf, Anda tidak memiliki jadwal mengajar di kelas ini untuk hari ini.']);
-            }
-
-            // 5. Eksekusi Gembok Waktu ±5 Menit (Logika Longgar)
-            // Ambil jam_mulai dari jam_ke terkecil, dan jam_selesai dari jam_ke terbesar
-            $jamAwal = $jadwalBlok->first()->jam_ke;
-            $jamAkhir = $jadwalBlok->last()->jam_ke;
-
-            // PERBAIKAN PRESISI: Mengambil data waktu dari tabel MasterJam (bukan HariOperasional)
-            $waktuMulai = \App\Models\MasterJam::where('jam_ke', $jamAwal)->value('jam_mulai');
-            $waktuSelesai = \App\Models\MasterJam::where('jam_ke', $jamAkhir)->value('jam_selesai');
-
-            if ($waktuMulai && $waktuSelesai) {
-                $batasBawah = Carbon::parse($waktuMulai)->subMinutes(5)->format('H:i:s');
-                $batasAtas = Carbon::parse($waktuSelesai)->addMinutes(5)->format('H:i:s');
-
-                if ($waktuSekarang < $batasBawah) {
-                    return response()->json(['status' => 'error', 'pesan' => 'Terlalu cepat! Jam pelajaran belum dimulai.']);
-                }
-                if ($waktuSekarang > $batasAtas) {
-                    return response()->json(['status' => 'error', 'pesan' => 'Waktu absen ditutup! Blok jam pelajaran Anda sudah lewat.']);
+                    if ($waktuSekarang >= $batasBawah && $waktuSekarang <= $batasAtas) {
+                        $jadwalAktif[] = $j;
+                        $jamKeDitemukan[] = $j->jam_ke;
+                    }
                 }
             }
 
-            // 6. Tembak Status HADIR untuk seluruh blok jam tersebut!
-            $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
-            $tanggalSekarang = Carbon::now()->format('Y-m-d');
-            $jumlahDisimpan = 0;
-
-            foreach ($jadwalBlok as $jadwal) {
-                // Cek apakah sudah absen sebelumnya agar tidak dobel
-                $sudahAbsen = DB::table('kehadiran_gurus')
-                    ->where('jadwal_id', $jadwal->id)
-                    ->where('tanggal', $tanggalSekarang)
-                    ->exists();
-
-                if (!$sudahAbsen) {
-                    DB::table('kehadiran_gurus')->insert([
-                        'jadwal_id'  => $jadwal->id,
-                        'tanggal'    => $tanggalSekarang,
-                        'status'     => 'Hadir',
-                        'periode_id' => $periodeAktif ? $periodeAktif->id : null,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                    $jumlahDisimpan++;
-                }
+            if (empty($jadwalAktif)) {
+                return response()->json(['status' => 'error', 'pesan' => 'Waktu absen tertutup! Tidak ada KBM yang sedang berlangsung di kelas ini pada pukul ' . \Carbon\Carbon::now()->format('H:i')]);
             }
 
-            if ($jumlahDisimpan > 0) {
-                return response()->json(['status' => 'success', 'pesan' => 'Alhamdulillah, Hadir ('. $jumlahDisimpan .' Jam) berhasil dicatat!']);
-            } else {
-                return response()->json(['status' => 'success', 'pesan' => 'Kehadiran Anda di blok kelas ini sudah tercatat sebelumnya.']);
+            // 7. PERCABANGAN LOGIKA: Apakah ini jadwal SAYA atau jadwal ORANG LAIN?
+            $jadwalMilikSaya = array_filter($jadwalAktif, function($j) use ($guruSAYA) {
+                return $j->guru_id == $guruSAYA->id;
+            });
+
+            $periodeAktif = get_periode_aktif();
+            $tanggalSekarang = \Carbon\Carbon::now()->format('Y-m-d');
+
+            if (count($jadwalMilikSaya) > 0) {
+                // ---> SKENARIO A: NORMAL (Jadwal Milik Sendiri)
+                $jumlahDisimpan = 0;
+                foreach ($jadwalMilikSaya as $j) {
+                    $sudahAbsen = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
+                        ->where('jadwal_id', $j->id)->where('tanggal', $tanggalSekarang)->exists();
+
+                    if (!$sudahAbsen) {
+                        \Illuminate\Support\Facades\DB::table('kehadiran_gurus')->insert([
+                            'jadwal_id'  => $j->id, 'tanggal' => $tanggalSekarang, 'status' => 'Hadir',
+                            'periode_id' => $periodeAktif ? $periodeAktif->id : null,
+                            'created_at' => now(), 'updated_at' => now(),
+                        ]);
+                        $jumlahDisimpan++;
+                    }
+                }
+                
+                if ($jumlahDisimpan > 0) {
+                    return response()->json(['status' => 'success', 'pesan' => 'Hadir (Jam Ke: ' . implode(',', $jamKeDitemukan) . ') berhasil dicatat!']);
+                } else {
+                    return response()->json(['status' => 'success', 'pesan' => 'Kehadiran Anda di jam ini sudah tercatat sebelumnya.']);
+                }
+            } 
+            else {
+                // ---> SKENARIO B: INVAL / PIKET (Jadwal Milik Guru Lain)
+                $jadwalGuruLain = reset($jadwalAktif);
+                $jadwalIds = array_map(function($j) { return $j->id; }, $jadwalAktif);
+                
+                $namaGuruAsli = $jadwalGuruLain->guru->nama_guru ?? 'Guru Tanpa Nama';
+                $matpelAsli = $jadwalGuruLain->pelajaran->nama_pelajaran ?? 'Pelajaran';
+
+                return response()->json([
+                    'status' => 'confirm_piket',
+                    'pesan' => "Jadwal ini milik Ust/Ustz. <b>{$namaGuruAsli}</b> ({$matpelAsli}).<br>Apakah Anda masuk untuk menggantikan (Piket)?",
+                    'data' => [
+                        'jadwal_ids' => $jadwalIds,
+                        'nama_asli' => $namaGuruAsli,
+                        'jam_ke' => implode(',', $jamKeDitemukan)
+                    ]
+                ]);
             }
 
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'pesan' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
+            return response()->json(['status' => 'error', 'pesan' => 'Kesalahan sistem: ' . $e->getMessage()]);
         }
+    }
+
+    // Fungsi: Mengeksekusi Keputusan Piket
+    public function prosesPiket(Request $request)
+    {
+        $request->validate(['jadwal_ids' => 'required|array']);
+        
+        $user = auth()->user();
+        $guruSAYA = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $periodeAktif = get_periode_aktif();
+        $tanggalSekarang = \Carbon\Carbon::now()->format('Y-m-d');
+        
+        $jumlahDisimpan = 0;
+        foreach ($request->jadwal_ids as $id) {
+            \App\Models\KehadiranGuru::updateOrCreate(
+                [
+                    'jadwal_id' => $id,
+                    'tanggal' => $tanggalSekarang
+                ],
+                [
+                    'status' => 'Kosong', 
+                    'keterangan' => 'Inval/Piket. Menunggu validasi TU.',
+                    'nig_pengganti' => $guruSAYA->nig, 
+                    'periode_id' => $periodeAktif ? $periodeAktif->id : null
+                ]
+            );
+            $jumlahDisimpan++;
+        }
+
+        return response()->json(['status' => 'success', 'pesan' => 'Tercatat! Anda bertugas sebagai Guru Piket untuk jam ini. TU akan memvalidasi alasannya.']);
     }
 }

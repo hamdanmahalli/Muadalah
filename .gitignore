@@ -25,3 +25,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+database/database.sqlite
+storage/app/public/*.sql
+storage/app/public/*.backup
+storage/framework/cache/laravel-excel/*.tmp

@@ -3,26 +3,44 @@
 @section('title', 'Meja Kontrol - SmartPesantren')
 
 @section('content')
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h2 class="text-xl font-bold text-gray-700"><i class="fas fa-tv mr-2 text-indigo-600"></i> Meja Kontrol Kehadiran</h2>
+    <!-- ==========================================
+         HEADER & MENU ELEGAN (REDESAIN)
+         ========================================== -->
+    <div class="bg-white p-5 md:p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-8 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 relative overflow-hidden">
         
-        <div class="flex flex-wrap items-center gap-3">
-            <form method="GET" action="/meja-kontrol" class="flex flex-wrap items-center gap-3">
-                    
-                <span class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow">{{ $hariIni }}</span>
+        <!-- Aksen Garis Dekoratif -->
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 rounded-l-3xl"></div>
 
-                <div class="flex items-center bg-white border border-gray-300 rounded-lg shadow-sm px-3 py-1.5 hover:border-emerald-400 transition">
-                    <label class="text-sm font-semibold text-gray-700 mr-2"><i class="fas fa-calendar-alt text-emerald-600 mr-1"></i> </label>
+        <div>
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 mr-3">
+                    <i class="fas fa-tv"></i>
+                </div>
+                Meja Kontrol Kehadiran
+            </h2>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto ml-0 xl:ml-auto">
+            <form method="GET" action="/meja-kontrol" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    
+                <div class="bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm flex items-center">
+                    <i class="fas fa-calendar-day mr-2 opacity-80"></i> {{ $hariIni }}
+                </div>
+
+                <!-- Pemilih Tanggal -->
+                <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 hover:border-emerald-400 hover:bg-white transition-all duration-300">
+                    <label class="text-slate-400 mr-2"><i class="fas fa-calendar-alt text-emerald-600"></i></label>
                     
                     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
                     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-                    <input type="text" id="kalender-dinamis" name="tanggal" value="{{ $tanggalPilihan }}" class="text-sm bg-transparent outline-none font-bold text-emerald-700 cursor-pointer w-24">
+                    <input type="text" id="kalender-dinamis" name="tanggal" value="{{ $tanggalPilihan }}" class="text-sm bg-transparent outline-none font-bold text-emerald-700 cursor-pointer w-24 bg-white" readonly>
                 </div>
 
-                <div class="flex items-center bg-white border border-gray-300 rounded-lg shadow-sm px-3 py-1.5 hover:border-indigo-400 transition">
-                    <label for="jam" class="text-sm font-semibold text-gray-700 mr-2"><i class="fas fa-clock text-indigo-600 mr-1"></i></label>
-                    <select name="jam" onchange="this.form.submit()" class="text-sm bg-transparent outline-none font-bold text-indigo-600 cursor-pointer">
+                <!-- Pemilih Jam -->
+                <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 hover:border-indigo-400 hover:bg-white transition-all duration-300 focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-500/10">
+                    <label for="jam" class="text-slate-400 mr-2"><i class="fas fa-clock text-indigo-600"></i></label>
+                    <select name="jam" onchange="this.form.submit()" class="text-sm bg-transparent outline-none font-bold text-indigo-700 cursor-pointer pr-2">
                         @foreach($opsiBlokJam as $opsi)
                             <option value="{{ $opsi['nilai'] }}" {{ $jamPilihan == $opsi['nilai'] ? 'selected' : '' }}>
                                 {{ $opsi['label'] }}
@@ -32,16 +50,14 @@
                 </div>
             </form>
 
+            <!-- Teks WhatsApp Broadcast -->
             @php
                 $tglFormat = \Carbon\Carbon::parse($tanggalPilihan)->translatedFormat('d F Y');
                 $waText = "ASSALAMUALAIKUM WR. WB.\nSekedar MENGINGATKAN bahwa Jadwal Mengajar hari ini, {$hariIni}, {$tglFormat}.\n\n";
 
-                // Membuang jadwal yang terkena Libur agar tidak ikut tersalin ke WA
-                $jadwalAktif = collect($jadwals)->filter(function($j) {
-                    return !isset($j['is_libur']) || !$j['is_libur'];
-                });
-
+                $jadwalAktif = collect($jadwals)->filter(function($j) { return !isset($j['is_libur']) || !$j['is_libur']; });
                 $groupedByJam = $jadwalAktif->groupBy('jam_tampil');
+                
                 foreach($groupedByJam as $jamTampil => $items) {
                     $waText .= "JAM " . $jamTampil . "\n";
                     foreach($items as $item) {
@@ -53,12 +69,15 @@
             @endphp
 
             <textarea id="teks-wa-hidden" class="hidden">{!! $waText !!}</textarea>
-            <button type="button" onclick="salinTeksWA()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center cursor-pointer">
+            <button type="button" onclick="salinTeksWA()" class="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all duration-300 flex items-center cursor-pointer flex-shrink-0 active:scale-95">
                 <i class="fab fa-whatsapp mr-2 text-lg"></i> <span id="teks-btn-wa">Copy WA</span>
             </button>
         </div>
     </div>
 
+    <!-- ==========================================
+         BAGIAN PENGUMUMAN HARI LIBUR
+         ========================================== -->
     @if(isset($daftarLibur) && $daftarLibur->count() > 0)
         <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl mb-6 shadow-sm">
             @foreach($daftarLibur as $libur)
@@ -68,29 +87,27 @@
                         <i class="fas fa-calendar-day text-xl"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-rose-800">🎉 HARI LIBUR: {{ $libur->nama_libur }}</h4>
+                        <h4 class="text-sm font-bold text-rose-800">🎉 HARI LIBUR: {{ $libur->nama_agenda }}</h4>
                         <p class="text-xs text-rose-600 mt-0.5 font-medium leading-relaxed">
                             Libur untuk 
                             @if($libur->target_libur == 'semua')
                                 <b>Seluruh Kelas</b>.
                             @else
                                 @php
-                                    // DEKODE JSON DENGAN AMAN
                                     $kelasArr = is_string($libur->kelas_ids) ? json_decode($libur->kelas_ids, true) : (is_array($libur->kelas_ids) ? $libur->kelas_ids : []);
                                     $namaKelasStr = (!empty($kelasArr) && is_array($kelasArr) && class_exists('\App\Models\Kelas')) 
-                                        ? \App\Models\Kelas::whereIn('id', $kelasArr)->pluck('nama_kelas')->implode(', ') 
-                                        : 'Tertentu';
+                                        ? \App\Models\Kelas::whereIn('id', $kelasArr)->pluck('nama_kelas')->implode(', ') : 'Tertentu';
                                 @endphp
                                 <b>Kelas {{ $namaKelasStr }}</b>.
                             @endif
                             
-                            @if($libur->tipe_libur == 'Penuh')
+                            @if($libur->tipe_agenda == 'Penuh')
                                 <b>Semua Jam</b>.
                             @else
                                 @php
-                                    // DEKODE JSON DENGAN AMAN
                                     $jamArr = is_string($libur->jam_diliburkan) ? json_decode($libur->jam_diliburkan, true) : (is_array($libur->jam_diliburkan) ? $libur->jam_diliburkan : []);
                                     if(is_array($jamArr) && count($jamArr) > 0) {
+                                        $jamArr = array_map('intval', $jamArr);
                                         $jamTeks = count($jamArr) > 1 ? min($jamArr) . '-' . max($jamArr) : implode(', ', $jamArr);
                                     } else {
                                         $jamTeks = '-';
@@ -108,24 +125,25 @@
         </div>
     @endif
 
+    <!-- ==========================================
+         GRID KOTAK JADWAL (LAYAR CATUR)
+         ========================================== -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
         @php $adaJadwalTampil = false; @endphp
 
         @foreach($jadwals as $jadwal)
         
-            {{-- KECERDASAN MUTLAK: Hilangkan Total Kotak Kelas Jika Termasuk Target Libur --}}
             @if(isset($jadwal['is_libur']) && $jadwal['is_libur'])
                 @continue
             @endif
 
             @php
                 $adaJadwalTampil = true;
-                // Mengambil data utama secara langsung dari struktur blok yang benar
                 $idUtama = $jadwal['id_list'][0];
                 $rekam = $kehadiranHariIni[$idUtama] ?? null;
                 $statusSaatIni = $rekam ? $rekam->status : 'Menunggu';
-                $keteranganSaatIni = $rekam ? $rekam->keterangan : null;
-                $nigPenggantiSaatIni = $rekam ? $rekam->nig_pengganti : null;
+                $keteranganSaatIni = $rekam ? $rekam->keterangan : '';
+                $nigPenggantiSaatIni = $rekam ? $rekam->nig_pengganti : '';
                 
                 $namaPenggantiSaatIni = null;
                 if($nigPenggantiSaatIni) {
@@ -133,49 +151,89 @@
                     $namaPenggantiSaatIni = $guruInval ? $guruInval->nama_guru : $nigPenggantiSaatIni;
                 }
                 
-                $warnaStatus = 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                $ikonStatus = 'fa-clock';
-                if($statusSaatIni == 'Hadir') { $warnaStatus = 'bg-green-100 text-green-800 border-green-200'; $ikonStatus = 'fa-check-circle'; }
-                if($statusSaatIni == 'Izin') { $warnaStatus = 'bg-blue-100 text-blue-800 border-blue-200'; $ikonStatus = 'fa-info-circle'; }
-                if($statusSaatIni == 'Kosong') { $warnaStatus = 'bg-red-100 text-red-800 border-red-200'; $ikonStatus = 'fa-times-circle'; }
+                // LOGIKA WARNA STATUS
+                $warnaStatus = 'bg-slate-50 text-slate-600 border-slate-200';
+                $dotColor = 'bg-slate-400';
+                $borderGlow = 'border-slate-200 hover:border-slate-300';
+                
+                if($statusSaatIni == 'Hadir') { 
+                    $warnaStatus = 'bg-emerald-50 text-emerald-700 border-emerald-200'; 
+                    $dotColor = 'bg-emerald-500';
+                    $borderGlow = 'border-emerald-200 shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)]';
+                }
+                if($statusSaatIni == 'Izin') { 
+                    $warnaStatus = 'bg-blue-50 text-blue-700 border-blue-200'; 
+                    $dotColor = 'bg-blue-500';
+                    $borderGlow = 'border-blue-200 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.15)]';
+                }
+                if($statusSaatIni == 'Sakit') { 
+                    $warnaStatus = 'bg-amber-50 text-amber-700 border-amber-200'; 
+                    $dotColor = 'bg-amber-500';
+                    $borderGlow = 'border-amber-200 shadow-[0_4px_20px_-4px_rgba(245,158,11,0.15)]';
+                }
+                if($statusSaatIni == 'Kosong') { 
+                    $warnaStatus = 'bg-rose-50 text-rose-700 border-rose-200'; 
+                    $dotColor = 'bg-rose-500';
+                    $borderGlow = 'border-rose-200 shadow-[0_4px_20px_-4px_rgba(225,29,72,0.15)]';
+                }
             @endphp
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 relative flex flex-col h-full overflow-hidden" id="card-{{ $idUtama }}">
-                <div id="pita-{{ $idUtama }}" class="h-2 w-full absolute top-0 left-0 {{ str_replace('bg-', 'bg-', explode(' ', $warnaStatus)[0]) }}"></div>
+            <div class="bg-white rounded-3xl p-5 shadow-sm border {{ $borderGlow }} hover:-translate-y-1 transition-all duration-300 relative flex flex-col h-full" id="card-{{ $idUtama }}">
                 
-                <div class="p-5 flex-grow flex flex-col pt-6 pb-4">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-1 rounded-md border border-gray-200">Kelas {{ $jadwal['kelas'] }}</span>
-                        <span class="text-xs font-bold px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">Jam {{ $jadwal['jam_tampil'] }}</span>
-                    </div>
-                    
-                    <h3 class="text-base font-bold text-gray-800 leading-tight mb-1">{{ $jadwal['mata_pelajaran'] }}</h3>
-                    <p class="text-sm text-gray-600 mb-1 font-medium"><i class="fas fa-chalkboard-teacher mr-1 text-gray-400"></i> {{ $jadwal['nama_guru'] }}</p>
-                    <p class="text-xs text-gray-400 mb-3 ml-5">NIG: {{ $jadwal['nig_guru'] }}</p>
+                <!-- HEADER: KELAS & JAM -->
+                <div class="flex justify-between items-center mb-4">
+                    <span class="bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">KLS {{ $jadwal['kelas'] }}</span>
+                    <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg tracking-wider">JAM {{ $jadwal['jam_tampil'] }}</span>
+                </div>
 
-                    <div id="info-extra-{{ $idUtama }}" class="mt-auto bg-gray-50 p-2.5 rounded-lg border border-gray-100 {{ (!$keteranganSaatIni && !$namaPenggantiSaatIni) ? 'hidden' : '' }}">
+                <!-- BODY: MATA PELAJARAN, KITAB & GURU -->
+                <div class="mb-4 flex-grow">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight leading-tight mb-1">{{ $jadwal['mata_pelajaran'] }}</h3>
+                    <p class="text-sm font-bold text-emerald-600 mb-4"><i class="fas fa-book-open text-[10px] mr-1.5 opacity-70"></i> {{ $jadwal['nama_kitab'] ?? 'Tanpa Kitab' }}</p>
+                    
+                    <div class="flex items-center pt-3 border-t border-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mr-3 border border-slate-200 shrink-0">
+                            <i class="fas fa-user-tie text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-700 font-extrabold leading-none mb-1">{{ $jadwal['nama_guru'] }}</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">NIG: {{ $jadwal['nig_guru'] }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INFO EXTRA (KETERANGAN & INVAL) -->
+                <div id="info-extra-{{ $idUtama }}" data-ket="{{ $keteranganSaatIni }}" data-inv="{{ $nigPenggantiSaatIni }}" class="mb-4 {{ (!$keteranganSaatIni && !$namaPenggantiSaatIni) ? 'hidden' : '' }}">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/60">
                         @if($keteranganSaatIni)
-                            <p class="text-xs text-gray-600 mb-1 leading-snug"><i class="fas fa-pen-alt text-gray-400 mr-1"></i> {{ $keteranganSaatIni }}</p>
+                            <p class="text-xs text-slate-600 font-semibold mb-1 leading-snug"><i class="fas fa-quote-left text-slate-300 text-[10px] mr-1.5"></i>{{ $keteranganSaatIni }}</p>
                         @endif
                         @if($namaPenggantiSaatIni)
-                            <p class="text-xs text-indigo-700 font-bold"><i class="fas fa-exchange-alt mr-1"></i> Inval: {{ $namaPenggantiSaatIni }}</p>
+                            <div class="inline-flex items-center text-[10px] text-indigo-700 font-bold bg-indigo-100/50 px-2 py-1.5 rounded-lg border border-indigo-200/50 mt-1.5">
+                                <i class="fas fa-user-shield mr-1.5 text-indigo-500"></i> Inval: {{ $namaPenggantiSaatIni }}
+                            </div>
                         @endif
                     </div>
                 </div>
-                
-                <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center mt-auto">
-                    <span id="label-{{ $idUtama }}" class="text-xs font-bold px-2.5 py-1.5 rounded-md border flex items-center {{ $warnaStatus }}">
-                        <i id="ikon-{{ $idUtama }}" class="fas {{ $ikonStatus }} mr-1.5"></i> <span id="teks-{{ $idUtama }}">{{ $statusSaatIni }}</span>
+
+                <!-- FOOTER: LABEL STATUS & CONTROL DOCK -->
+                <div class="mt-auto flex justify-between items-center bg-slate-50/50 -mx-5 -mb-5 p-4 border-t border-slate-100 rounded-b-3xl">
+                    <span id="label-{{ $idUtama }}" class="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-xl border flex items-center transition-all duration-500 {{ $warnaStatus }}">
+                        <span id="dot-{{ $idUtama }}" class="w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse {{ $dotColor }}"></span> 
+                        <span id="teks-{{ $idUtama }}">{{ $statusSaatIni }}</span>
                     </span>
-                    
-                    <div class="flex space-x-1.5 flex-shrink-0">
-                        <button onclick='simpanLangsung(@json($jadwal["id_list"]), "Hadir", {{ $idUtama }})' class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 text-green-600 rounded-lg hover:bg-green-50 hover:border-green-400 transition" title="Hadir">
+
+                    <div class="bg-white p-1 rounded-xl border border-slate-200 flex space-x-1 shadow-sm shrink-0">
+                        <button onclick='simpanLangsung(@json($jadwal["id_list"]), "Hadir", {{ $idUtama }})' class="w-9 h-9 flex items-center justify-center text-emerald-600 bg-slate-50 rounded-lg hover:bg-emerald-500 hover:text-white transition-all duration-300 active:scale-90" title="Tandai Hadir">
                             <i class="fas fa-check"></i>
                         </button>
-                        <button onclick='bukaPopup(@json($jadwal["id_list"]), "Izin", {{ $idUtama }})' class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 text-blue-600 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition" title="Izin">
-                            <i class="fas fa-info"></i>
+                        <button onclick='bukaPopup(@json($jadwal["id_list"]), "Izin", {{ $idUtama }})' class="w-9 h-9 flex items-center justify-center text-blue-600 bg-slate-50 rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-300 active:scale-90" title="Tandai Izin">
+                            <i class="fas fa-info text-sm"></i>
                         </button>
-                        <button onclick='bukaPopup(@json($jadwal["id_list"]), "Kosong", {{ $idUtama }})' class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-400 transition" title="Kosong">
+                        <button onclick='bukaPopup(@json($jadwal["id_list"]), "Sakit", {{ $idUtama }})' class="w-9 h-9 flex items-center justify-center text-amber-600 bg-slate-50 rounded-lg hover:bg-amber-500 hover:text-white transition-all duration-300 active:scale-90" title="Tandai Sakit">
+                            <i class="fas fa-procedures text-xs"></i>
+                        </button>
+                        <button onclick='bukaPopup(@json($jadwal["id_list"]), "Kosong", {{ $idUtama }})' class="w-9 h-9 flex items-center justify-center text-rose-600 bg-slate-50 rounded-lg hover:bg-rose-500 hover:text-white transition-all duration-300 active:scale-90" title="Tandai Kosong (Alpa)">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -183,61 +241,65 @@
             </div>
         @endforeach
 
+        <!-- KONDISI KOSONG -->
         @if(count($jadwals) > 0 && !$adaJadwalTampil)
-        <div class="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-100 border-dashed">
-            <div class="text-6xl text-rose-200 mb-4"><i class="fas fa-bed"></i></div>
-            <p class="text-gray-500 font-semibold text-lg">Semua kelas pada blok jam ini sedang diliburkan.</p>
-            <p class="text-sm text-gray-400 mt-1">Staf TU bisa beristirahat sejenak.</p>
+        <div class="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-200 border-dashed">
+            <div class="w-20 h-20 bg-rose-50 text-rose-300 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-bed"></i></div>
+            <p class="text-slate-600 font-bold text-lg">Semua kelas pada blok jam ini sedang diliburkan.</p>
+            <p class="text-sm text-slate-400 mt-1 font-medium">Staf TU bisa beristirahat sejenak.</p>
         </div>
         @elseif(count($jadwals) == 0)
-        <div class="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-100 border-dashed">
-            <div class="text-6xl text-gray-200 mb-4"><i class="fas fa-mug-hot"></i></div>
-            <p class="text-gray-500 font-semibold text-lg">Tidak ada jadwal kelas untuk blok jam ini.</p>
-            <p class="text-sm text-gray-400 mt-1">Staf TU bisa beristirahat sejenak.</p>
+        <div class="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-200 border-dashed">
+            <div class="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-mug-hot"></i></div>
+            <p class="text-slate-600 font-bold text-lg">Tidak ada jadwal kelas untuk blok jam ini.</p>
+            <p class="text-sm text-slate-400 mt-1 font-medium">Staf TU bisa beristirahat sejenak.</p>
         </div>
         @endif
     </div>
 
-    <div id="popup-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="relative mx-auto p-6 border w-full max-w-md shadow-2xl rounded-xl bg-white transform transition-all">
-            <div class="absolute top-0 right-0 pt-4 pr-4">
-                <button onclick="tutupPopup()" class="text-gray-400 hover:text-gray-600 transition">
-                    
-                    <i class="fas fa-times text-xl"></i>
+    <!-- ==========================================
+         MODAL POPUP ALASAN / KETERANGAN
+         ========================================== -->
+    <div id="popup-modal" class="hidden fixed inset-0 bg-slate-900/60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="relative mx-auto p-7 border border-slate-100 w-full max-w-md shadow-2xl rounded-3xl bg-white transform transition-all">
+            <div class="absolute top-0 right-0 pt-5 pr-5">
+                <button onclick="tutupPopup()" class="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-colors">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
+            
             <div class="mt-2 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                    <i id="ikon-modal" class="fas fa-clipboard-list text-xl text-blue-600"></i>
+                <div id="box-ikon-modal" class="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-blue-50 mb-5 shadow-inner">
+                    <i id="ikon-modal" class="fas fa-clipboard-list text-2xl text-blue-600"></i>
                 </div>
-                <h3 class="text-xl leading-6 font-bold text-gray-900" id="popup-judul">Konfirmasi Status</h3>
-                <p class="text-sm text-gray-500 mt-1">Silakan isi detail keterangan di bawah ini.</p>
+                <h3 class="text-2xl font-black text-slate-800" id="popup-judul">Konfirmasi Status</h3>
+                <p class="text-sm text-slate-500 mt-1.5 font-medium">Silakan isi rincian keterangan di bawah ini.</p>
                 
-                <div class="mt-6 text-left">
+                <div class="mt-8 text-left">
                     <input type="hidden" id="modal-jadwal-ids">
                     <input type="hidden" id="modal-id-utama">
                     <input type="hidden" id="modal-status">
                     
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5"><i class="fas fa-pen-alt text-gray-400 mr-1"></i> Alasan / Keterangan (Opsional)</label>
-                    <textarea id="modal-keterangan" rows="3" class="w-full border border-gray-300 rounded-lg p-3 mb-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Contoh: Sakit tipes, dinas luar, ban bocor..."></textarea>
+                    <label class="block text-sm font-extrabold text-slate-700 mb-2"><i class="fas fa-pen-alt text-slate-400 w-5"></i> Alasan / Keterangan <span class="text-rose-500">* (Wajib)</span></label>
+                    <textarea id="modal-keterangan" rows="3" required class="w-full border border-slate-200 bg-slate-50 rounded-xl p-3.5 mb-5 text-sm font-medium text-slate-700 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder-slate-400" placeholder="Contoh: Sakit tipes, dinas luar, ban bocor..."></textarea>
                     
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5"><i class="fas fa-user-plus text-gray-400 mr-1"></i> Guru Pengganti / Inval (Opsional)</label>
+                    <label class="block text-sm font-extrabold text-slate-700 mb-2"><i class="fas fa-user-plus text-slate-400 w-5"></i> Guru Pengganti / Inval <span class="text-slate-400 font-medium">(Opsional)</span></label>
                     <div class="relative">
-                        <select id="modal-nig-pengganti" class="w-full border border-gray-300 rounded-lg p-3 text-sm appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition cursor-pointer bg-white">
+                        <select id="modal-nig-pengganti" class="w-full border border-slate-200 bg-slate-50 rounded-xl p-3.5 text-sm font-medium text-slate-700 appearance-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all cursor-pointer">
                             <option value="">-- Kosongkan jika tidak ada --</option>
                             @foreach($daftarGuru as $guru)
                                 <option value="{{ $guru->nig }}">{{ $guru->nama_guru }}</option>
                             @endforeach
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
                             <i class="fas fa-chevron-down text-xs"></i>
                         </div>
                     </div>
                 </div>
-                <div class="mt-8 flex justify-end space-x-3">
-                    <button type="button" onclick="tutupPopup()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition w-full">Batal</button>
+                <div class="mt-8 flex justify-end gap-3">
+                    <button type="button" onclick="tutupPopup()" class="px-5 py-3.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors w-full">Batal</button>
                     
-                    <button id="btn-simpan-modal" type="button" onclick="kirimDataModal()" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition w-full shadow-sm">Simpan Data</button>
+                    <button id="btn-simpan-modal" type="button" onclick="kirimDataModal()" class="px-5 py-3.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition-all w-full shadow-md shadow-blue-500/20">Simpan Data</button>
                 </div>
             </div>
         </div>
@@ -246,19 +308,12 @@
 
 @push('scripts')
     <script>
-        
         let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        // FITUR KEMBALI: Mesin Penggerak Dropdown Pilihan Jam (Mempertahankan Filter Hari)
-        function gantiJam(jamKe) {
-            // Mengambil URL saat ini agar filter 'Hari' tidak hilang saat jam diganti
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('jam', jamKe);
-            window.location.search = urlParams.toString();
-        }
-        
+        // ==========================================
+        // FUNGSI AKSI UTAMA (SIMPAN DAN MODAL)
+        // ==========================================
         function simpanLangsung(jadwalIdsArray, statusBaru, idUtama) {
-            // FITUR BARU: Ubah tombol kecil di Grid menjadi muter/loading
             let btn = event.currentTarget;
             let teksAsli = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -269,25 +324,48 @@
         }
 
         function bukaPopup(jadwalIdsArray, status, idUtama) {
-            document.getElementById('popup-modal').classList.remove('hidden');
+            let modal = document.getElementById('popup-modal');
+            modal.classList.remove('hidden');
+            
             document.getElementById('modal-jadwal-ids').value = JSON.stringify(jadwalIdsArray);
             document.getElementById('modal-id-utama').value = idUtama;
             document.getElementById('modal-status').value = status;
             
-            let ikonModal = document.querySelector('#popup-modal .fa-clipboard-list').parentElement;
-            ikonModal.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4';
+            // LOGIKA CERDAS: MENGAMBIL DATA PIKET/INVAL DARI ATRIBUT LAYAR CATUR
+            let infoDiv = document.getElementById('info-extra-' + idUtama);
+            let ketLama = infoDiv ? (infoDiv.getAttribute('data-ket') || '') : '';
+            let invLama = infoDiv ? (infoDiv.getAttribute('data-inv') || '') : '';
+
+            // SUNTIKKAN KE DALAM FORM MODAL
+            let ketInput = document.getElementById('modal-keterangan');
+            ketInput.value = ketLama;
+            ketInput.classList.remove('border-rose-500', 'ring-rose-500/20', 'bg-rose-50'); // Hapus sisa error
+            
+            document.getElementById('modal-nig-pengganti').value = invLama;
+            
+            // DESAIN DINAMIS MODAL BERDASARKAN STATUS
+            let boxIkon = document.getElementById('box-ikon-modal');
+            let ikonModal = document.getElementById('ikon-modal');
+            let btnSimpan = document.getElementById('btn-simpan-modal');
+            
+            boxIkon.className = 'mx-auto flex items-center justify-center h-16 w-16 rounded-2xl mb-5 shadow-inner';
+            btnSimpan.className = 'px-5 py-3.5 text-white text-sm font-bold rounded-xl active:scale-95 transition-all w-full shadow-md';
             
             if(status === 'Izin') {
-                ikonModal.classList.add('bg-blue-100', 'text-blue-600');
-                document.querySelector('#popup-modal .fa-clipboard-list').className = 'fas fa-info-circle text-xl';
+                boxIkon.classList.add('bg-blue-50');
+                ikonModal.className = 'fas fa-info-circle text-3xl text-blue-600';
+                btnSimpan.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-500/20');
+            } else if(status === 'Sakit') {
+                boxIkon.classList.add('bg-amber-50');
+                ikonModal.className = 'fas fa-procedures text-3xl text-amber-600';
+                btnSimpan.classList.add('bg-amber-500', 'hover:bg-amber-600', 'shadow-amber-500/20');
             } else {
-                ikonModal.classList.add('bg-red-100', 'text-red-600');
-                document.querySelector('#popup-modal .fa-clipboard-list').className = 'fas fa-times-circle text-xl';
+                boxIkon.classList.add('bg-rose-50');
+                ikonModal.className = 'fas fa-times-circle text-3xl text-rose-600';
+                btnSimpan.classList.add('bg-rose-600', 'hover:bg-rose-700', 'shadow-rose-500/20');
             }
 
             document.getElementById('popup-judul').innerText = "Konfirmasi " + status;
-            document.getElementById('modal-keterangan').value = "";
-            document.getElementById('modal-nig-pengganti').value = "";
         }
 
         function tutupPopup() {
@@ -295,25 +373,39 @@
         }
 
         function kirimDataModal() {
-            // FITUR BARU: Ubah tombol biru "Simpan" di Modal menjadi Memproses
+            let status = document.getElementById('modal-status').value;
+            let ketInput = document.getElementById('modal-keterangan');
+            let keterangan = ketInput.value.trim();
+            
+            // VALIDASI KETERANGAN WAJIB
+            if(keterangan === '') {
+                ketInput.classList.add('border-rose-500', 'ring-rose-500/20', 'bg-rose-50');
+                ketInput.focus();
+                alert("Mohon maaf, alasan/keterangan WAJIB diisi untuk status " + status + ".");
+                return;
+            }
+
             let btn = document.getElementById('btn-simpan-modal');
             let teksAsli = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...';
             btn.disabled = true;
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.classList.add('opacity-90', 'cursor-wait');
 
             let jadwalIdsArray = JSON.parse(document.getElementById('modal-jadwal-ids').value);
             let idUtama = document.getElementById('modal-id-utama').value;
-            let status = document.getElementById('modal-status').value;
-            let keterangan = document.getElementById('modal-keterangan').value;
             let nigPengganti = document.getElementById('modal-nig-pengganti').value;
 
             kirimKeServer(jadwalIdsArray, status, keterangan, nigPengganti, idUtama, btn, teksAsli, true);
         }
 
+        // ==========================================
+        // MESIN FETCH API (KOMUNIKASI SERVER)
+        // ==========================================
         function kirimKeServer(jadwalIdsArray, statusBaru, keterangan, nigPengganti, idUtama, btnLoading, teksAsli, isModal) {
-            // KECERDASAN BARU: Ambil tanggal yang sedang tampil di kalender
-            let tanggalLayar = document.getElementById('kalender-dinamis').value;
+            let urlParams = new URLSearchParams(window.location.search);
+            let tanggalUrl = urlParams.get('tanggal');
+            let inputTanggal = document.getElementById('kalender-dinamis');
+            let tanggalLayar = inputTanggal ? inputTanggal.value : (tanggalUrl || '{{ \Carbon\Carbon::now()->format("Y-m-d") }}');
 
             fetch('/simpan-kehadiran', {
                 method: 'POST',
@@ -327,41 +419,48 @@
                     status: statusBaru,
                     keterangan: keterangan,
                     nig_pengganti: nigPengganti,
-                    tanggal: tanggalLayar // <-- KIRIM TANGGAL KE MESIN DATABASE
+                    tanggal: tanggalLayar
                 })
             })
             .then(async response => {
-                // SULAP UI: Mengubah warna kotak secara instan tanpa reload halaman!
+                if(!response.ok) throw new Error("Terjadi kesalahan jaringan.");
+
+                // AMBIL ELEMEN BARU
                 let label = document.getElementById('label-' + idUtama);
                 let teks = document.getElementById('teks-' + idUtama);
-                let ikon = document.getElementById('ikon-' + idUtama);
-                let pita = document.getElementById('pita-' + idUtama);
+                let dot = document.getElementById('dot-' + idUtama);
+                let card = document.getElementById('card-' + idUtama);
+                let infoDiv = document.getElementById('info-extra-' + idUtama);
                 
                 teks.innerText = statusBaru;
                 
-                label.className = "text-xs font-bold px-2.5 py-1.5 rounded-md border flex items-center transition duration-300";
-                label.classList.remove('bg-yellow-100', 'text-yellow-800', 'border-yellow-200', 'bg-green-100', 'text-green-800', 'border-green-200', 'bg-blue-100', 'text-blue-800', 'border-blue-200', 'bg-red-100', 'text-red-800', 'border-red-200');
-                pita.className = "h-2 w-full absolute top-0 left-0 transition duration-300";
-                pita.classList.remove('bg-yellow-100', 'bg-green-100', 'bg-blue-100', 'bg-red-100');
-                ikon.className = 'fas mr-1.5';
+                // RESET KELAS ELEMEN
+                label.className = "text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-xl border flex items-center transition-all duration-500";
+                dot.className = "w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse";
+                card.className = "bg-white rounded-3xl p-5 shadow-sm border hover:-translate-y-1 transition-all duration-300 relative flex flex-col h-full";
                 
+                // SUNTIKKAN WARNA SESUAI STATUS TERBARU
                 if(statusBaru === 'Hadir') {
-                    label.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
-                    pita.classList.add('bg-green-100');
-                    ikon.classList.add('fa-check-circle');
-                }
-                if(statusBaru === 'Izin') {
-                    label.classList.add('bg-blue-100', 'text-blue-800', 'border-blue-200');
-                    pita.classList.add('bg-blue-100');
-                    ikon.classList.add('fa-info-circle');
-                }
-                if(statusBaru === 'Kosong') {
-                    label.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
-                    pita.classList.add('bg-red-100');
-                    ikon.classList.add('fa-times-circle');
+                    label.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+                    dot.classList.add('bg-emerald-500');
+                    card.classList.add('border-emerald-200', 'shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)]');
+                } else if(statusBaru === 'Izin') {
+                    label.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+                    dot.classList.add('bg-blue-500');
+                    card.classList.add('border-blue-200', 'shadow-[0_4px_20px_-4px_rgba(59,130,246,0.15)]');
+                } else if(statusBaru === 'Sakit') {
+                    label.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-200');
+                    dot.classList.add('bg-amber-500');
+                    card.classList.add('border-amber-200', 'shadow-[0_4px_20px_-4px_rgba(245,158,11,0.15)]');
+                } else if(statusBaru === 'Kosong') {
+                    label.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-200');
+                    dot.classList.add('bg-rose-500');
+                    card.classList.add('border-rose-200', 'shadow-[0_4px_20px_-4px_rgba(225,29,72,0.15)]');
                 }
 
-                let infoDiv = document.getElementById('info-extra-' + idUtama);
+                // SINKRONISASI INFO KETERANGAN
+                infoDiv.setAttribute('data-ket', keterangan || '');
+                infoDiv.setAttribute('data-inv', nigPengganti || '');
                 infoDiv.innerHTML = ''; 
 
                 if(statusBaru === 'Hadir') {
@@ -369,129 +468,165 @@
                 } else {
                     let htmlExtra = '';
                     if (keterangan) {
-                        htmlExtra += `<p class="text-xs text-gray-600 mb-1 leading-snug"><i class="fas fa-pen-alt text-gray-400 mr-1"></i> ${keterangan}</p>`;
+                        htmlExtra += `<p class="text-xs text-slate-600 font-semibold mb-1 leading-snug"><i class="fas fa-quote-left text-slate-300 text-[10px] mr-1.5"></i>${keterangan}</p>`;
                     }
-                    
                     if (nigPengganti) {
                         let selectPengganti = document.getElementById('modal-nig-pengganti');
                         let teksPengganti = selectPengganti.options[selectPengganti.selectedIndex].text;
-                        htmlExtra += `<p class="text-xs text-indigo-700 font-bold"><i class="fas fa-exchange-alt mr-1"></i> Inval: ${teksPengganti}</p>`;
+                        htmlExtra += `<div class="inline-flex items-center text-[10px] text-indigo-700 font-bold bg-indigo-100/50 px-2 py-1.5 rounded-lg border border-indigo-200/50 mt-1.5"><i class="fas fa-user-shield mr-1.5 text-indigo-500"></i> Inval: ${teksPengganti}</div>`;
                     }
 
                     if(htmlExtra !== '') {
-                        infoDiv.innerHTML = htmlExtra;
+                        infoDiv.innerHTML = `<div class="bg-slate-50 p-3 rounded-xl border border-slate-200/60">${htmlExtra}</div>`;
                         infoDiv.classList.remove('hidden');
                     } else {
                         infoDiv.classList.add('hidden');
                     }
                 }
 
-                // Kembalikan teks asli dan normalkan tombol setelah sukses
+                // NORMALISASI TOMBOL LOADING
                 if (btnLoading) {
                     btnLoading.innerHTML = teksAsli;
                     btnLoading.disabled = false;
-                    btnLoading.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btnLoading.classList.remove('opacity-75', 'cursor-wait', 'cursor-not-allowed');
                 }
-                if (isModal) {
-                    tutupPopup();
-                }
+                if (isModal) tutupPopup();
             })
             .catch((error) => {
-                alert("Gagal menyimpan data.");
-                // Jika error jaringan, normalkan tombol kembali
+                alert("Gagal menyimpan data ke server.");
                 if (btnLoading) {
                     btnLoading.innerHTML = teksAsli;
                     btnLoading.disabled = false;
-                    btnLoading.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btnLoading.classList.remove('opacity-75', 'cursor-wait', 'cursor-not-allowed');
                 }
             });
         }
 
-        // FITUR BARU: Kalender Kustom dengan Format DD-MM-YYYY
-        document.addEventListener("DOMContentLoaded", function() {
-            flatpickr("#kalender-dinamis", {
-                dateFormat: "Y-m-d", // Format asli yang dibutuhkan Database
-                altInput: true,      // Menyamarkan input dengan format baru
-                altFormat: "d-m-Y",  // Format DD-MM-YYYY yang dilihat Staf TU
-                disableMobile: true, // Mencegah HP menimpa gaya kalender kita
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Otomatis memuat ulang data (Submit) saat tanggal dipilih
-                    instance.element.closest('form').submit();
-                }
-            });
-        });
-        
-        // FITUR BARU: Radar Auto-Sync (Berjalan setiap 5 detik)
+        // ==========================================
+        // RADAR SINKRONISASI REAL-TIME
+        // ==========================================
         setInterval(function() {
             fetch('/cek-kehadiran-terbaru', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(response => response.json())
             .then(data => {
-                // Loop data terbaru dari server
                 data.forEach(item => {
-                    // Cari kotak di layar yang cocok dengan ID jadwal
                     let label = document.getElementById('label-' + item.jadwal_id);
                     if (label) {
-                        let teksSekarang = document.getElementById('teks-' + item.jadwal_id).innerText;
+                        let teksElement = document.getElementById('teks-' + item.jadwal_id);
+                        let teksSekarang = teksElement.innerText;
                         
-                        // Jika status di layar berbeda dengan di server (berarti Staf lain baru saja mengubahnya)
-                        if (teksSekarang !== item.status) {
-                            let ikon = document.getElementById('ikon-' + item.jadwal_id);
-                            let pita = document.getElementById('pita-' + item.jadwal_id);
-                            let teks = document.getElementById('teks-' + item.jadwal_id);
+                        let infoDiv = document.getElementById('info-extra-' + item.jadwal_id);
+                        let ketSekarang = infoDiv ? infoDiv.getAttribute('data-ket') : '';
+                        let invSekarang = infoDiv ? infoDiv.getAttribute('data-inv') : '';
+                        
+                        let itemKet = item.keterangan || '';
+                        let itemInv = item.nig_pengganti || '';
+
+                        // JIKA ADA PERUBAHAN DATA DARI LUAR (Misal: Guru Scan QR)
+                        if (teksSekarang !== item.status || ketSekarang !== itemKet || invSekarang !== itemInv) {
                             
-                            // Ubah teksnya
-                            teks.innerText = item.status;
+                            let dot = document.getElementById('dot-' + item.jadwal_id);
+                            let card = document.getElementById('card-' + item.jadwal_id);
                             
-                            // Hapus warna lama
-                            label.className = "text-xs font-bold px-2.5 py-1.5 rounded-md border flex items-center transition duration-500";
-                            pita.className = "h-2 w-full absolute top-0 left-0 transition duration-500";
-                            ikon.className = "fas mr-1.5";
+                            teksElement.innerText = item.status;
                             
-                            // Pasang warna baru layaknya sihir
+                            label.className = "text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-xl border flex items-center transition-all duration-500 animate-pulse";
+                            dot.className = "w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse";
+                            card.className = "bg-white rounded-3xl p-5 shadow-sm border hover:-translate-y-1 transition-all duration-300 relative flex flex-col h-full";
+                            
                             if(item.status === 'Hadir') {
-                                label.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
-                                pita.classList.add('bg-green-100');
-                                ikon.classList.add('fa-check-circle');
+                                label.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+                                dot.classList.add('bg-emerald-500');
+                                card.classList.add('border-emerald-200', 'shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)]');
                             } else if(item.status === 'Izin') {
-                                label.classList.add('bg-blue-100', 'text-blue-800', 'border-blue-200');
-                                pita.classList.add('bg-blue-100');
-                                ikon.classList.add('fa-info-circle');
+                                label.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+                                dot.classList.add('bg-blue-500');
+                                card.classList.add('border-blue-200', 'shadow-[0_4px_20px_-4px_rgba(59,130,246,0.15)]');
+                            } else if(item.status === 'Sakit') {
+                                label.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-200');
+                                dot.classList.add('bg-amber-500');
+                                card.classList.add('border-amber-200', 'shadow-[0_4px_20px_-4px_rgba(245,158,11,0.15)]');
                             } else if(item.status === 'Kosong') {
-                                label.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
-                                pita.classList.add('bg-red-100');
-                                ikon.classList.add('fa-times-circle');
+                                label.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-200');
+                                dot.classList.add('bg-rose-500');
+                                card.classList.add('border-rose-200', 'shadow-[0_4px_20px_-4px_rgba(225,29,72,0.15)]');
                             }
                             
-                            // (Opsional) Memunculkan peringatan visual sekilas bahwa data ini baru saja diperbarui staf lain
-                            label.classList.add('animate-pulse');
                             setTimeout(() => label.classList.remove('animate-pulse'), 2000);
+
+                            // SINKRONISASI KOTAK KETERANGAN
+                            if(infoDiv) {
+                                infoDiv.setAttribute('data-ket', itemKet);
+                                infoDiv.setAttribute('data-inv', itemInv);
+                                
+                                if(item.status === 'Hadir' || item.status === 'Menunggu') {
+                                    infoDiv.classList.add('hidden');
+                                    infoDiv.innerHTML = '';
+                                } else {
+                                    let htmlExtra = '';
+                                    if (itemKet) {
+                                        htmlExtra += `<p class="text-xs text-slate-600 font-semibold mb-1 leading-snug"><i class="fas fa-quote-left text-slate-300 text-[10px] mr-1.5"></i>${itemKet}</p>`;
+                                    }
+                                    if (itemInv) {
+                                        let selectPengganti = document.getElementById('modal-nig-pengganti');
+                                        let teksPengganti = itemInv; 
+                                        if(selectPengganti) {
+                                            for(let i=0; i<selectPengganti.options.length; i++){
+                                                if(selectPengganti.options[i].value === itemInv) teksPengganti = selectPengganti.options[i].text;
+                                            }
+                                        }
+                                        htmlExtra += `<div class="inline-flex items-center text-[10px] text-indigo-700 font-bold bg-indigo-100/50 px-2 py-1.5 rounded-lg border border-indigo-200/50 mt-1.5"><i class="fas fa-user-shield mr-1.5 text-indigo-500"></i> Inval: ${teksPengganti}</div>`;
+                                    }
+                                    
+                                    if(htmlExtra !== '') {
+                                        infoDiv.innerHTML = `<div class="bg-slate-50 p-3 rounded-xl border border-slate-200/60">${htmlExtra}</div>`;
+                                        infoDiv.classList.remove('hidden');
+                                    } else {
+                                        infoDiv.classList.add('hidden');
+                                    }
+                                }
+                            }
                         }
                     }
                 });
             })
-            .catch(error => console.error('Gagal Sinkronisasi:', error));
-        }, 5000); // 5000 milidetik = 5 detik
+            .catch(error => console.error('Radar Error:', error));
+        }, 5000);
 
-        // FITUR BARU: FUNGSI MENYALIN TEKS WA
+        // ==========================================
+        // UTILITAS LAINNYA
+        // ==========================================
         function salinTeksWA() {
             let teksArea = document.getElementById("teks-wa-hidden");
-            teksArea.classList.remove('hidden'); // Munculkan sebentar untuk disalin mesin
+            teksArea.classList.remove('hidden'); 
             teksArea.select();
-            teksArea.setSelectionRange(0, 99999); // Kompatibilitas untuk HP
+            teksArea.setSelectionRange(0, 99999); 
             document.execCommand("copy");
-            teksArea.classList.add('hidden'); // Sembunyikan lagi
+            teksArea.classList.add('hidden'); 
 
-            // Ubah teks tombol sementara sebagai umpan balik visual
             let btnTeks = document.getElementById("teks-btn-wa");
             let isiAsli = btnTeks.innerText;
             btnTeks.innerText = 'Tersalin!';
             
-            setTimeout(() => {
-                btnTeks.innerText = isiAsli;
-            }, 2000);
+            setTimeout(() => { btnTeks.innerText = isiAsli; }, 2000);
         }
-        
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof flatpickr !== 'undefined') {
+                flatpickr("#kalender-dinamis", {
+                    dateFormat: "Y-m-d", 
+                    altInput: true,      
+                    altFormat: "d-m-Y",  
+                    disableMobile: true, 
+                    onChange: function(selectedDates, dateStr, instance) {
+                        instance.element.closest('form').submit();
+                    }
+                });
+            } else {
+                console.warn("Library kalender belum termuat secara sempurna.");
+            }
+        });
     </script>
 @endpush

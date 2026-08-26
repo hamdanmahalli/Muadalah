@@ -27,11 +27,7 @@ class JadwalImport implements ToCollection, WithHeadingRow
                         'mata_pelajaran' => $row['mata_pelajaran'] ?? $row['pelajaran'] ?? '-',
                     ]);
                 } catch (\Exception $e) {
-                    // FITUR DIAGNOSTIK: Membongkar alasan penolakan database
-                    $baris = $index + 2; // +2 karena baris 1 adalah header Excel
-                    
-                    // Sistem akan berhenti dan menampilkan pesan hitam berisi detail error
-                    dd("Sistem Menolak Excel Anda di Baris ke-" . $baris . " | Isi Kolom Guru: '" . $nigGuru . "' | Alasan Brankas: " . $e->getMessage());
+                    \Log::warning("Import gagal di baris " . ($index + 2) . " (Guru: {$nigGuru}): " . $e->getMessage());
                 }
             }
         }

@@ -11,12 +11,13 @@ class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Bersihkan memori cache Spatie agar tidak terjadi bentrok
+        // 1. Bersihkan memori cache Spatie
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 2. Daftar semua "Kunci Pintu" menu di sistem kita
+        // 2. Daftar Kunci Pintu (Permissions)
         $permissions = [
             'akses_dashboard',
+            'akses_dashboard_guru', // <--- FITUR BARU: Kunci untuk Dashboard Guru (Mobile)
             'akses_meja_kontrol',
             'akses_laporan',
             'akses_import_excel',
@@ -33,19 +34,18 @@ class PermissionSeeder extends Seeder
             'akses_jadwal_saya' 
         ];
 
+        // Buat Kunci di Database
         foreach ($permissions as $perm) {
             Permission::firstOrCreate(['name' => $perm]);
         }
 
-        // =========================================================
-        // FITUR PEMBERSIH: Menghapus Role (Jabatan) Lama yang Ganda
-        // =========================================================
+        // Hapus Role Lama (Pembersihan)
         Role::whereNotIn('name', [
             'Administrator', 'Pimpinan', 'Tata Usaha', 'Kepanitiaan', 
             'Wali Kelas', 'Dewan Guru', 'Murid', 'Wali Murid'
         ])->delete();
 
-        // 3. Mendaftarkan 8 Jabatan (Role) Resmi Sesuai Permintaan
+        // 3. Mendaftarkan Jabatan Resmi
         $roleAdmin       = Role::firstOrCreate(['name' => 'Administrator']);
         $rolePimpinan    = Role::firstOrCreate(['name' => 'Pimpinan']);
         $roleTataUsaha   = Role::firstOrCreate(['name' => 'Tata Usaha']);
@@ -55,10 +55,12 @@ class PermissionSeeder extends Seeder
         $roleMurid       = Role::firstOrCreate(['name' => 'Murid']);
         $roleWaliMurid   = Role::firstOrCreate(['name' => 'Wali Murid']);
 
-        // 4. Suntikan Hak Akses Standar Sementara (Bisa diubah 100% via layar Web nanti)
+        // 4. Sinkronisasi Kunci Sementara
         $roleAdmin->syncPermissions($permissions); // Admin pegang semua kunci
         $rolePimpinan->syncPermissions(['akses_dashboard', 'akses_laporan']);
         $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas']);
-        $roleDewanGuru->syncPermissions(['akses_dashboard', 'akses_jadwal_saya']);
+        
+        // PENTING: Berikan Kunci Dashboard Guru ke Dewan Guru
+        $roleDewanGuru->syncPermissions(['akses_dashboard_guru', 'akses_jadwal_saya']);
     }
 }

@@ -30,10 +30,10 @@ class BarcodeController extends Controller
         $tanggalKunci = Carbon::now()->startOfWeek(Carbon::SATURDAY)->format('Y-m-d');
         
         // 2. Meracik Teks Rahasia: IDKelas + TanggalKunci + KunciAplikasi
-        $teksRahasia = $kelas->id . '|' . $tanggalKunci . '|' . env('APP_KEY');
+        $teksRahasia = $kelas->id . '|' . $tanggalKunci . '|' . config('app.key');
         
-        // 3. Mengenkripsi Teks (Hash MD5) agar tidak bisa dibaca/ditebak manusia
-        $tokenBarcode = hash('md5', $teksRahasia);
+        // 3. Mengenkripsi Teks (Hash SHA256) agar tidak bisa dibaca/ditebak manusia
+        $tokenBarcode = hash_hmac('sha256', $teksRahasia, config('app.key'));
         
         // Format Final Barcode: SP (SmartPesantren) - ID Kelas - Token Rahasia
         $isiBarcode = 'SP-' . $kelas->id . '-' . $tokenBarcode;

@@ -148,6 +148,17 @@
                                     @endforeach
                                 </select>
                             </td>
+
+                            <!-- TAMBAHAN: KOLOM AKSI (MUTASI) -->
+                            <td class="px-5 py-3 whitespace-nowrap text-center">
+                                @if($plot && $plot->guru_id)
+                                    <a href="/plot-jadwal/{{ $plot->id }}/mutasi" class="inline-flex items-center justify-center text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-600 hover:text-white transition-colors border border-indigo-100 shadow-sm">
+                                        <i class="fas fa-exchange-alt mr-1.5"></i> Mutasi
+                                    </a>
+                                @else
+                                    <span class="text-[10px] text-gray-400 italic px-2">Menunggu Plotting</span>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

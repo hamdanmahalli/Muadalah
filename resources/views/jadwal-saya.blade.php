@@ -21,40 +21,66 @@
         </div>
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @foreach($jadwalTerstruktur as $hari => $blokJadwal)
-            <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 overflow-hidden flex flex-col h-full transition hover:shadow-md">
-                
-                <div class="bg-gray-50/50 px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                    <h3 class="font-black text-gray-800 text-base tracking-widest uppercase">{{ $hari }}</h3>
-                    <i class="fas fa-calendar-alt text-gray-300 text-lg"></i>
+    @forelse($jadwalTerstruktur as $hari => $blokJadwal)
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
+            
+            <!-- Header Hari (Gaya Sancod Builder) -->
+            <div class="bg-indigo-50/50 px-5 py-4 border-b border-indigo-100 flex justify-between items-center">
+                <h3 class="font-black text-indigo-700 text-base tracking-widest uppercase">{{ $hari }}</h3>
+                <div class="w-8 h-8 rounded-full bg-white text-indigo-400 flex items-center justify-center shadow-sm border border-indigo-50">
+                    <i class="fas fa-calendar-day"></i>
                 </div>
+            </div>
 
-                <div class="flex-col flex-grow">
-                    @foreach($blokJadwal as $index => $blok)
-                    <div class="flex items-center px-4 py-4 {{ !$loop->last ? 'border-b border-gray-50' : '' }} hover:bg-gray-50 transition duration-150">
+            <!-- List Pelajaran -->
+            <div class="flex-col flex-grow">
+                @foreach($blokJadwal as $index => $blok)
+                    <div class="flex items-center px-4 py-4 {{ !$loop->last ? 'border-b border-slate-100' : '' }} hover:bg-slate-50 transition-colors duration-150">
                         
+                        <!-- Blok Jam -->
                         <div class="w-16 flex flex-col items-center justify-center flex-shrink-0">
-                            <span class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-0.5">Blok</span>
-                            <span class="text-xl font-black text-gray-800">
-                                {{ $blok['jam_mulai'] }}{{ $blok['jam_mulai'] != $blok['jam_selesai'] ? '-'.$blok['jam_selesai'] : '' }}
+                            <span class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-0.5">Jam Ke</span>
+                            <span class="text-xl font-black text-slate-700">
+                                <!-- Logika Pemecah Jam -->
+                                {{ $blok['jam_mulai'] == $blok['jam_selesai'] ? $blok['jam_mulai'] : $blok['jam_mulai'].'-'.$blok['jam_selesai'] }}
                             </span>
                         </div>
                         
-                        <div class="w-px h-10 bg-gray-200 mx-4"></div>
+                        <!-- Garis Pemisah (Divider) -->
+                        <div class="w-px h-10 bg-slate-200 mx-4"></div>
                         
-                        <div class="flex flex-col">
-                            <h4 class="text-base font-bold text-gray-800 leading-tight">{{ $blok['pelajaran'] }}</h4>
-                            <div class="flex items-center mt-1 text-sm font-semibold text-emerald-600">
-                                <i class="fas fa-chalkboard-teacher mr-1.5 text-xs"></i> Kelas {{ $blok['kelas'] }}
+                        <!-- Info Pelajaran -->
+                        <div class="flex flex-col min-w-0">
+                            <!-- Mendukung key 'mata_pelajaran' (Dashboard SPA) atau 'pelajaran' (Web) -->
+                            <h4 class="text-base font-bold text-slate-800 leading-tight truncate">
+                                {{ $blok['mata_pelajaran'] ?? $blok['pelajaran'] }}
+                            </h4>
+                            
+                            <div class="flex items-center mt-1 text-xs font-semibold text-emerald-600 truncate">
+                                <i class="fas fa-chalkboard-teacher mr-1.5 opacity-70"></i> Kelas {{ $blok['kelas'] }}
                             </div>
+                            
+                            <!-- Tambahan: Menampilkan Nama Kitab jika tersedia -->
+                            @if(!empty($blok['nama_kitab']) && $blok['nama_kitab'] != '-')
+                                <div class="flex items-center mt-0.5 text-[10px] font-bold text-slate-400 truncate">
+                                    <i class="fas fa-book-open mr-1.5 opacity-70"></i> {{ $blok['nama_kitab'] }}
+                                </div>
+                            @endif
                         </div>
 
                     </div>
-                    @endforeach
-                </div>
-            </div>
-            @endforeach
-        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @empty
+                            <!-- State Kosong jika tidak ada jadwal -->
+                            <div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm">
+                                <div class="text-slate-300 text-5xl mb-4"><i class="fas fa-mug-hot"></i></div>
+                                <h3 class="text-lg font-black text-slate-600 mb-1">Jadwal Kosong</h3>
+                                <p class="text-sm font-bold text-slate-400">Anda belum memiliki jadwal mengajar yang aktif di periode ini.</p>
+                            </div>
+                        @endforelse
+                    </div>
 
         <div class="mt-10">
             <h2 class="text-lg font-black text-gray-800 tracking-tight mb-4 border-b pb-2"><i class="fas fa-chart-pie text-emerald-600 mr-2"></i> Rekapitulasi Kehadiran Pribadi</h2>

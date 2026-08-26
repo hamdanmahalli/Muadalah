@@ -20,7 +20,4 @@ class Periode extends Model
     ];
     
     protected $table = 'periodes';
-    
-    // Membuka gembok agar data bisa disimpan dari form
-    protected $guarded = [];
 }

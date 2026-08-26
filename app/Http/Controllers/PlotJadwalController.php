@@ -26,7 +26,7 @@ class PlotJadwalController extends Controller
         $totalTerjadwal = 0;
         $terjadwalPerMapel = collect();
 
-        $periodeAktif = Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
 
         if ($kelas_id) {
@@ -63,7 +63,7 @@ class PlotJadwalController extends Controller
         $force_update = $request->input('force_update') == 'true';
 
         $kapasitasMaksimal = \App\Models\HariOperasional::where('is_active', true)->sum('max_jam');
-        $periodeAktif = Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
 
         // 1. CEK OVERLOAD KAPASITAS
@@ -159,5 +159,52 @@ class PlotJadwalController extends Controller
             'beban_jam' => $beban_jam,
             'pelajaran_id' => $pelajaran_id
         ]);
+
+        
+    }
+    // ==========================================================
+    // FUNGSI: Menampilkan Form Mutasi Massal dari Master Plot
+    // ==========================================================
+    public function formMutasi($id)
+    {
+        $plot = PlotJadwal::with(['kelas', 'pelajaran', 'guru'])->findOrFail($id);
+        
+        // Ambil guru yang berstatus Aktif, kecuali guru yang saat ini menjabat
+        $semuaGuru = Guru::where('status', 'Aktif')
+                        ->where('id', '!=', $plot->guru_id)
+                        ->orderBy('nama_guru', 'asc')
+                        ->get();
+
+        return view('admin.plot-mutasi', compact('plot', 'semuaGuru'));
+    }
+
+    // ==========================================================
+    // FUNGSI: Eksekusi Mutasi Massal (Konsep Soft Delete)
+    // ==========================================================
+    public function mutasiGuru(Request $request, $id)
+    {
+        $request->validate([
+            'guru_baru_id' => 'required|exists:gurus,id'
+        ]);
+
+        $plot = PlotJadwal::findOrFail($id);
+        $guruLamaId = $plot->guru_id;
+        $guruBaruId = $request->guru_baru_id;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($plot, $guruLamaId, $guruBaruId) {
+            
+            // 1. HAPUS JADWAL LAMA (Otomatis masuk ke Soft Deletes, riwayat aman!)
+            JadwalHarian::where('kelas_id', $plot->kelas_id)
+                        ->where('pelajaran_id', $plot->pelajaran_id)
+                        ->where('guru_id', $guruLamaId)
+                        ->delete();
+
+            // 2. Ganti nama guru di Master Plotting
+            $plot->update(['guru_id' => $guruBaruId]);
+        });
+
+        // Arahkan kembali ke halaman Master Plotting beserta parameter kelas_id-nya
+        return redirect('/master-jadwal-harian?kelas_id=' . $plot->kelas_id)
+                ->with('sukses', 'Mutasi Berhasil! Jadwal lama telah diarsipkan (Soft Delete). Silakan atur ulang Hari/Jam secara manual untuk guru baru.');
     }
 }

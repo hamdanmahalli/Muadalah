@@ -17,6 +17,7 @@
         .ts-wrapper.single .ts-control:after { right: 1rem !important; border-color: #9ca3af transparent transparent transparent !important; }
     </style>
 
+    
     <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-calendar-alt text-green-600 mr-2"></i> Master Jadwal Harian</h1>
@@ -36,6 +37,7 @@
                     @endforeach
                 </select>
             </form>
+            
 
             <div class="hidden md:block w-8 border-b-2 border-gray-200 border-dashed"></div>
 
@@ -49,7 +51,7 @@
             </form>
             
         </div>
-
+        
         <div class="w-full xl:w-auto flex justify-end">
             <button type="button" class="w-full md:w-auto bg-red-50 text-red-600 border border-red-100 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center shadow-sm cursor-pointer">
                 <i class="fas fa-file-pdf mr-2 text-lg"></i> Cetak PDF
@@ -91,24 +93,35 @@
                                 $j = $jadwal_matriks[$hari][$blok['key']] ?? null;
                             @endphp
                             
-                            <div class="p-4 flex items-center hover:bg-gray-50 transition">
+                            <!-- ROW JADWAL: Ditambahkan class transisi untuk efek drop -->
+                            <div class="p-4 flex items-center transition duration-200" id="row-{{ $hari }}-{{ $blok['key'] }}">
                                 <div class="w-16 flex-shrink-0 text-center border-r border-gray-200 pr-3">
                                     <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Blok</span>
                                     <span class="block text-lg font-black text-gray-800">{{ $blok['key'] }}</span>
                                 </div>
                                 
-                                <div class="flex-1 min-w-0 flex justify-between items-center relative group py-1 pl-4">
+                                <!-- AREA DROP ZONE (Tempat meletakkan jadwal) -->
+                                <div class="flex-1 min-w-0 flex justify-between items-center relative group py-2 pl-4 rounded-xl transition-all border-2 border-transparent"
+                                     ondragover="allowDrop(event)"
+                                     ondragenter="dragEnter(event)"
+                                     ondragleave="dragLeave(event)"
+                                     ondrop="dropData(event, '{{ $hari }}', '{{ $blok['key'] }}', '{{ $j ? $j->id : '' }}')">
+                                    
                                     @if($j)
-                                        <div class="w-full">
-                                            <h4 class="text-sm font-bold text-gray-800 truncate">{{ $j->pelajaran->nama_pelajaran ?? '-' }}</h4>
+                                        <!-- ITEM DRAGGABLE (Bisa ditarik) -->
+                                        <div class="w-full cursor-grab active:cursor-grabbing p-2 -ml-2 rounded-lg hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200" 
+                                             draggable="true" 
+                                             ondragstart="dragStart(event, '{{ $j->id }}')" 
+                                             ondragend="dragEnd(event)">
+                                            <h4 class="text-sm font-bold text-gray-800 truncate pointer-events-none">{{ $j->pelajaran->nama_pelajaran ?? '-' }}</h4>
                                             @if($mode == 'kelas')
-                                                <p class="text-xs text-gray-500 mt-1 truncate font-medium text-emerald-600"><i class="fas fa-user-tie text-emerald-400 mr-1"></i> {{ $j->guru->nama_guru ?? 'Tanpa Guru' }}</p>
+                                                <p class="text-xs text-gray-500 mt-1 truncate font-medium text-emerald-600 pointer-events-none"><i class="fas fa-user-tie text-emerald-400 mr-1"></i> {{ $j->guru->nama_guru ?? 'Tanpa Guru' }}</p>
                                             @else
-                                                <p class="text-xs text-gray-500 mt-1 truncate font-medium text-indigo-600"><i class="fas fa-school text-indigo-400 mr-1"></i> Kelas {{ $j->kelas->nama_kelas ?? '-' }}</p>
+                                                <p class="text-xs text-gray-500 mt-1 truncate font-medium text-indigo-600 pointer-events-none"><i class="fas fa-school text-indigo-400 mr-1"></i> Kelas {{ $j->kelas->nama_kelas ?? '-' }}</p>
                                             @endif
                                         </div>
                                         
-                                        <div class="absolute right-0 inset-y-0 pl-12 pr-2 bg-gradient-to-l from-gray-100 via-gray-50 to-transparent flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <div class="absolute right-0 inset-y-0 pl-12 pr-2 bg-gradient-to-l from-white via-white/80 to-transparent flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                             <button type="button" onclick="bukaModalEdit('{{ $hari }}', '{{ $blok['key'] }}', '{{ $j->pelajaran_id }}', '{{ $mode == 'kelas' ? $j->guru_id : $j->kelas_id }}')" class="w-9 h-9 rounded-xl bg-orange-50 text-orange-500 hover:bg-orange-500 hover:text-white transition flex items-center justify-center shadow-sm">
                                                 <i class="fas fa-pen text-xs"></i>
                                             </button>
@@ -122,10 +135,13 @@
                                             </form>
                                         </div>
                                     @else
-                                        <p class="text-xs font-bold text-gray-300 italic flex items-center">
-                                            <i class="fas fa-minus-circle mr-1.5 opacity-40"></i> Kosong
-                                        </p>
-                                        <button onclick="bukaModalTambah('{{ $hari }}', '{{ $blok['key'] }}')" class="px-4 py-1.5 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:border-gray-500 hover:text-gray-700 hover:bg-gray-100 transition text-xs font-bold flex items-center cursor-pointer ml-3">
+                                        <!-- TAMPILAN KOSONG -->
+                                        <div class="w-full flex items-center pointer-events-none">
+                                            <p class="text-xs font-bold text-gray-300 italic flex items-center">
+                                                <i class="fas fa-minus-circle mr-1.5 opacity-40"></i> Kosong
+                                            </p>
+                                        </div>
+                                        <button onclick="bukaModalTambah('{{ $hari }}', '{{ $blok['key'] }}')" class="absolute right-2 px-4 py-1.5 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:border-gray-500 hover:text-gray-700 hover:bg-gray-100 transition text-xs font-bold flex items-center cursor-pointer">
                                             <i class="fas fa-plus mr-1.5"></i> Isi
                                         </button>
                                     @endif
@@ -424,6 +440,89 @@
         }
         function tutupModal() {
             document.getElementById('modal-jadwal').classList.add('hidden');
+        }
+
+        // --- MESIN DRAG AND DROP JADWAL ---
+        let draggedJadwalId = null;
+
+        // Saat item mulai ditarik
+        function dragStart(ev, id) {
+            draggedJadwalId = id;
+            ev.dataTransfer.effectAllowed = "move";
+            // Efek visual item yang ditarik menjadi transparan
+            setTimeout(() => { ev.target.classList.add('opacity-40'); }, 0);
+        }
+
+        // Saat item dilepas (Selesai tarik)
+        function dragEnd(ev) {
+            ev.target.classList.remove('opacity-40');
+            draggedJadwalId = null;
+        }
+
+        // Mengizinkan area untuk dijatuhkan item
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        // Efek visual saat item melayang di atas area kosong/target
+        function dragEnter(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('bg-indigo-50', 'border-indigo-300', 'border-dashed');
+        }
+
+        // Menghilangkan efek visual saat item keluar dari area
+        function dragLeave(ev) {
+            ev.currentTarget.classList.remove('bg-indigo-50', 'border-indigo-300', 'border-dashed');
+        }
+
+        // Proses saat item dilepaskan (Drop)
+        function dropData(ev, targetHari, targetJam, targetId) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('bg-indigo-50', 'border-indigo-300', 'border-dashed');
+
+            // Abaikan jika tidak ada item yang ditarik, atau dijatuhkan di tempatnya sendiri
+            if (!draggedJadwalId || draggedJadwalId === targetId) return;
+
+            // Tampilkan UI Loading Global Anda (Opsional, agar terlihat memproses)
+            document.body.style.cursor = 'wait';
+
+            let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            // Ambil parameter mode yang sedang aktif dari URL (Kelas / Guru)
+            let searchParams = new URLSearchParams(window.location.search);
+            let kelas_id = searchParams.get('kelas_id');
+            let guru_id = searchParams.get('guru_id');
+
+            fetch('/master-jadwal-harian/drag-drop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': token
+                },
+                body: JSON.stringify({
+                    source_id: draggedJadwalId,
+                    target_hari: targetHari,
+                    target_jam: targetJam,
+                    target_id: targetId,
+                    kelas_id: kelas_id,
+                    guru_id: guru_id
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Berhasil! Reload halaman agar matriks merender ulang posisi terbaru
+                    window.location.reload();
+                } else {
+                    alert(data.pesan); // Tampilkan pesan error bentrok
+                    document.body.style.cursor = 'default';
+                }
+            })
+            .catch(error => {
+                alert('Terjadi kesalahan jaringan.');
+                document.body.style.cursor = 'default';
+            });
         }
     </script>
 @endsection

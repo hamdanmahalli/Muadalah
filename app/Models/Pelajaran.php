@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pelajaran extends Model
 {
-    // Menentukan nama tabel secara eksplisit agar pasti terbaca
-    protected $table = 'pelajarans';
-
-    // Membuka gembok agar data bisa dimanipulasi
     protected $guarded = [];
+
+    // CASTING KE ARRAY
+    protected $casts = [
+        'kitab_tingkat' => 'array', 
+    ];
+
+    public function batasPelajaran()
+    {
+        return $this->hasMany(BatasPelajaran::class);
+    }
 }

@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Master Data Guru</h1>
-            <p class="text-sm text-gray-500 mt-1">Kelola data pengajar Pondok Pesantren.</p>
+            <p class="text-sm text-gray-500 mt-1">Kelola data pengajar dan profil profesional Pondok Pesantren.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -59,9 +59,9 @@
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-12">No</th>
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-24">NIG</th>
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Nama Guru</th>
-                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-28">L/P</th>
-                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Alamat</th>
-                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-32">No. HP</th>
+                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">TTL / Gender</th>
+                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Kontak & Alamat</th>
+                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Pendidikan</th>
                             <th class="px-5 py-4 text-center text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-24">Status</th>
                             <th class="px-5 py-4 text-right text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-28">Aksi</th>
                         </tr>
@@ -72,9 +72,17 @@
                             <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-400 font-semibold">{{ $gurus->firstItem() + $index }}</td>
                             <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{{ $guru->nig }}</td>
                             <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $guru->nama_guru }}</td>
-                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ $guru->gender ?? '-' }}</td>
-                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ $guru->alamat ?? '-' }}</td>
-                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ $guru->no_hp ?? '-' }}</td>
+                            <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <div>{{ $guru->tempat_lahir ?? '-' }}, {{ $guru->tanggal_lahir ?? '-' }}</div>
+                                <div class="text-xs text-gray-400 font-medium">{{ $guru->gender ?? '-' }}</div>
+                            </td>
+                            <td class="px-5 py-4 text-sm text-gray-600">
+                                <div><i class="fab fa-whatsapp text-emerald-500 mr-1"></i> {{ $guru->no_hp ?? '-' }}</div>
+                                <div class="text-xs text-gray-400 truncate max-w-xs">{{ $guru->alamat ?? '-' }}</div>
+                            </td>
+                            <td class="px-5 py-4 text-sm text-gray-600 font-medium">
+                                {{ $guru->pendidikan_terakhir ?? '-' }}
+                            </td>
                             <td class="px-5 py-4 whitespace-nowrap text-center">
                                 <span class="px-3 py-1 inline-flex text-[10px] uppercase tracking-wider font-bold rounded-full {{ ($guru->status == 'Nonaktif') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
                                     {{ $guru->status ?? 'Aktif' }}
@@ -82,7 +90,8 @@
                             </td>
                             <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
-                                    <button onclick="bukaModalEdit('{{ $guru->id }}', '{{ $guru->nig }}', '{{ addslashes($guru->nama_guru) }}', '{{ $guru->no_hp }}', '{{ $guru->gender }}', '{{ addslashes($guru->alamat) }}', '{{ $guru->status }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Edit">
+                                    <!-- Tombol Edit diperbarui dengan membawa data baru -->
+                                    <button onclick="bukaModalEdit('{{ $guru->id }}', '{{ $guru->nig }}', '{{ addslashes($guru->nama_guru) }}', '{{ $guru->no_hp }}', '{{ $guru->gender }}', '{{ addslashes($guru->alamat) }}', '{{ $guru->status }}', '{{ $guru->tempat_lahir }}', '{{ $guru->tanggal_lahir }}', '{{ addslashes($guru->pendidikan_terakhir) }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Edit">
                                         <i class="fas fa-pen text-[10px]"></i>
                                     </button>
                                     
@@ -114,6 +123,7 @@
         </div>
     </div>
 
+    <!-- MODAL IMPORT -->
     <div id="modal-import" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="relative mx-auto p-6 border w-full max-w-sm shadow-2xl rounded-xl bg-white">
             <div class="flex justify-between items-center mb-4 border-b pb-3">
@@ -134,8 +144,9 @@
         </div>
     </div>
 
+    <!-- MODAL TAMBAH & EDIT GURU (DISINKRONKAN DENGAN PROFIL LENGKAP) -->
     <div id="modal-guru" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="relative mx-auto p-6 border w-full max-w-lg shadow-2xl rounded-xl bg-white">
+        <div class="relative mx-auto p-6 border w-full max-w-xl shadow-2xl rounded-xl bg-white">
             <div class="flex justify-between items-center mb-5 border-b pb-3">
                 <h3 class="text-lg font-bold text-gray-800" id="modal-judul">Tambah Guru Baru</h3>
                 <button type="button" onclick="tutupModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
@@ -146,7 +157,7 @@
                 <input type="hidden" name="_method" id="form-method" value="POST">
                 
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="mb-4">
+                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">NIG (Otomatis)</label>
                         <input type="text" name="nig" id="input-nig" value="{{ $nigBaru }}" readonly class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 text-gray-500 font-bold outline-none cursor-not-allowed">
                     </div>
@@ -160,8 +171,19 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap Guru</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap & Gelar</label>
                     <input type="text" name="nama_guru" id="input-nama" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tempat Lahir</label>
+                        <input type="text" name="tempat_lahir" id="input-tempat-lahir" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Lahir</label>
+                        <input type="date" name="tanggal_lahir" id="input-tanggal-lahir" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -170,7 +192,7 @@
                         <input type="text" name="no_hp" id="input-nohp" placeholder="08123xxxx" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">gender</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Kelamin</label>
                         <select name="gender" id="input-gender" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
                             <option value="">-- Pilih --</option>
                             <option value="Laki-laki">Laki-laki</option>
@@ -179,8 +201,13 @@
                     </div>
                 </div>
 
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Pendidikan Terakhir</label>
+                    <input type="text" name="pendidikan_terakhir" id="input-pendidikan" placeholder="Contoh: S1 PAI" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                </div>
+
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Alamat Lengkap</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Alamat Domisili</label>
                     <textarea name="alamat" id="input-alamat" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"></textarea>
                 </div>
 
@@ -192,6 +219,7 @@
         </div>
     </div>
 
+    <!-- MODAL HAPUS -->
     <div id="modal-hapus" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="relative mx-auto p-6 border w-full max-w-sm shadow-2xl rounded-2xl bg-white text-center">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4 shadow-inner">
@@ -255,19 +283,22 @@
             document.getElementById('input-status').value = "Aktif";
         }
 
-        function bukaModalEdit(id, nig, nama, hp, gender, alamat, status) {
+        function bukaModalEdit(id, nig, nama, hp, gender, alamat, status, tempatLahir, tanggalLahir, pendidikan) {
             document.getElementById('modal-guru').classList.remove('hidden');
             document.getElementById('modal-judul').innerText = "Edit Data Guru";
             document.getElementById('form-guru').action = "/master-guru/" + id;
             document.getElementById('form-method').value = "PUT";
             
-            // Isi form dengan data lama
+            // Isi form dengan data lama (Sinkron dengan Profil Lengkap)
             document.getElementById('input-nig').value = nig;
             document.getElementById('input-nama').value = nama;
             document.getElementById('input-nohp').value = hp;
             document.getElementById('input-gender').value = gender;
             document.getElementById('input-alamat').value = alamat;
             document.getElementById('input-status').value = status;
+            document.getElementById('input-tempat-lahir').value = tempatLahir;
+            document.getElementById('input-tanggal-lahir').value = tanggalLahir;
+            document.getElementById('input-pendidikan').value = pendidikan;
         }
 
         function tutupModal() {

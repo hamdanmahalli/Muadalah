@@ -22,14 +22,9 @@ class JadwalController extends Controller
         $waktuSekarang = Carbon::now();
         $tanggalHariIni = $waktuSekarang->format('Y-m-d');
         
-        $namaHariInggris = $waktuSekarang->format('l');
-        $daftarHari = [
-            'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Ahad'
-        ];
-        $hariIni = $daftarHari[$namaHariInggris];
+        $hariIni = map_hari($waktuSekarang->format('l'));
 
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
 
         // Menghitung jadwal HANYA untuk Tahun Ajaran aktif
@@ -56,12 +51,7 @@ class JadwalController extends Controller
         $isHariIni = ($tanggalPilihan === $waktuAsliKomputer->format('Y-m-d'));
         $jamSekarang = $waktuAsliKomputer->format('H:i:s');
         
-        $namaHariInggris = $waktuSekarang->format('l');
-        $daftarHari = [
-            'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Ahad' 
-        ];
-        $hariIni = $daftarHari[$namaHariInggris];
+        $hariIni = map_hari($waktuSekarang->format('l'));
 
         $semuaJam = \App\Models\MasterJam::orderBy('jam_ke', 'asc')->get();
         
@@ -87,8 +77,9 @@ class JadwalController extends Controller
         $jamPilihan = $request->input('jam', $jamDefault);
         $arrayJamPilihan = explode('-', $jamPilihan); 
 
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+        $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
         $jadwalsMentah = \App\Models\JadwalHarian::with(['kelas', 'pelajaran', 'guru'])
                          ->where('hari', 'ilike', $hariIni)
@@ -96,7 +87,10 @@ class JadwalController extends Controller
                          ->where('tahun_ajaran', $tahunAjaran)
                          ->get();
 
-        $daftarLibur = \App\Models\HariLibur::whereDate('tanggal_mulai', '<=', $tanggalPilihan)
+        // KECERDASAN BARU: Mengambil data dari AgendaKaldik (Bukan HariLibur)
+        $daftarLibur = \App\Models\AgendaKaldik::where('periode_id', $periodeId)
+                        ->whereIn('jenis_agenda', ['Libur', 'UTS', 'UAS'])
+                        ->whereDate('tanggal_mulai', '<=', $tanggalPilihan)
                         ->whereDate('tanggal_selesai', '>=', $tanggalPilihan)
                         ->get();
 
@@ -107,50 +101,56 @@ class JadwalController extends Controller
             $isLibur = false;
             $namaLibur = '';
 
-            foreach ($daftarLibur as $libur) {
-                $kenaTarget = false;
-                
-                // KECERDASAN 1: DEKODE AMAN UNTUK TARGET KELAS
-                $rawKls = $libur->kelas_ids;
-                $arrKls = is_string($rawKls) ? json_decode($rawKls, true) : $rawKls;
-                $arrKls = is_array($arrKls) ? $arrKls : [];
+            foreach ($daftarLibur as $agenda) {
+                $kenaTargetKelas = false;
+                $arrKls = is_array($agenda->kelas_ids) ? $agenda->kelas_ids : (is_string($agenda->kelas_ids) ? json_decode($agenda->kelas_ids, true) : []);
 
-                if ($libur->target_libur == 'semua') {
-                    $kenaTarget = true;
-                } elseif ($libur->target_libur == 'kelas_tertentu') {
-                    if (in_array($j->kelas_id, $arrKls)) {
-                        $kenaTarget = true;
-                    }
+                if ($agenda->target_libur == 'semua') {
+                    $kenaTargetKelas = true;
+                } elseif ($agenda->target_libur == 'kelas_tertentu' && in_array($j->kelas_id, $arrKls)) {
+                    $kenaTargetKelas = true;
                 }
 
-                if ($kenaTarget) {
-                    if ($libur->tipe_libur == 'Penuh') {
+                if ($kenaTargetKelas) {
+                    // KECERDASAN PARSIAL DIKEMBALIKAN
+                    if ($agenda->tipe_agenda == 'Penuh') {
                         $isLibur = true;
-                        $namaLibur = $libur->nama_libur;
-                        break;
+                        $namaLibur = $agenda->nama_agenda . ' (' . $agenda->jenis_agenda . ' Full)';
+                        break; 
                     } else {
-                        // KECERDASAN 2: DEKODE AMAN UNTUK TARGET JAM (PARSIAL)
-                        $rawJam = $libur->jam_diliburkan;
-                        $arrJam = is_string($rawJam) ? json_decode($rawJam, true) : $rawJam;
-                        $arrJam = is_array($arrJam) ? $arrJam : [];
-                        
-                        // PENCOCOKAN TAHAN BANTING (Konversi Angka Mutlak)
+                        // Cek apakah jam jadwal ini termasuk jam yang diliburkan
+                        $arrJam = is_array($agenda->jam_diliburkan) ? $agenda->jam_diliburkan : (json_decode($agenda->jam_diliburkan, true) ?? []);
                         foreach ($arrJam as $jamLibur) {
                             if ((int)$j->jam_ke == (int)$jamLibur) {
                                 $isLibur = true;
-                                $namaLibur = $libur->nama_libur . " (Parsial)";
-                                break 2; // Keluar dari loop jam dan loop libur sekaligus
+                                $namaLibur = $agenda->nama_agenda . " (Parsial)";
+                                break 2; // Keluar dari loop jam dan loop agenda
                             }
                         }
                     }
                 }
             }
 
+            // --- LOGIKA KECERDASAN TINGKAT KELAS ---
+            $namaKelas = $j->kelas->nama_kelas ?? 'Kelas -';
+            
+            // Ekstrak hanya angkanya saja dari nama kelas (Contoh: "7A" menjadi "7", "9 Putra" menjadi "9")
+            $tingkatKelas = preg_replace('/[^0-9]/', '', $namaKelas); 
+            
+            // Ambil data array JSON kitab_tingkat dari database
+            $petaKitab = $j->pelajaran->kitab_tingkat ?? [];
+            
+            // Tentukan nama kitab: Cek apakah di JSON ada data untuk tingkat kelas tersebut.
+            // Jika tidak ada, gunakan fallback (kolom nama_kitab lama atau tanda strip)
+            $namaKitab = $petaKitab[$tingkatKelas] ?? ($j->pelajaran->nama_kitab ?? '-');
+            // ---------------------------------------
+
             if (!isset($jadwals[$kunci])) {
                 $jadwals[$kunci] = [
                     'id_list' => [], 
-                    'kelas' => $j->kelas->nama_kelas ?? 'Kelas -',
+                    'kelas' => $namaKelas,
                     'mata_pelajaran' => $j->pelajaran->nama_pelajaran ?? 'Tanpa Pelajaran',
+                    'nama_kitab' => $namaKitab, // <--- Variabel cerdas dimasukkan ke sini
                     'nig_guru' => $j->guru->nig ?? '-',
                     'nama_guru' => $j->guru->nama_guru ?? 'Belum ada guru',
                     'jam_tampil' => $jamPilihan,
@@ -163,7 +163,7 @@ class JadwalController extends Controller
                     $jadwals[$kunci]['nama_libur'] = $namaLibur;
                 }
             }
-            $jadwals[$kunci]['id_list'][] = $j->id; 
+            $jadwals[$kunci]['id_list'][] = $j->id;
         }
 
         $infoJamLengkap = collect($opsiBlokJam)->firstWhere('nilai', $jamPilihan);
@@ -171,7 +171,14 @@ class JadwalController extends Controller
         $daftarGuru = \App\Models\Guru::all();
         $kehadiranHariIni = \App\Models\KehadiranGuru::whereDate('tanggal', $tanggalPilihan)->get()->keyBy('jadwal_id');
 
+        // =========================================================================
+        // KUNCI STABILITAS URUTAN (Agar tidak melompat-lompat setelah di-update)
+        // Mengurutkan berdasarkan Nama Kelas secara alfabetis (A - Z)
+        // =========================================================================
+        $jadwals = collect($jadwals)->sortBy('kelas')->values()->all();
+
         return view('meja-kontrol', compact('jadwals', 'kehadiranHariIni', 'infoJam', 'daftarGuru', 'opsiBlokJam', 'jamPilihan', 'hariIni', 'tanggalPilihan', 'waktuSekarang', 'daftarLibur'));
+        
     }
 
     // ========================================================
@@ -187,7 +194,7 @@ class JadwalController extends Controller
         ]);
 
         // KECERDASAN: Ambil ID Periode yang sedang aktif
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
         // Menerima tanggal dari Kalender di layar TU, jika kosong baru pakai Hari Ini
@@ -214,9 +221,6 @@ class JadwalController extends Controller
     // ========================================================
     // 4. LAPORAN REKAPITULASI (WEB) DENGAN SIMULASI KALENDER
     // ========================================================
-    // ========================================================
-    // 4. LAPORAN REKAPITULASI (WEB) DENGAN SIMULASI KALENDER
-    // ========================================================
     public function laporanKehadiran(Request $request)
     {
         $tglMulai = $request->input('tgl_mulai', date('Y-m-01'));
@@ -224,68 +228,65 @@ class JadwalController extends Controller
         $periodeTeks = \Carbon\Carbon::parse($tglMulai)->translatedFormat('d F Y') . " s/d " . \Carbon\Carbon::parse($tglSelesai)->translatedFormat('d F Y');
 
         $gurus = \App\Models\Guru::orderBy('nama_guru', 'asc')->get();
-        
         $rekapData = [];
         $totalSeluruhWajib = 0; $totalSeluruhRealita = 0; $totalSeluruhKosong = 0;
 
-        $mapHari = [
-            'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'
-        ];
-
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
 
-        $semuaJadwal = \App\Models\JadwalHarian::where('tahun_ajaran', $tahunAjaran)->get();
+        // 🛡️ PERBAIKAN: Gunakan withTrashed() agar jadwal guru lama tidak hilang dari sejarah
+        $semuaJadwal = \App\Models\JadwalHarian::withTrashed()->where('tahun_ajaran', $tahunAjaran)->get();
 
-        // KECERDASAN BARU: Tarik data Hari Libur di rentang tanggal laporan
-        $daftarLibur = \App\Models\HariLibur::where('tanggal_mulai', '<=', $tglSelesai)
+        $daftarLibur = \App\Models\AgendaKaldik::where('periode_id', $periodeId)
+                        ->whereIn('jenis_agenda', ['Libur', 'UTS', 'UAS'])
+                        ->where('tanggal_mulai', '<=', $tglSelesai)
                         ->where('tanggal_selesai', '>=', $tglMulai)
                         ->get();
 
         foreach ($gurus as $guru) {
-            // 1. HITUNG JAM WAJIB BERDASARKAN KALENDER & HARI LIBUR
             $jamWajib = 0;
             $period = \Carbon\CarbonPeriod::create($tglMulai, $tglSelesai);
             
             foreach ($period as $date) {
                 $tglStr = $date->format('Y-m-d');
-                $namaHari = $date->format('l');
-                $hariIndo = $mapHari[$namaHari];
+                $hariIndo = map_hari($date->format('l'));
                 
                 $jadwalHariIni = $semuaJadwal->where('guru_id', $guru->id)
-                                         ->filter(function($j) use ($hariIndo) {
-                                             return strtolower($j->hari) == strtolower($hariIndo) || 
-                                                    (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'minggu');
-                                         });
+                                             ->filter(function($j) use ($hariIndo, $tglStr) {
+                                                 $isHariSama = strtolower($j->hari) == strtolower($hariIndo) || (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'Ahad');
+                                                 
+                                                 // 🛡️ KECERDASAN HISTORIS: Baca kapan Soft Delete terjadi
+                                                 $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
+                                                 $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                                                 $isDalamRentang = ($tglStr >= $mulaiAktif && $tglStr <= $selesaiAktif);
+
+                                                 return $isHariSama && $isDalamRentang;
+                                             });
 
                 foreach ($jadwalHariIni as $j) {
                     $isLibur = false;
-
-                    foreach ($daftarLibur as $libur) {
-                        // Apakah tanggal ini masuk rentang libur?
-                        if ($tglStr >= $libur->tanggal_mulai && $tglStr <= $libur->tanggal_selesai) {
+                    foreach ($daftarLibur as $agenda) {
+                        $mulai = \Carbon\Carbon::parse($agenda->tanggal_mulai)->format('Y-m-d');
+                        $selesai = \Carbon\Carbon::parse($agenda->tanggal_selesai)->format('Y-m-d');
+                        
+                        if ($tglStr >= $mulai && $tglStr <= $selesai) {
                             $kenaTarget = false;
-                            
-                            // Apakah untuk semua kelas atau kelas tertentu?
-                            if ($libur->target_libur == 'semua') {
+                            $arrKls = is_array($agenda->kelas_ids) ? $agenda->kelas_ids : (is_string($agenda->kelas_ids) ? json_decode($agenda->kelas_ids, true) : []);
+
+                            if ($agenda->target_libur == 'semua') {
                                 $kenaTarget = true;
-                            } elseif ($libur->target_libur == 'kelas_tertentu') {
-                                $kelasDiliburkan = is_string($libur->kelas_ids) ? json_decode($libur->kelas_ids, true) : (is_array($libur->kelas_ids) ? $libur->kelas_ids : []);
-                                if (is_array($kelasDiliburkan) && in_array($j->kelas_id, $kelasDiliburkan)) {
-                                    $kenaTarget = true;
-                                }
+                            } elseif ($agenda->target_libur == 'kelas_tertentu' && in_array($j->kelas_id, $arrKls)) {
+                                $kenaTarget = true;
                             }
 
-                            // Jika kelasnya libur, cek apakah full atau parsial jamnya
                             if ($kenaTarget) {
-                                if ($libur->tipe_libur == 'Penuh') {
+                                if ($agenda->tipe_agenda == 'Penuh') {
                                     $isLibur = true;
                                     break;
                                 } else {
-                                    $jamDiliburkan = is_string($libur->jam_diliburkan) ? json_decode($libur->jam_diliburkan, true) : (is_array($libur->jam_diliburkan) ? $libur->jam_diliburkan : []);
-                                    if (is_array($jamDiliburkan) && in_array($j->jam_ke, $jamDiliburkan)) {
+                                    $arrJam = is_array($agenda->jam_diliburkan) ? $agenda->jam_diliburkan : (json_decode($agenda->jam_diliburkan, true) ?? []);
+                                    if (in_array($j->jam_ke, $arrJam)) {
                                         $isLibur = true;
                                         break;
                                     }
@@ -294,16 +295,15 @@ class JadwalController extends Controller
                         }
                     }
 
-                    // Jika tidak terkena libur apa pun, baru hitung sebagai Jam Wajib
                     if (!$isLibur) {
                         $jamWajib++;
                     }
                 }
             }
 
-            if ($jamWajib == 0) continue; // Sembunyikan guru jika tidak ada jadwal wajib di rentang ini
+            if ($jamWajib == 0) continue; 
 
-            // 2. AMBIL REALITA KEHADIRAN (JADWAL SENDIRI)
+            // Tarik Presensi yang bersangkutan
             $kehadiran = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
                 ->join('jadwal_harians', 'kehadiran_gurus.jadwal_id', '=', 'jadwal_harians.id')
                 ->where('jadwal_harians.guru_id', $guru->id)
@@ -316,18 +316,15 @@ class JadwalController extends Controller
             $izin  = $kehadiran->where('status', 'Izin')->count();
             $sakit = $kehadiran->where('status', 'Sakit')->count();
             
-            // 3. SAPU BERSIH: UBAH "MENUNGGU" MENJADI "ALPA"
             $alpha = $jamWajib - ($hadir + $izin + $sakit);
             if($alpha < 0) $alpha = 0; 
 
-            // 4. HITUNG PIKET / INVAL (TIDAK MEMPENGARUHI PERSENTASE JAM WAJIB)
             $piket = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
                 ->whereBetween('tanggal', [$tglMulai, $tglSelesai])
                 ->where('periode_id', $periodeId)
                 ->where('nig_pengganti', $guru->nig)
                 ->count();
 
-            // RUMUS REGULASI: Persentase kehadiran HANYA dari jam wajib sendiri
             $persentase = round(($hadir / $jamWajib) * 100, 1);
 
             if ($persentase >= 85) {
@@ -347,9 +344,9 @@ class JadwalController extends Controller
                 'a' => $alpha,
                 'i' => $izin,
                 's' => $sakit,
-                'piket' => $piket, // Muncul di tabel web/PDF
+                'piket' => $piket, 
                 'realita' => $hadir,
-                'persen' => $persentase, // Aman, tidak terpengaruh piket
+                'persen' => $persentase, 
                 'ket' => $ket,
                 'badge_bg' => $badgeBg
             ];
@@ -370,7 +367,7 @@ class JadwalController extends Controller
     }
 
     // ========================================================
-    // 5. CETAK PDF (DISINKRONKAN 100% DENGAN LOGIKA WEB)
+    // 5. CETAK PDF (STRUKTUR DATA IDENTIK DENGAN WEB)
     // ========================================================
     public function cetakPdf(Request $request)
     {
@@ -382,19 +379,16 @@ class JadwalController extends Controller
         $rekapData = [];
         $totalSeluruhWajib = 0; $totalSeluruhRealita = 0; $totalSeluruhKosong = 0;
 
-        $mapHari = [
-            'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'
-        ];
-
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
 
-        $semuaJadwal = \App\Models\JadwalHarian::where('tahun_ajaran', $tahunAjaran)->get();
+        // 🛡️ PERBAIKAN: Gunakan withTrashed()
+        $semuaJadwal = \App\Models\JadwalHarian::withTrashed()->where('tahun_ajaran', $tahunAjaran)->get();
 
-        // KECERDASAN BARU: Tarik data Hari Libur di rentang tanggal laporan
-        $daftarLibur = \App\Models\HariLibur::where('tanggal_mulai', '<=', $tglSelesai)
+        $daftarLibur = \App\Models\AgendaKaldik::where('periode_id', $periodeId)
+                        ->whereIn('jenis_agenda', ['Libur', 'UTS', 'UAS'])
+                        ->where('tanggal_mulai', '<=', $tglSelesai)
                         ->where('tanggal_selesai', '>=', $tglMulai)
                         ->get();
 
@@ -404,49 +398,39 @@ class JadwalController extends Controller
             
             foreach ($period as $date) {
                 $tglStr = $date->format('Y-m-d');
-                $namaHari = $date->format('l');
-                $hariIndo = $mapHari[$namaHari];
+                $hariIndo = map_hari($date->format('l'));
                 
                 $jadwalHariIni = $semuaJadwal->where('guru_id', $guru->id)
-                                         ->filter(function($j) use ($hariIndo) {
-                                             return strtolower($j->hari) == strtolower($hariIndo) || 
-                                                    (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'minggu');
-                                         });
+                                             ->filter(function($j) use ($hariIndo, $tglStr) {
+                                                 $isHariSama = strtolower($j->hari) == strtolower($hariIndo) || (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'Ahad');
+                                                 
+                                                 $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
+                                                 $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                                                 $isDalamRentang = ($tglStr >= $mulaiAktif && $tglStr <= $selesaiAktif);
+
+                                                 return $isHariSama && $isDalamRentang;
+                                             });
 
                 foreach ($jadwalHariIni as $j) {
                     $isLibur = false;
-
-                    foreach ($daftarLibur as $libur) {
-                        if ($tglStr >= $libur->tanggal_mulai && $tglStr <= $libur->tanggal_selesai) {
+                    foreach ($daftarLibur as $agenda) {
+                        $mulai = \Carbon\Carbon::parse($agenda->tanggal_mulai)->format('Y-m-d');
+                        $selesai = \Carbon\Carbon::parse($agenda->tanggal_selesai)->format('Y-m-d');
+                        if ($tglStr >= $mulai && $tglStr <= $selesai) {
                             $kenaTarget = false;
-                            
-                            if ($libur->target_libur == 'semua') {
+                            $arrKls = is_array($agenda->kelas_ids) ? $agenda->kelas_ids : (is_string($agenda->kelas_ids) ? json_decode($agenda->kelas_ids, true) : []);
+                            if ($agenda->target_libur == 'semua') {
                                 $kenaTarget = true;
-                            } elseif ($libur->target_libur == 'kelas_tertentu') {
-                                $kelasDiliburkan = is_string($libur->kelas_ids) ? json_decode($libur->kelas_ids, true) : (is_array($libur->kelas_ids) ? $libur->kelas_ids : []);
-                                if (is_array($kelasDiliburkan) && in_array($j->kelas_id, $kelasDiliburkan)) {
-                                    $kenaTarget = true;
-                                }
+                            } elseif ($agenda->target_libur == 'kelas_tertentu' && in_array($j->kelas_id, $arrKls)) {
+                                $kenaTarget = true;
                             }
-
                             if ($kenaTarget) {
-                                if ($libur->tipe_libur == 'Penuh') {
-                                    $isLibur = true;
-                                    break;
-                                } else {
-                                    $jamDiliburkan = is_string($libur->jam_diliburkan) ? json_decode($libur->jam_diliburkan, true) : (is_array($libur->jam_diliburkan) ? $libur->jam_diliburkan : []);
-                                    if (is_array($jamDiliburkan) && in_array($j->jam_ke, $jamDiliburkan)) {
-                                        $isLibur = true;
-                                        break;
-                                    }
-                                }
+                                $isLibur = true;
+                                break;
                             }
                         }
                     }
-
-                    if (!$isLibur) {
-                        $jamWajib++;
-                    }
+                    if (!$isLibur) $jamWajib++;
                 }
             }
 
@@ -466,7 +450,7 @@ class JadwalController extends Controller
             
             $alpha = $jamWajib - ($hadir + $izin + $sakit);
             if($alpha < 0) $alpha = 0; 
-
+            
             $piket = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
                 ->whereBetween('tanggal', [$tglMulai, $tglSelesai])
                 ->where('periode_id', $periodeId)
@@ -498,7 +482,7 @@ class JadwalController extends Controller
                 'ket' => $ket,
                 'badge_bg' => $badgeBg
             ];
-
+            
             $totalSeluruhWajib += $jamWajib;
             $totalSeluruhRealita += $hadir;
             $totalSeluruhKosong += $alpha;
@@ -507,7 +491,7 @@ class JadwalController extends Controller
         $persenTotalRealita = $totalSeluruhWajib > 0 ? round(($totalSeluruhRealita / $totalSeluruhWajib) * 100, 1) : 0;
         $persenTotalKosong = $totalSeluruhWajib > 0 ? round(($totalSeluruhKosong / $totalSeluruhWajib) * 100, 1) : 0;
 
-        $pdf = Pdf::loadView('laporan-pdf', compact(
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan-pdf', compact(
             'rekapData', 'tglMulai', 'tglSelesai', 'periodeTeks',
             'totalSeluruhWajib', 'totalSeluruhRealita', 'totalSeluruhKosong',
             'persenTotalRealita', 'persenTotalKosong', 'daftarLibur'
@@ -526,8 +510,9 @@ class JadwalController extends Controller
         return response()->json($kehadiran);
     }
 
-    // FITUR BARU: Menyuplai Riwayat Kelas via AJAX (TERMASUK ALPA OTOMATIS & PIKET)
-    // FITUR BARU: Menyuplai Riwayat Kelas via AJAX (TERMASUK ALPA OTOMATIS, PIKET, & FORMAT HARI LENGKAP)
+    // ==========================================================
+    // FUNGSI BANTUAN 2: Pop-Up AJAX Riwayat (Layar Admin)
+    // ==========================================================
     public function riwayatGuruAjax(Request $request)
     {
         $guruId = $request->guru_id;
@@ -537,159 +522,13 @@ class JadwalController extends Controller
         $guru = \App\Models\Guru::find($guruId);
         if (!$guru) return response()->json([]);
 
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
-        // Peta terjemahan hari ke Bahasa Indonesia
-        $mapHari = [
-            'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Ahad'
-        ];
+        $riwayat = $this->getRiwayatPribadi($guruId, $tglMulai, $tglSelesai, $periodeId, $tahunAjaran);
 
-        // 1. Ambil Jadwal Asli (Wajib) Guru Tersebut
-        $jadwalAsli = \App\Models\JadwalHarian::with(['kelas', 'pelajaran'])
-                        ->where('guru_id', $guruId)
-                        ->where('tahun_ajaran', $tahunAjaran)
-                        ->get();
-
-        // 2. Ambil Rekaman Kehadiran untuk jadwal asli
-        $kehadiranAsli = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
-            ->whereIn('jadwal_id', $jadwalAsli->pluck('id'))
-            ->whereBetween('tanggal', [$tglMulai, $tglSelesai])
-            ->where('periode_id', $periodeId)
-            ->get()->keyBy(function($item) {
-                return $item->jadwal_id . '_' . $item->tanggal; // ID Jadwal + Tanggal
-            });
-
-        $riwayat = [];
-        $period = \Carbon\CarbonPeriod::create($tglMulai, $tglSelesai);
-        
-        // 3. SIMULASIKAN KALENDER UNTUK MENGELUARKAN ALPA OTOMATIS
-        foreach ($period as $date) {
-            $tglStr = $date->format('Y-m-d');
-            $namaHari = $date->format('l');
-            $hariIndo = $mapHari[$namaHari] ?? $namaHari;
-
-            // KECERDASAN BARU: Meracik format "Hari, Tanggal Bulan Tahun" (Contoh: Rabu, 4 Juli 2026)
-            $formatTanggalCantik = $hariIndo . ', ' . $date->translatedFormat('j F Y');
-
-            $jadwalHariIni = $jadwalAsli->filter(function($j) use ($hariIndo) {
-                return strtolower($j->hari) == strtolower($hariIndo) || 
-                       (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'minggu');
-            });
-
-            foreach ($jadwalHariIni as $j) {
-                $key = $j->id . '_' . $tglStr;
-                $rekam = $kehadiranAsli->get($key);
-
-                if ($rekam) {
-                    $riwayat[] = (object)[
-                        'tanggal' => $tglStr,
-                        'tanggal_indo' => $formatTanggalCantik, // <-- Format baru disuntikkan
-                        'status' => $rekam->status,
-                        'keterangan' => $rekam->keterangan,
-                        'jam_ke' => $j->jam_ke,
-                        'nama_kelas' => $j->kelas->nama_kelas ?? '?',
-                        'nama_pelajaran' => $j->pelajaran->nama_pelajaran ?? '?'
-                    ];
-                } else {
-                    // JIKA TIDAK ADA RECORD, JADI ALPA (Tersapu Sistem)
-                    $riwayat[] = (object)[
-                        'tanggal' => $tglStr,
-                        'tanggal_indo' => $formatTanggalCantik, // <-- Format baru disuntikkan
-                        'status' => 'Alpa',
-                        'keterangan' => 'Belum dikonfirmasi (Tersapu Sistem)',
-                        'jam_ke' => $j->jam_ke,
-                        'nama_kelas' => $j->kelas->nama_kelas ?? '?',
-                        'nama_pelajaran' => $j->pelajaran->nama_pelajaran ?? '?'
-                    ];
-                }
-            }
-        }
-
-        // 4. TAMBAHKAN DATA PIKET (INVAL) DI KELAS GURU LAIN
-        $piketRecords = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
-            ->join('jadwal_harians', 'kehadiran_gurus.jadwal_id', '=', 'jadwal_harians.id')
-            ->leftJoin('kelas', 'jadwal_harians.kelas_id', '=', 'kelas.id')
-            ->leftJoin('pelajarans', 'jadwal_harians.pelajaran_id', '=', 'pelajarans.id')
-            ->where('kehadiran_gurus.nig_pengganti', $guru->nig) // Karena Inval disimpan lewat NIG
-            ->whereBetween('kehadiran_gurus.tanggal', [$tglMulai, $tglSelesai])
-            ->where('kehadiran_gurus.periode_id', $periodeId)
-            ->select('kehadiran_gurus.tanggal', 'kehadiran_gurus.keterangan', 'jadwal_harians.jam_ke', 'kelas.nama_kelas', 'pelajarans.nama_pelajaran')
-            ->get();
-
-        foreach ($piketRecords as $p) {
-            $tglPiket = \Carbon\Carbon::parse($p->tanggal);
-            $namaHariPiket = $tglPiket->format('l');
-            $hariIndoPiket = $mapHari[$namaHariPiket] ?? $namaHariPiket;
-            
-            // Format cantik untuk Piket
-            $formatTanggalCantikPiket = $hariIndoPiket . ', ' . $tglPiket->translatedFormat('j F Y');
-
-            $riwayat[] = (object)[
-                'tanggal' => $p->tanggal,
-                'tanggal_indo' => $formatTanggalCantikPiket, // <-- Format baru disuntikkan
-                'status' => 'Piket',
-                'keterangan' => 'Inval / Mengganti Guru Lain',
-                'jam_ke' => $p->jam_ke,
-                'nama_kelas' => $p->nama_kelas ?? '?',
-                'nama_pelajaran' => $p->nama_pelajaran ?? '?'
-            ];
-        }
-
-        // 5. URUTKAN DARI TANGGAL TERBARU LALU JAM AWAL
-        usort($riwayat, function($a, $b) {
-            $tglCmp = strcmp($b->tanggal, $a->tanggal);
-            if ($tglCmp === 0) {
-                return $a->jam_ke <=> $b->jam_ke;
-            }
-            return $tglCmp;
-        });
-
-        // 6. GABUNGKAN BLOK JAM & PASTIKAN TIDAK PECAH
-        $groupedRiwayat = [];
-        $currentGroup = null;
-
-        foreach ($riwayat as $item) {
-            $item->jam_ke = (int)$item->jam_ke;
-            
-            if ($currentGroup === null) {
-                $currentGroup = clone $item;
-                $currentGroup->jam_list = [$item->jam_ke];
-            } else {
-                // Solusi Mutlak: Gunakan max() agar urutan terpantau
-                $lastJam = max($currentGroup->jam_list);
-                
-                if (
-                    $currentGroup->tanggal === $item->tanggal &&
-                    $currentGroup->status === $item->status &&
-                    $currentGroup->nama_kelas === $item->nama_kelas &&
-                    $currentGroup->nama_pelajaran === $item->nama_pelajaran &&
-                    ($lastJam + 1 === $item->jam_ke)
-                ) {
-                    $currentGroup->jam_list[] = $item->jam_ke;
-                } else {
-                    $jamMulai = min($currentGroup->jam_list);
-                    $jamSelesai = max($currentGroup->jam_list);
-                    $currentGroup->jam_tampil = ($jamMulai == $jamSelesai) ? (string)$jamMulai : $jamMulai . '-' . $jamSelesai;
-                    
-                    $groupedRiwayat[] = $currentGroup;
-                    
-                    $currentGroup = clone $item;
-                    $currentGroup->jam_list = [$item->jam_ke];
-                }
-            }
-        }
-        
-        if ($currentGroup !== null) {
-            $jamMulai = min($currentGroup->jam_list);
-            $jamSelesai = max($currentGroup->jam_list);
-            $currentGroup->jam_tampil = ($jamMulai == $jamSelesai) ? (string)$jamMulai : $jamMulai . '-' . $jamSelesai;
-            $groupedRiwayat[] = $currentGroup;
-        }
-
-        return response()->json($groupedRiwayat);
+        return response()->json($riwayat);
     }
 
     // ==========================================================
@@ -708,11 +547,12 @@ class JadwalController extends Controller
             ]);
         }
 
-        $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
+        $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
-        // 1. Ambil Jadwal dan Kelompokkan (Sistem Blok Jam)
+        // 1. Ambil Jadwal dan Kelompokkan 
+        // 🛡️ PERBAIKAN: Tidak perlu withTrashed() maupun tgl_efektif, karena di layar jadwal yang tampil hanya jadwal aktif saat ini
         $jadwalMentah = \App\Models\JadwalHarian::with(['kelas', 'pelajaran'])
             ->where('guru_id', $guru->id)
             ->where('tahun_ajaran', $tahunAjaran)
@@ -752,35 +592,342 @@ class JadwalController extends Controller
 
         // 2. TANGGAL PERIODE DINAMIS
         $sekarang = \Carbon\Carbon::now();
-        
-        // Batas Tanggal 1 Periode/Semester dari Master Periode
         $tglMulaiPeriode   = ($periodeAktif && $periodeAktif->tanggal_mulai) ? $periodeAktif->tanggal_mulai : $sekarang->copy()->startOfYear()->format('Y-m-d');
         $tglSelesaiPeriode = ($periodeAktif && $periodeAktif->tanggal_selesai) ? $periodeAktif->tanggal_selesai : $sekarang->copy()->endOfYear()->format('Y-m-d');
 
-        // Batas Bulan Ini (Tetap Di dalam Rentang Periode)
         $awalBulan = $sekarang->copy()->startOfMonth()->format('Y-m-d');
         $akhirBulan = $sekarang->copy()->endOfMonth()->format('Y-m-d');
 
         if ($awalBulan < $tglMulaiPeriode) $awalBulan = $tglMulaiPeriode;
         if ($akhirBulan > $tglSelesaiPeriode) $akhirBulan = $tglSelesaiPeriode;
 
-        // Hitung Rekap
         $rekapBulan = $this->hitungRekapGuru($guru->id, $awalBulan, $akhirBulan, $periodeId, $tahunAjaran);
         $rekapTahun = $this->hitungRekapGuru($guru->id, $tglMulaiPeriode, $tglSelesaiPeriode, $periodeId, $tahunAjaran);
 
         return view('jadwal-saya', compact('guru', 'jadwalTerstruktur', 'periodeAktif', 'rekapBulan', 'rekapTahun'));
     }
 
-    // FUNGSI BANTUAN: Mesin Penghitung Rekap Guru Pribadi Berbasis Rentang Tanggal
+    
+    // ==========================================================
+    // KHUSUS GURU: HALAMAN REKAP PRESENSI PRIBADI & RIWAYAT
+    // ==========================================================
+    public function rekapPresensiPribadi(Request $request)
+    {
+        $user = auth()->user();
+        $guru = \App\Models\Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+
+        if (!$guru) {
+            return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
+        }
+
+        $periodeAktif = get_periode_aktif();
+        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+        $periodeId = $periodeAktif ? $periodeAktif->id : null;
+
+        $sekarang = \Carbon\Carbon::now();
+        $awalBulan = $sekarang->copy()->startOfMonth()->format('Y-m-d');
+        $akhirBulan = $sekarang->copy()->endOfMonth()->format('Y-m-d');
+
+        $tglMulaiPeriode   = ($periodeAktif && $periodeAktif->tanggal_mulai) ? $periodeAktif->tanggal_mulai : $sekarang->copy()->startOfYear()->format('Y-m-d');
+        $tglSelesaiPeriode = ($periodeAktif && $periodeAktif->tanggal_selesai) ? $periodeAktif->tanggal_selesai : $sekarang->copy()->endOfYear()->format('Y-m-d');
+
+        $filterTipe = $request->input('filter_tipe', 'bulan');
+        $tglMulai = $request->input('tgl_mulai', $awalBulan);
+        $tglSelesai = $request->input('tgl_selesai', $akhirBulan);
+
+        if ($filterTipe == 'tahun') {
+            $tglMulai = $tglMulaiPeriode;
+            $tglSelesai = $tglSelesaiPeriode;
+        } elseif ($filterTipe == 'bulan') {
+            $tglMulai = $awalBulan;
+            $tglSelesai = $akhirBulan;
+        }
+
+        $rekap = $this->hitungRekapGuru($guru->id, $tglMulai, $tglSelesai, $periodeId, $tahunAjaran);
+        $riwayat = $this->getRiwayatPribadi($guru->id, $tglMulai, $tglSelesai, $periodeId, $tahunAjaran);
+
+        return view('rekap-presensi', compact('guru', 'periodeAktif', 'rekap', 'filterTipe', 'tglMulai', 'tglSelesai', 'riwayat'));
+    }
+
+    // ==========================================================
+    // KHUSUS GURU: HALAMAN KALDIK (TARGET KURIKULUM & PETA MENGAJAR)
+    // ==========================================================
+    public function kaldikGuru()
+    {
+        $user = auth()->user();
+        $guru = \App\Models\Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+
+        if (!$guru) return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
+
+        $periodeAktif = get_periode_aktif();
+        if (!$periodeAktif || !$periodeAktif->tanggal_mulai || !$periodeAktif->tanggal_selesai) {
+            return redirect('/dashboard-guru')->with('pesan', 'Tanggal mulai dan selesai Periode/Semester belum diatur oleh Admin.');
+        }
+
+        $tglMulai = $periodeAktif->tanggal_mulai;
+        $tglSelesai = $periodeAktif->tanggal_selesai;
+        $hariIni = date('Y-m-d');
+        $periodeId = $periodeAktif->id;
+
+        // Kaldik guru fokus pada masa depan / saat ini, tidak perlu withTrashed
+        $jadwals = \App\Models\JadwalHarian::with(['kelas', 'pelajaran'])
+                        ->where('guru_id', $guru->id)
+                        ->where('tahun_ajaran', $periodeAktif->tahun_ajaran)
+                        ->get();
+
+        $batasPelajaran = \App\Models\BatasPelajaran::where('periode_id', $periodeId)->get();
+        $semuaAgenda = \App\Models\AgendaKaldik::where('periode_id', $periodeId)->get();
+        $agendaUts = $semuaAgenda->where('jenis_agenda', 'UTS')->first();
+        $agendaPemotongKBM = $semuaAgenda->whereIn('jenis_agenda', ['Libur', 'UTS', 'UAS']);
+
+        $targetMengajar = [];
+
+        foreach ($jadwals as $j) {
+            $keyGrup = $j->kelas_id . '_' . $j->pelajaran_id;
+            $hIndo = strtolower($j->hari);
+            if($hIndo == 'Ahad') $hIndo = 'ahad';
+
+            if (!isset($targetMengajar[$keyGrup])) {
+                $namaKel = $j->kelas->nama_kelas ?? '-';
+                $tingkat = preg_replace('/[^0-9]/', '', $namaKel); 
+
+                $targetMengajar[$keyGrup] = (object)[
+                    'nama_kelas' => $namaKel,
+                    'nama_pelajaran' => $j->pelajaran->nama_pelajaran ?? '?',
+                    'kelas_id' => $j->kelas_id,
+                    'pelajaran_id' => $j->pelajaran_id,
+                    'target_total' => 0,
+                    'telah_berlalu' => 0,
+                    'sisa_pertemuan_total' => 0,
+                    'sisa_pertemuan_pra_uts' => 0,
+                    'hari_mengajar' => [],
+                    'batas' => $batasPelajaran->where('tingkat', $tingkat)->where('pelajaran_id', $j->pelajaran_id)->first()
+                ];
+            }
+            if (!in_array($hIndo, $targetMengajar[$keyGrup]->hari_mengajar)) {
+                $targetMengajar[$keyGrup]->hari_mengajar[] = $hIndo;
+            }
+        }
+
+        $period = \Carbon\CarbonPeriod::create($tglMulai, $tglSelesai);
+        foreach ($period as $date) {
+            $tglStr = $date->format('Y-m-d');
+            $hariIndo = strtolower(map_hari($date->format('l')));
+
+            foreach ($targetMengajar as $keyGrup => $item) {
+                if (in_array($hariIndo, $item->hari_mengajar)) {
+                    
+                    $isLibur = false;
+                    foreach ($agendaPemotongKBM as $libur) {
+                        $mulai = $libur->tanggal_mulai->format('Y-m-d');
+                        $selesai = $libur->tanggal_selesai->format('Y-m-d');
+                        
+                        if ($tglStr >= $mulai && $tglStr <= $selesai) {
+                            $kenaTarget = ($libur->target_libur == 'semua') || (is_array($libur->kelas_ids) && in_array($item->kelas_id, $libur->kelas_ids));
+                            if ($kenaTarget) {
+                                $isLibur = true; break; 
+                            }
+                        }
+                    }
+
+                    if (!$isLibur) {
+                        $item->target_total++; 
+                        
+                        if ($tglStr <= $hariIni) {
+                            $item->telah_berlalu++;
+                        } else {
+                            $item->sisa_pertemuan_total++;
+                            if ($agendaUts && $tglStr < $agendaUts->tanggal_mulai->format('Y-m-d')) {
+                                $item->sisa_pertemuan_pra_uts++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($targetMengajar as $item) {
+            $item->persentase_waktu = $item->target_total > 0 ? round(($item->telah_berlalu / $item->target_total) * 100) : 0;
+        }
+
+        return view('kaldik', compact('guru', 'periodeAktif', 'targetMengajar', 'agendaUts'));
+    }
+    
+    // ==========================================================
+    // FUNGSI BANTUAN: Menarik Daftar Riwayat Mengajar Pribadi
+    // ==========================================================
+    private function getRiwayatPribadi($guruId, $tglMulai, $tglSelesai, $periodeId, $tahunAjaran)
+    {
+        $guru = \App\Models\Guru::find($guruId);
+        
+        // 🛡️ PERBAIKAN HISTORIS: Tambahkan withTrashed() agar bisa melacak riwayat dari jadwal yang telah dihapus
+        $jadwalAsli = \App\Models\JadwalHarian::withTrashed()->with(['kelas', 'pelajaran'])->where('guru_id', $guruId)->where('tahun_ajaran', $tahunAjaran)->get();
+        
+        $kehadiranAsli = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
+            ->whereIn('jadwal_id', $jadwalAsli->pluck('id'))
+            ->whereDate('tanggal', '>=', $tglMulai)
+            ->whereDate('tanggal', '<=', $tglSelesai)
+            ->get();
+
+        $daftarLibur = \App\Models\AgendaKaldik::where('periode_id', $periodeId)
+                        ->whereIn('jenis_agenda', ['Libur', 'UTS', 'UAS'])
+                        ->where('tanggal_mulai', '<=', $tglSelesai)
+                        ->where('tanggal_selesai', '>=', $tglMulai)
+                        ->get();
+
+        $riwayatMentah = [];
+        $batasTglHitung = min($tglSelesai, date('Y-m-d')); 
+        
+        if ($tglMulai <= $batasTglHitung) {
+            $period = \Carbon\CarbonPeriod::create($tglMulai, $batasTglHitung);
+            foreach ($period as $date) {
+                $tglStr = $date->format('Y-m-d');
+                $hariIndo = map_hari($date->format('l'));
+                $formatTanggalCantik = $hariIndo . ', ' . $date->translatedFormat('d M Y');
+
+                $jadwalHariIni = $jadwalAsli->filter(function($j) use ($hariIndo, $tglStr) {
+                    $isHariSama = (strtolower($j->hari) == strtolower($hariIndo)) || (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'Ahad');
+                    
+                    // 🛡️ KECERDASAN HISTORIS: Baca kapan Soft Delete terjadi
+                    $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
+                    $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                    $isDalamRentang = ($tglStr >= $mulaiAktif && $tglStr <= $selesaiAktif);
+
+                    return $isHariSama && $isDalamRentang;
+                });
+
+                foreach ($jadwalHariIni as $j) {
+                    $isLibur = false;
+                    foreach ($daftarLibur as $agenda) {
+                        $mulai = \Carbon\Carbon::parse($agenda->tanggal_mulai)->format('Y-m-d');
+                        $selesai = \Carbon\Carbon::parse($agenda->tanggal_selesai)->format('Y-m-d');
+                        
+                        if ($tglStr >= $mulai && $tglStr <= $selesai) {
+                            $kenaTarget = false;
+                            $arrKls = is_array($agenda->kelas_ids) ? $agenda->kelas_ids : (is_string($agenda->kelas_ids) ? json_decode($agenda->kelas_ids, true) : []);
+
+                            if ($agenda->target_libur == 'semua') {
+                                $kenaTarget = true;
+                            } elseif ($agenda->target_libur == 'kelas_tertentu' && in_array($j->kelas_id, $arrKls)) {
+                                $kenaTarget = true;
+                            }
+
+                            if ($kenaTarget) {
+                                if ($agenda->tipe_agenda == 'Penuh') {
+                                    $isLibur = true;
+                                    break; 
+                                } else {
+                                    $arrJam = is_array($agenda->jam_diliburkan) ? $agenda->jam_diliburkan : (json_decode($agenda->jam_diliburkan, true) ?? []);
+                                    if (in_array($j->jam_ke, $arrJam)) {
+                                        $isLibur = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!$isLibur) {
+                        $rekam = $kehadiranAsli->where('jadwal_id', $j->id)->where('tanggal', $tglStr)->first();
+                        $statusAktual = $rekam ? $rekam->status : 'Alpa';
+                        $keteranganAktual = $rekam ? $rekam->keterangan : null;
+
+                        $riwayatMentah[] = (object)[
+                            'tanggal' => $tglStr, 'tanggal_indo' => $formatTanggalCantik,
+                            'status' => $statusAktual, 'keterangan' => $keteranganAktual,
+                            'jam_ke' => (int)$j->jam_ke, 'nama_kelas' => trim($j->kelas->nama_kelas ?? '?'),
+                            'nama_pelajaran' => trim($j->pelajaran->nama_pelajaran ?? '?')
+                        ];
+                    }
+                }
+             }
+        }
+
+        $piketRecords = \Illuminate\Support\Facades\DB::table('kehadiran_gurus')
+            ->join('jadwal_harians', 'kehadiran_gurus.jadwal_id', '=', 'jadwal_harians.id')
+            ->leftJoin('kelas', 'jadwal_harians.kelas_id', '=', 'kelas.id')
+            ->leftJoin('pelajarans', 'jadwal_harians.pelajaran_id', '=', 'pelajarans.id')
+            ->where('kehadiran_gurus.nig_pengganti', $guru->nig)
+            ->whereDate('kehadiran_gurus.tanggal', '>=', $tglMulai)
+            ->whereDate('kehadiran_gurus.tanggal', '<=', $tglSelesai)
+            ->select('kehadiran_gurus.tanggal', 'kehadiran_gurus.keterangan', 'jadwal_harians.jam_ke', 'kelas.nama_kelas', 'pelajarans.nama_pelajaran')
+            ->get();
+
+        foreach ($piketRecords as $p) {
+            $tglPiket = \Carbon\Carbon::parse($p->tanggal);
+            $hariIndoPiket = map_hari($tglPiket->format('l'));
+            $riwayatMentah[] = (object)[
+                'tanggal' => $tglPiket->format('Y-m-d'), 
+                'tanggal_indo' => $hariIndoPiket . ', ' . $tglPiket->translatedFormat('d M Y'),
+                'status' => 'Piket', 'keterangan' => 'Inval / Mengganti Guru Lain',
+                'jam_ke' => (int)$p->jam_ke, 
+                'nama_kelas' => trim($p->nama_kelas ?? '?'), 
+                'nama_pelajaran' => trim($p->nama_pelajaran ?? '?')
+            ];
+        }
+
+        usort($riwayatMentah, function($a, $b) {
+            $tglCmp = strcmp($b->tanggal, $a->tanggal);
+            if ($tglCmp === 0) return $a->jam_ke <=> $b->jam_ke;
+            return $tglCmp;
+        });
+
+        $groupedRiwayat = [];
+        $currentGroup = null;
+
+        foreach ($riwayatMentah as $item) {
+            if ($currentGroup === null) {
+                $currentGroup = clone $item;
+                $currentGroup->jam_list = [$item->jam_ke];
+            } else {
+                $lastJam = max($currentGroup->jam_list);
+                if (
+                    $currentGroup->tanggal === $item->tanggal && 
+                    strtolower($currentGroup->status) === strtolower($item->status) &&
+                    strtolower($currentGroup->nama_kelas) === strtolower($item->nama_kelas) && 
+                    strtolower($currentGroup->nama_pelajaran) === strtolower($item->nama_pelajaran) &&
+                    ($lastJam + 1 === $item->jam_ke) &&
+                    count($currentGroup->jam_list) < 2 // 🛡️ KECERDASAN BARU: Batasi maksimal 2 jam per blok
+                ) {
+                    $currentGroup->jam_list[] = $item->jam_ke;
+                } else {
+                    $jamMulai = min($currentGroup->jam_list);
+                    $jamSelesai = max($currentGroup->jam_list);
+                    $currentGroup->jam_tampil = ($jamMulai == $jamSelesai) ? (string)$jamMulai : $jamMulai . '-' . $jamSelesai;
+                    $groupedRiwayat[] = $currentGroup;
+                    $currentGroup = clone $item;
+                    $currentGroup->jam_list = [$item->jam_ke];
+                }
+            }
+        }
+        if ($currentGroup !== null) {
+            $jamMulai = min($currentGroup->jam_list);
+            $jamSelesai = max($currentGroup->jam_list);
+            $currentGroup->jam_tampil = ($jamMulai == $jamSelesai) ? (string)$jamMulai : $jamMulai . '-' . $jamSelesai;
+            $groupedRiwayat[] = $currentGroup;
+        }
+
+        return $groupedRiwayat;
+    }
+
+    
+    // ==========================================================
+    // FUNGSI BANTUAN: Mesin Penghitung Rekap Guru Pribadi 
+    // ==========================================================
     private function hitungRekapGuru($guruId, $tglMulai, $tglSelesai, $periodeId, $tahunAjaran)
     {
-        $mapHari = ['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Minggu'];
-        $jadwalMentah = \App\Models\JadwalHarian::where('guru_id', $guruId)->where('tahun_ajaran', $tahunAjaran)->get();
-        $daftarLibur = \App\Models\HariLibur::where('tanggal_mulai', '<=', $tglSelesai)->where('tanggal_selesai', '>=', $tglMulai)->get();
-
+        
+        // 🛡️ PERBAIKAN HISTORIS: Sertakan jadwal yang di-Soft Delete agar beban wajib mengajar di bulan lalu ikut terhitung
+        $jadwalMentah = \App\Models\JadwalHarian::withTrashed()->where('guru_id', $guruId)->where('tahun_ajaran', $tahunAjaran)->get();
+        
+        $daftarLibur = \App\Models\AgendaKaldik::where('periode_id', $periodeId)
+                        ->whereIn('jenis_agenda', ['Libur', 'UTS', 'UAS'])
+                        ->where('tanggal_mulai', '<=', $tglSelesai)
+                        ->where('tanggal_selesai', '>=', $tglMulai)
+                        ->get();
+                        
         $jamWajib = 0;
         
-        // Hitung jam wajib s/d hari ini (agar hari esok yang belum dilewati tidak terhitung Alpa)
         $batasTglHitung = min($tglSelesai, date('Y-m-d'));
         
         if ($tglMulai <= $batasTglHitung) {
@@ -788,29 +935,54 @@ class JadwalController extends Controller
             
             foreach ($period as $date) {
                 $tglStr = $date->format('Y-m-d');
-                $hariIndo = $mapHari[$date->format('l')];
+                $hariIndo = map_hari($date->format('l'));
                 
-                $jadwalHariIni = $jadwalMentah->filter(function($j) use ($hariIndo) {
-                    return strtolower($j->hari) == strtolower($hariIndo) || (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'minggu');
+                $jadwalHariIni = $jadwalMentah->filter(function($j) use ($hariIndo, $tglStr) {
+                    $isHariSama = (strtolower($j->hari) == strtolower($hariIndo)) || (strtolower($hariIndo) == 'ahad' && strtolower($j->hari) == 'Ahad');
+                    
+                    // 🛡️ KECERDASAN HISTORIS: Gunakan created_at & deleted_at
+                    $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01'; 
+                    $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31'; 
+                    $isDalamRentang = ($tglStr >= $mulaiAktif && $tglStr <= $selesaiAktif);
+
+                    return $isHariSama && $isDalamRentang;
                 });
 
                 foreach ($jadwalHariIni as $j) {
                     $isLibur = false;
-                    foreach ($daftarLibur as $libur) {
-                        if ($tglStr >= $libur->tanggal_mulai && $tglStr <= $libur->tanggal_selesai) {
-                            $kenaTarget = ($libur->target_libur == 'semua') || 
-                                          (in_array($j->kelas_id, is_string($libur->kelas_ids) ? json_decode($libur->kelas_ids, true) : (is_array($libur->kelas_ids) ? $libur->kelas_ids : [])));
-                            
+                    
+                    foreach ($daftarLibur as $agenda) {
+                        $mulai = \Carbon\Carbon::parse($agenda->tanggal_mulai)->format('Y-m-d');
+                        $selesai = \Carbon\Carbon::parse($agenda->tanggal_selesai)->format('Y-m-d');
+                        
+                        if ($tglStr >= $mulai && $tglStr <= $selesai) {
+                            $kenaTarget = false;
+                            $arrKls = is_array($agenda->kelas_ids) ? $agenda->kelas_ids : (is_string($agenda->kelas_ids) ? json_decode($agenda->kelas_ids, true) : []);
+
+                            if ($agenda->target_libur == 'semua') {
+                                $kenaTarget = true;
+                            } elseif ($agenda->target_libur == 'kelas_tertentu' && in_array($j->kelas_id, $arrKls)) {
+                                $kenaTarget = true;
+                            }
+
                             if ($kenaTarget) {
-                                if ($libur->tipe_libur == 'Penuh') { $isLibur = true; break; } 
-                                else {
-                                    $jamLibur = is_string($libur->jam_diliburkan) ? json_decode($libur->jam_diliburkan, true) : (is_array($libur->jam_diliburkan) ? $libur->jam_diliburkan : []);
-                                    if (in_array($j->jam_ke, $jamLibur)) { $isLibur = true; break; }
+                                if ($agenda->tipe_agenda == 'Penuh') {
+                                    $isLibur = true;
+                                    break; 
+                                } else {
+                                    $arrJam = is_array($agenda->jam_diliburkan) ? $agenda->jam_diliburkan : (json_decode($agenda->jam_diliburkan, true) ?? []);
+                                    if (in_array($j->jam_ke, $arrJam)) {
+                                        $isLibur = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
-                    if (!$isLibur) $jamWajib++;
+                    
+                    if (!$isLibur) {
+                        $jamWajib++;
+                    }
                 }
             }
         }
@@ -836,5 +1008,158 @@ class JadwalController extends Controller
             'alpha' => $alpha, 
             'persen' => $persentase
         ];
+    }
+
+    // ==========================================================
+    // KHUSUS GURU: HALAMAN DASHBOARD MOBILE SPA
+    // ==========================================================
+    public function dashboardGuru()
+    {
+        $user = auth()->user();
+        
+        $guru = \App\Models\Guru::where('nama_guru', $user->name)
+                                ->orWhere('nig', $user->username)
+                                ->first();
+
+        $periodeAktif = get_periode_aktif();
+        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+
+        $jadwals = [];
+
+        if ($guru) {
+            // 🛡️ PERBAIKAN: Bersihkan logika rentang tanggal yang sudah tidak relevan
+            // Di Dashboard Guru cukup panggil jadwal yang AKTIF (tidak perlu withTrashed)
+            $jadwalMentah = \App\Models\JadwalHarian::with(['kelas', 'pelajaran'])
+                        ->where('guru_id', $guru->id)
+                        ->where('tahun_ajaran', $tahunAjaran)
+                        ->get();
+
+            $hariIniStr = map_hari(\Carbon\Carbon::now()->format('l'));
+
+            $hariSeAhad = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
+            
+            $indexHariIni = array_search($hariIniStr, $hariSeAhad);
+            
+            $hariDiurutkan = array_merge(
+                array_slice($hariSeAhad, $indexHariIni), 
+                array_slice($hariSeAhad, 0, $indexHariIni) 
+            );
+
+            $urutanDinamis = [];
+            foreach ($hariDiurutkan as $index => $hari) {
+                $urutanDinamis[$hari] = $index + 1;
+            }
+            
+            $jadwalGrouped = $jadwalMentah->groupBy('hari')->sortBy(function ($item, $key) use ($urutanDinamis) {
+                return $urutanDinamis[$key] ?? 99;
+            });
+
+            foreach ($jadwalGrouped as $hari => $list) {
+                $list = $list->sortBy('jam_ke')->values();
+                
+                $blokJadwal = [];
+                $currentBlock = null;
+
+                foreach ($list as $j) {
+                    $namaPel = $j->pelajaran->nama_pelajaran ?? 'Pelajaran';
+                    $namaKel = $j->kelas->nama_kelas ?? '-';
+                    $pelajaranId = $j->pelajaran_id ?? ''; 
+                    
+                    $tingkatKelas = preg_replace('/[^0-9]/', '', $namaKel); 
+                    $petaKitab = $j->pelajaran->kitab_tingkat ?? [];
+                    $namaKitab = $petaKitab[$tingkatKelas] ?? ($j->pelajaran->nama_kitab ?? '-');
+
+                    if (!$currentBlock) {
+                        $currentBlock = [
+                            'jam_mulai' => $j->jam_ke, 
+                            'jam_selesai' => $j->jam_ke, 
+                            'mata_pelajaran' => $namaPel, 
+                            'nama_kitab' => $namaKitab, 
+                            'kelas' => $namaKel,
+                            'pelajaran_id' => $pelajaranId 
+                        ];
+                    } else {
+                        // 🛡️ KECERDASAN BARU: Selisih awal dan akhir tidak boleh lebih dari 1
+                        if ($currentBlock['mata_pelajaran'] == $namaPel && 
+                            $currentBlock['kelas'] == $namaKel && 
+                            $j->jam_ke == $currentBlock['jam_selesai'] + 1 &&
+                            ($currentBlock['jam_selesai'] - $currentBlock['jam_mulai'] < 1)
+                        ) {
+                            $currentBlock['jam_selesai'] = $j->jam_ke;
+                        } else {
+                            $currentBlock['jam_tampil'] = ($currentBlock['jam_mulai'] == $currentBlock['jam_selesai']) ? (string)$currentBlock['jam_mulai'] : $currentBlock['jam_mulai'] . '-' . $currentBlock['jam_selesai'];
+                            $blokJadwal[] = $currentBlock;
+                            
+                            $currentBlock = [
+                                'jam_mulai' => $j->jam_ke, 
+                                'jam_selesai' => $j->jam_ke, 
+                                'mata_pelajaran' => $namaPel, 
+                                'nama_kitab' => $namaKitab, 
+                                'kelas' => $namaKel,
+                                'pelajaran_id' => $pelajaranId
+                            ];
+                        }
+                    }
+                }
+                if ($currentBlock) {
+                    $currentBlock['jam_tampil'] = ($currentBlock['jam_mulai'] == $currentBlock['jam_selesai']) ? (string)$currentBlock['jam_mulai'] : $currentBlock['jam_mulai'] . '-' . $currentBlock['jam_selesai'];
+                    $blokJadwal[] = $currentBlock;
+                }
+                if (count($blokJadwal) > 0) $jadwals[$hari] = $blokJadwal;
+            }
+        }
+
+        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif'));
+    }
+
+    // ==========================================================
+    // KHUSUS GURU: HALAMAN PROFIL PENGGUNA
+    // ==========================================================
+    public function menu()
+    {
+        $user = auth()->user();
+        $guru = \App\Models\Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+
+        if (!$guru) {
+            return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
+        }
+
+        // Pastikan Anda sudah me-rename (mengubah nama) file profil.blade.php menjadi menu.blade.php
+        return view('guru.menu', compact('guru', 'user'));
+    }
+
+    // ==========================================================
+    // KHUSUS GURU: HALAMAN PROFIL LENGKAP & EDIT BIODATA
+    // ==========================================================
+    public function profilLengkap()
+    {
+        $user = auth()->user();
+        $guru = \App\Models\Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+
+        if (!$guru) {
+            return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
+        }
+
+        return view('guru.profil-lengkap', compact('guru'));
+    }
+
+    public function updateProfil(Request $request)
+    {
+        $user = auth()->user();
+        $guru = \App\Models\Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+
+        if (!$guru) {
+            return back()->with('error', 'Data Guru tidak ditemukan.');
+        }
+
+        $data = $request->only([
+            'nama_guru', 'no_hp', 'gender', 'alamat', 'status', 'alamat_asal',
+            'tempat_lahir', 'tanggal_lahir', 'pendidikan', 'nama_ayah', 'nama_ibu',
+            'alamat_ortu', 'foto', 'email_pribadi'
+        ]);
+
+        $guru->update($data);
+
+        return back()->with('status', 'Biodata profil berhasil diperbarui!');
     }
 }

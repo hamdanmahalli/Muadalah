@@ -20,7 +20,29 @@
     </style>
     
     @stack('styles')
-        </head>
+    <!-- ================= PWA SETUP ================= -->
+    <!-- Memanggil KTP Aplikasi -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#4f46e5">
+    <!-- Ikon khusus untuk perangkat Apple / iOS -->
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
+
+    <!-- Memanggil Asisten (Service Worker) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('PWA Asisten gagal dipanggil:', error);
+                    });
+            });
+        }
+    </script>
+    <!-- ============================================= -->
+</head>
         <body class="bg-gray-50 flex h-screen overflow-hidden text-sm antialiased">
 
             <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
@@ -40,6 +62,12 @@
                         @can('akses_dashboard')
                         <a href="/" class="flex items-center px-6 py-3 {{ request()->is('/') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
                             <i class="fas fa-desktop w-6"></i> Dashboard
+                        </a>
+                        @endcan
+
+                        @can('akses_dashboard_guru')
+                        <a href="/dashboard-guru" class="flex items-center px-6 py-3 {{ request()->is('dashboard-guru') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
+                            <i class="fas fa-chalkboard-teacher w-6"></i> Beranda Guru
                         </a>
                         @endcan
                         
@@ -72,6 +100,11 @@
                             <i class="fas fa-calendar-check w-6"></i> Scan Hadir
                         </a>
                         @endcan
+
+                        <!-- Menu Agenda & Kehadiran Kegiatan -->
+                        <a href="/agenda-kegiatan" class="flex items-center px-6 py-3 {{ request()->is('agenda-kegiatan*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
+                            <i class="fas fa-calendar-check w-6"></i> Agenda Kegiatan
+                        </a>
                     </nav>
 
                     @canany(['akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas'])
@@ -82,14 +115,29 @@
                             <i class="fas fa-chalkboard-teacher w-6"></i> Master Guru
                         </a>
                         @endcan
+                        
                         @can('akses_master_pelajaran')
                         <a href="/master-pelajaran" class="flex items-center px-6 py-3 {{ request()->is('master-pelajaran*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
                             <i class="fas fa-book-open w-6"></i> Master Pelajaran
                         </a>
                         @endcan
+
+                        @can('akses_master_pelajaran')
+                        <a href="/batas-pelajaran" class="flex items-center px-6 py-3 {{ request()->is('batas-pelajaran*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
+                            <i class="fas fa-book-open w-6"></i> Batas Pelajaran
+                        </a>
+                        @endcan
+                        
                         @can('akses_master_kelas')
                         <a href="/master-kelas" class="flex items-center px-6 py-3 {{ request()->is('master-kelas*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
                             <i class="fas fa-school w-6"></i> Master Kelas
+                        </a>
+                        @endcan
+                        
+                        <!-- TAMBAHAN: TOMBOL PUSAT IMPORT -->
+                        @can('akses_master_guru')
+                        <a href="/master-import" class="flex items-center px-6 py-3 {{ request()->is('master-import*') ? 'bg-indigo-50 text-indigo-700 border-r-4 border-indigo-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600 transition font-medium' }}">
+                            <i class="fas fa-file-excel w-6"></i> Pusat Import
                         </a>
                         @endcan
                     </nav>
@@ -104,7 +152,7 @@
                         </a>
                         @endcan
                         @can('akses_hari_libur')
-                        <a href="/hari-libur" class="flex items-center px-6 py-3 {{ request()->is('hari-libur*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
+                        <a href="/agenda-kaldik" class="flex items-center px-6 py-3 {{ request()->is('agenda-kaldik*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
                             <i class="fas fa-calendar-times w-6"></i> Kalender Pendidikan
                         </a>
                         @endcan
@@ -139,6 +187,14 @@
                             <i class="fas fa-key w-6 text-center"></i> Hak Akses
                         </a>
                         @endcan
+
+                        <!-- Menu Sidebar: Manajemen Database -->
+                        <a href="/backup-restore" class="flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all {{ request()->is('backup-restore*') ? 'bg-indigo-600 text-white shadow-[0_4px_15px_-3px_rgba(79,70,229,0.4)]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 {{ request()->is('backup-restore*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500' }}">
+                                <i class="fas fa-database text-sm"></i>
+                            </div>
+                            <span>Manajemen Database</span>
+                        </a>
                     </nav>
                     @endcanany
                 </div>
@@ -204,7 +260,7 @@
                                 <i class="fas fa-key w-6 text-gray-400"></i> Ganti Password
                             </button>
                         </div>
-
+                        
                         <div class="p-3 border-t border-gray-100 bg-gray-50">
                             <form method="POST" action="/logout">
                                 @csrf
@@ -413,4 +469,6 @@
     </script>
     @stack('scripts')
 </body>
+
+
 </html>

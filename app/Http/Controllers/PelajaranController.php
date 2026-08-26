@@ -25,15 +25,18 @@ class PelajaranController extends Controller
 
     public function store(Request $request)
     {
+        // Validasi input disesuaikan untuk menerima array JSON
         $request->validate([
-            'nama_pelajaran' => 'required|string|max:255'
+            'nama_pelajaran' => 'required|string|max:255',
+            'kitab_tingkat'  => 'nullable|array', 
+            'status'         => 'nullable|in:Aktif,Nonaktif'
         ]);
 
         Pelajaran::create([
             'kode_pelajaran' => $request->kode_pelajaran,
             'nama_pelajaran' => $request->nama_pelajaran,
-            'nama_kitab'     => $request->nama_kitab,
-            'status'         => $request->status ?? 'Aktif' // Menyimpan Status
+            'kitab_tingkat'  => $request->kitab_tingkat, // Menyimpan array kitab per tingkat
+            'status'         => $request->status ?? 'Aktif'
         ]);
 
         return redirect()->back()->with('sukses', 'Data Pelajaran berhasil ditambahkan!');
@@ -43,14 +46,17 @@ class PelajaranController extends Controller
     {
         $pelajaran = Pelajaran::findOrFail($id);
         
+        // Validasi input disesuaikan
         $request->validate([
-            'nama_pelajaran' => 'required|string|max:255'
+            'nama_pelajaran' => 'required|string|max:255',
+            'kitab_tingkat'  => 'nullable|array',
+            'status'         => 'nullable|in:Aktif,Nonaktif'
         ]);
 
         $pelajaran->update([
             'nama_pelajaran' => $request->nama_pelajaran,
-            'nama_kitab'     => $request->nama_kitab,
-            'status'         => $request->status ?? 'Aktif' // Memperbarui Status
+            'kitab_tingkat'  => $request->kitab_tingkat, // Memperbarui array kitab per tingkat
+            'status'         => $request->status ?? 'Aktif'
         ]);
 
         return redirect()->back()->with('sukses', 'Data Pelajaran berhasil diperbarui!');

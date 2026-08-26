@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes; // Tambahkan baris ini
 
 class JadwalHarian extends Model
 {
+    use SoftDeletes; // Aktifkan di sini
+
     protected $table = 'jadwal_harians';
     protected $guarded = [];
 

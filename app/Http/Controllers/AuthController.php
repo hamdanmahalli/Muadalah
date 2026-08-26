@@ -20,27 +20,37 @@ class AuthController extends Controller
     public function prosesLogin(Request $request)
     {
         $request->validate([
-            'login_id' => 'required', // Bisa berisi Username atau Email
+            'login_id' => 'required', 
             'password' => 'required',
         ]);
 
-        // KECERDASAN GANDA: Mendeteksi apakah inputan berupa Email atau Username
+        // Deteksi apakah inputan berupa Email atau Username
         $loginType = filter_var($request->login_id, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        // Syarat login: ID cocok, Password cocok, dan Status WAJIB Aktif
-        $credentials = [
-            $loginType => $request->login_id,
-            'password' => $request->password,
-            'status'   => 'Aktif' // Filter User Aktif
-        ];
+        // 1. CARI USERNYA DULU
+        $user = \App\Models\User::where($loginType, $request->login_id)->first();
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('/');
+        // JIKA USER TIDAK DITEMUKAN
+        if (!$user) {
+            return back()->with('error', 'User tidak ditemukan di dalam sistem!');
         }
 
-        // Jika gagal login (salah sandi atau status nonaktif)
-        return back()->with('error', 'Login gagal! Periksa kembali data Anda atau hubungi Admin jika akun nonaktif.');
+        // 2. JIKA USER DITEMUKAN, CEK STATUSNYA
+        if ($user->status !== 'Aktif') {
+            return back()->withInput($request->only('login_id'))->with('error', 'Akun Anda dinonaktifkan. Silakan hubungi Admin TU.');
+        }
+
+        // 3. JIKA STATUS AKTIF, CEK PASSWORDNYA
+        if (!\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+            // Password salah -> Kembalikan ke halaman login DENGAN membawa inputan sebelumnya (withInput)
+            return back()->withInput($request->only('login_id'))->with('error', 'Kata sandi yang Anda masukkan salah!');
+        }
+
+        // 4. JIKA SEMUA BENAR, IZINKAN MASUK
+        \Illuminate\Support\Facades\Auth::login($user);
+        $request->session()->regenerate();
+        
+        return redirect()->intended('/');
     }
 
     public function gantiPassword(Request $request)

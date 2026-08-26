@@ -50,7 +50,9 @@ class GuruController extends Controller
         ]);
 
         // 1. Simpan Data Guru ke tabel gurus
-        $guru = Guru::create($request->all());
+        $guru = Guru::create($request->only([
+            'nig', 'nama_guru', 'no_hp', 'gender', 'alamat', 'status'
+        ]));
 
         // 2. Otomatis Buat Akun User Baru (Username = NIG, Password = 123456)
         $user = User::create([
