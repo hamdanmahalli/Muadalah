@@ -35,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/ganti-password', [AuthController::class, 'gantiPassword']);
 
     // GERBANG PENGALIHAN CERDAS (Titik Masuk Pertama)
-    Route::get('/dashboard-utama', [JadwalController::class, 'dashboard'])->name('dashboard.utama');
+    Route::get('/dashboard-utama', [App\Http\Controllers\JadwalController::class, 'dashboard'])->name('dashboard.utama');
 
     Route::get('/', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
