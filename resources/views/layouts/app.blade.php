@@ -60,7 +60,7 @@
                     <div class="px-6 mb-2 text-xs font-bold text-green-600 uppercase tracking-wider">Menu Utama</div>
                     <nav class="space-y-1 pb-6">
                         @can('akses_dashboard')
-                        <a href="/" class="flex items-center px-6 py-3 {{ request()->is('/') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
+                        <a href="/dashboard-utama" class="flex items-center px-6 py-3 {{ request()->is('/') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
                             <i class="fas fa-desktop w-6"></i> Dashboard
                         </a>
                         @endcan
