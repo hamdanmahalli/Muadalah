@@ -525,10 +525,11 @@
             }
         });
 
-        // NAV-CLICK LOADING: tampilkan overlay saat klik link navigasi
+        // NAV-CLICK LOADING: tampilkan overlay hanya saat navigasi antar-halaman melambat (hindari "kedip" saat cepat)
         (function() {
             var overlay = document.getElementById('nav-loading');
             if (!overlay) return;
+            function sembunyikan() { overlay.classList.remove('show'); }
             document.addEventListener('click', function(e) {
                 var link = e.target.closest('a');
                 if (!link) return;
@@ -537,12 +538,20 @@
                 if (href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
                 if (link.target === '_blank') return;
                 if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+                // Lewati tautan dengan data-lazy (mis. sub-menu) yang tidak memuat ulang halaman
+                if (link.hasAttribute('data-lazy')) return;
                 try {
                     var url = new URL(href, window.location.origin);
                     if (url.pathname === window.location.pathname) return;
                 } catch(ex) {}
-                overlay._navTimer = setTimeout(function() { overlay.classList.add('show'); }, 2000);
+                // Tunda sebelum menampilkan, agar navigasi cepat tidak sempat "berkedip"
+                overlay._navTimer = setTimeout(function() { overlay.classList.add('show'); }, 1200);
             });
+            // Bersihkan sentuhan jika halaman sempat kembali/dihidupkan ulang
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') sembunyikan();
+            });
+            window.addEventListener('pageshow', sembunyikan);
         })();
 
         // OFFLINE BANNER: tampilkan saat koneksi putus
