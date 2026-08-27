@@ -113,10 +113,23 @@ class NotificationService
         }
     }
 
-    public function sendTestNotification(Guru $guru, string $mode): bool
+    public function sendTestNotification(Guru $guru, string $mode): array
     {
         $subscriptions = PushSubscription::where('guru_id', $guru->id)->get();
-        if ($subscriptions->isEmpty()) return false;
+
+        $total = $subscriptions->count();
+        $success = 0;
+        $failed = 0;
+
+        if ($total === 0) {
+            return [
+                'success' => false,
+                'total' => 0,
+                'success_count' => 0,
+                'failed_count' => 0,
+                'message' => 'Belum ada perangkat terhubung. Buka Pengaturan Notifikasi lalu ketuk "Hubungkan Perangkat Ini".',
+            ];
+        }
 
         $payload = json_encode([
             'title' => 'Notifikasi Test',
@@ -128,7 +141,6 @@ class NotificationService
             'url' => '/dashboard-guru',
         ]);
 
-        $sent = false;
         foreach ($subscriptions as $sub) {
             $webPushSub = Subscription::create([
                 'endpoint' => $sub->endpoint,
@@ -137,13 +149,24 @@ class NotificationService
 
             $result = $this->webPush->sendOneNotification($webPushSub, $payload);
             if ($result->isSuccess()) {
-                $sent = true;
+                $success++;
             } else {
+                $failed++;
                 $sub->delete();
             }
         }
 
-        return $sent;
+        $semuaSukses = $failed === 0 && $success > 0;
+
+        return [
+            'success' => $semuaSukses,
+            'total' => $total,
+            'success_count' => $success,
+            'failed_count' => $failed,
+            'message' => $semuaSukses
+                ? "Berhasil! Notification test terkirim ke {$success} perangkat."
+                : "Sebagian gagal: {$failed} dari {$total} perangkat tidak menerima (mungkin sudah tidak aktif).",
+        ];
     }
 
     public function saveSubscription(Guru $guru, array $subscription): void

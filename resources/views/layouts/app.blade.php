@@ -43,6 +43,16 @@
             0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
             40% { transform: scale(1.1); opacity: 1; }
         }
+
+        /* OFFLINE BANNER */
+        #offline-banner {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+            transform: translateY(-100%);
+            transition: transform 0.35s ease;
+        }
+        #offline-banner.show {
+            transform: translateY(0);
+        }
     </style>
     
     @stack('styles')
@@ -57,26 +67,31 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Unregister semua SW lama dulu, lalu register baru
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                    for (let registration of registrations) {
-                        registration.unregister();
-                    }
-                    // Register SW baru
-                    navigator.serviceWorker.register('/sw.js')
-                        .then(registration => {
-                            console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
-                        })
-                        .catch(error => {
-                            console.log('PWA Asisten gagal dipanggil:', error);
-                        });
-                });
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
+                        return registration.update();
+                    })
+                    .catch(error => {
+                        console.log('PWA Asisten gagal dipanggil:', error);
+                    });
             });
         }
     </script>
     <!-- ============================================= -->
 </head>
         <body class="bg-gray-50 flex h-screen overflow-hidden text-sm antialiased">
+
+            <!-- OFFLINE BANNER -->
+            <div id="offline-banner" class="bg-gradient-to-r from-amber-500 to-red-500 text-white shadow-lg shadow-red-300/40">
+                <div class="flex items-center gap-3 px-4 py-2.5">
+                    <i class="fas fa-wifi-slash text-sm"></i>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold">Anda sedang offline</p>
+                        <p class="text-[10px] text-white/80">Data yang tampil adalah data terakhir saat online</p>
+                    </div>
+                </div>
+            </div>
 
             <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
                 <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
@@ -526,8 +541,24 @@
                     var url = new URL(href, window.location.origin);
                     if (url.pathname === window.location.pathname) return;
                 } catch(ex) {}
-                overlay._navTimer = setTimeout(function() { overlay.classList.add('show'); },);
+                overlay._navTimer = setTimeout(function() { overlay.classList.add('show'); }, 2000);
             });
+        })();
+
+        // OFFLINE BANNER: tampilkan saat koneksi putus
+        (function() {
+            var banner = document.getElementById('offline-banner');
+            if (!banner) return;
+            function setState() {
+                if (!navigator.onLine) {
+                    banner.classList.add('show');
+                } else {
+                    banner.classList.remove('show');
+                }
+            }
+            window.addEventListener('online', setState);
+            window.addEventListener('offline', setState);
+            setState();
         })();
 
     </script>

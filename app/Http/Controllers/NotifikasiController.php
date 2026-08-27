@@ -91,11 +91,14 @@ class NotifikasiController extends Controller
             $setting = GuruNotifikasiSetting::where('guru_id', $guru->id)->first();
             $mode = $setting?->mode ?? 'sound';
 
-            $sent = $this->service->sendTestNotification($guru, $mode);
+            $result = $this->service->sendTestNotification($guru, $mode);
 
             return response()->json([
-                'success' => $sent,
-                'message' => $sent ? 'Notifikasi test berhasil dikirim!' : 'Gagal mengirim. Pastikan notifikasi diaktifkan di browser.',
+                'success' => $result['success'],
+                'message' => $result['message'],
+                'total' => $result['total'],
+                'success_count' => $result['success_count'],
+                'failed_count' => $result['failed_count'],
             ]);
         } catch (\Throwable $e) {
             return response()->json([

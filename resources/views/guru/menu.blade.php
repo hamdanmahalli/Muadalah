@@ -73,6 +73,31 @@
                 <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
             </a>
 
+            <!-- MENU DEMO TEST (DIHAPUS SETELAH SELESAI UJI) -->
+            <button onclick="kirimDemoTest(this)" id="btn-demo-notif" class="w-full flex items-center justify-between bg-gradient-to-r from-purple-50 to-fuchsia-50 p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(168,85,247,0.1)] border border-purple-200 hover:border-purple-300 group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center text-white group-hover:bg-purple-600 transition-colors">
+                        <i class="fas fa-paper-plane text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-sm font-bold text-slate-700">Kirim Notifikasi Demo</span>
+                        <p class="text-[10px] font-medium text-purple-500 mt-0.5">Uji coba di luar jam sekolah</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+            </button>
+
+            <!-- MENU: Hapus Cache & Muat Ulang -->
+            <button onclick="hapusCacheReload(this)" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-sky-200 group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-broom text-lg"></i>
+                    </div>
+                    <span class="text-sm font-bold text-slate-700">Hapus Cache & Muat Ulang</span>
+                </div>
+                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+            </button>
+
             <!-- MENU 5: Logout (Proteksi CSRF + Loading Animasi Premium) -->
             <form method="POST" action="/logout" class="w-full mt-8" onsubmit="loadingElegan(event, this)">
                 @csrf
@@ -217,6 +242,72 @@
         setTimeout(() => {
             document.getElementById(modalId).classList.add('hidden');
         }, 300);
+    }
+
+    function tampilToast(tipe, pesan) {
+        let el = document.getElementById('toast-demo');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'toast-demo';
+            el.className = 'fixed left-4 right-4 bottom-24 z-[120] px-4 py-3 rounded-2xl text-xs font-bold text-center shadow-2xl transition-all duration-300 opacity-0 translate-y-3';
+            document.body.appendChild(el);
+        }
+        el.className = el.className
+            .replace(/bg-emerald-500|bg-red-500|bg-sky-500/g, '') 
+            + (tipe === 'success' ? ' bg-emerald-500 text-white' : tipe === 'error' ? ' bg-red-500 text-white' : ' bg-sky-500 text-white');
+        el.textContent = pesan;
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+        clearTimeout(el._t);
+        el._t = setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(12px)'; }, 4000);
+    }
+
+    // DEMO TEST NOTIFIKASI (DIHAPUS SETELAH SELESAI UJI)
+    function kirimDemoTest(btn) {
+        const asli = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-lg"></i> Mengirim...';
+        fetch('/notifikasi/test', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                tampilToast('success', data.message || 'Notifikasi demo berhasil dikirim!');
+            } else {
+                tampilToast('error', data.message || 'Gagal mengirim notifikasi.');
+            }
+        })
+        .catch(err => {
+            tampilToast('error', 'Gagal mengirim. Periksa koneksi.');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = asli;
+        });
+    }
+
+    // HAPUS CACHE & MUAT ULANG
+    function hapusCacheReload(btn) {
+        const asli = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-lg"></i> Membersihkan...';
+        tampilToast('info', 'Menghapus cache dan memuat ulang...');
+        if ('caches' in window) {
+            caches.keys().then(namaCache => {
+                return Promise.all(namaCache.map(n => caches.delete(n)));
+            });
+        }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                return Promise.all(regs.map(r => r.unregister()));
+            });
+        }
+        setTimeout(() => { location.reload(); }, 1200);
     }
 </script>
 @endsection

@@ -127,6 +127,12 @@
             </button>
 
             <div id="testResult" class="hidden mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center"></div>
+
+            <!-- Status Perangkat -->
+            <div id="subStatus" class="hidden mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2"></div>
+            <button id="btnHubungkan" onclick="hubungkanNotifikasi()" class="hidden mt-2 w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-blue-200 active:scale-95 transition">
+                <i class="fas fa-link mr-2"></i> Hubungkan Perangkat Ini
+            </button>
         </div>
 
         <!-- Keterangan iOS -->
@@ -230,21 +236,95 @@ function kirimTest() {
 }
 
 // Push subscription
+let subStatusEl = document.getElementById('subStatus');
+let btnHubungkan = document.getElementById('btnHubungkan');
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+function setSubStatus(status, text) {
+    if (!subStatusEl) return;
+    subStatusEl.classList.remove('hidden');
+    const styles = {
+        success: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+        warning: 'bg-amber-50 text-amber-700 border border-amber-200',
+        error: 'bg-red-50 text-red-700 border border-red-200',
+    };
+    subStatusEl.className = 'mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 ' + (styles[status] || styles.warning);
+    subStatusEl.innerHTML = text;
+}
+
+function simpanSubscription(sub) {
+    return fetch('/notifikasi/subscribe', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sub.toJSON()),
+    }).then(r => r.json());
+}
+
+function hubungkanNotifikasi() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        setSubStatus('error', '<i class="fas fa-times-circle"></i> Browser tidak mendukung notifikasi push.');
+        return;
+    }
+    navigator.serviceWorker.ready.then(reg => {
+        if (Notification.permission === 'default') {
+            return Notification.requestPermission().then(permission => {
+                if (permission !== 'granted') {
+                    setSubStatus('warning', '<i class="fas fa-exclamation-circle"></i> Izin notifikasi ditolak. Aktifkan di pengaturan browser.');
+                    return;
+                }
+                return reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array('{{ config("webpush.vapid.public_key") }}')
+                });
+            });
+        }
+        return reg.pushManager.getSubscription().then(existing => {
+            if (existing) return existing;
+            return reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array('{{ config("webpush.vapid.public_key") }}')
+            });
+        });
+    }).then(sub => {
+        if (!sub) return;
+        return simpanSubscription(sub).then(() => {
+            setSubStatus('success', '<i class="fas fa-check-circle"></i> Perangkat terhubung. Notifikasi akan dikirim ke perangkat ini.');
+            btnHubungkan.classList.add('hidden');
+        });
+    }).catch(err => {
+        setSubStatus('error', '<i class="fas fa-times-circle"></i> Gagal menghubungkan: ' + err.message);
+    });
+}
+
 if ('serviceWorker' in navigator && 'PushManager' in window) {
     navigator.serviceWorker.ready.then(reg => {
-        reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: '{{ config("webpush.vapid.public_key") }}'
-        }).then(sub => {
-            fetch('/notifikasi/subscribe', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(sub.toJSON()),
-            });
-        }).catch(err => console.log('Push subscribe error:', err));
+        return reg.pushManager.getSubscription();
+    }).then(sub => {
+        if (sub) {
+            setSubStatus('success', '<i class="fas fa-check-circle"></i> Perangkat sudah terhubung & notifikasi aktif.');
+        } else if (Notification.permission === 'granted') {
+            return hubungkanNotifikasi();
+        } else if (Notification.permission === 'default') {
+            setSubStatus('warning', '<i class="fas fa-link"></i> Ketuk "Hubungkan Perangkat Ini" untuk mengaktifkan notifikasi.');
+            btnHubungkan.classList.remove('hidden');
+        } else {
+            setSubStatus('warning', '<i class="fas fa-exclamation-circle"></i> Izin notifikasi ditolak di browser.');
+        }
+    }).catch(err => {
+        console.log('Push status error:', err);
     });
 }
 </script>
