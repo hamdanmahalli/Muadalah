@@ -130,6 +130,10 @@
                 <i class="fas fa-bolt"></i> Uji Notifikasi Lokal (tanpa server)
             </button>
 
+            <button id="btnTestPulse" onclick="kirimTestPulse()" class="mt-2 w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-sm shadow-lg shadow-amber-200 active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fas fa-radio"></i> Tes Pengiriman Murni (tanpa isi pesan)
+            </button>
+
             <div id="testResult" class="hidden mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center"></div>
             <div id="testDetail" class="hidden mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-white p-3"></div>
 
@@ -146,6 +150,8 @@
                 <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Push diterima perangkat (10 mnt)</span><span id="diagPulse" class="font-bold {{ $pulseCount > 0 ? 'text-emerald-600' : 'text-slate-700' }}">{{ $pulseCount }} kali</span></div>
                 <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Subscribsi di browser ini</span><span id="diagBrowser" class="font-bold text-slate-700">Memeriksa...</span></div>
                 <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Service Worker aktif</span><span id="diagSW" class="font-bold text-slate-700">Memeriksa...</span></div>
+                <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Kunci tersimpan (p256dh/auth)</span><span id="diagKunci" class="font-bold text-slate-700">{{ $storedKeyInfo ? $storedKeyInfo['p256dh'] . '/' . $storedKeyInfo['auth'] . ' karakter' : 'tidak ada' }}</span></div>
+                <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Kunci di browser ini</span><span id="diagKunciBrowser" class="font-bold text-slate-700">Memeriksa...</span></div>
             </div>
         </div>
 
@@ -258,6 +264,52 @@ function kirimTest() {
     });
 }
 
+// Tes Pengiriman Murni: push tanpa payload/enkripsi. Membuktikan apakah pesan benar2 tiba di browser.
+function kirimTestPulse() {
+    const btn = document.getElementById('btnTestPulse');
+    const result = document.getElementById('testResult');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+
+    fetch('/notifikasi/test-pulse', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        result.classList.remove('hidden');
+        const detailEl = document.getElementById('testDetail');
+        if (data.success) {
+            result.className = 'mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center bg-emerald-50 text-emerald-700 border border-emerald-200';
+        } else {
+            result.className = 'mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center bg-red-50 text-red-700 border border-red-200';
+        }
+        result.textContent = data.message;
+        result.textContent += ' — Cek "Push diterima perangkat" di Diagnosa, lalu refresh.';
+
+        if (detailEl && data.detail && data.detail.length) {
+            detailEl.classList.remove('hidden');
+            detailEl.innerHTML = data.detail.map(d =>
+                '<div class="flex items-center justify-between text-xs">' +
+                '<span class="text-slate-500 font-medium truncate mr-2"><i class="fas ' + (d.success ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500') + ' mr-1"></i>' + d.host + '</span>' +
+                '<span class="font-bold ' + (d.success ? 'text-emerald-600' : 'text-red-600') + '">HTTP ' + (d.status_code || '-') + '</span></div>'
+            ).join('');
+        }
+    })
+    .catch(() => {
+        result.classList.remove('hidden');
+        result.className = 'mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center bg-red-50 text-red-700 border border-red-200';
+        result.textContent = 'Gagal mengirim. Periksa koneksi internet.';
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-radio"></i> Tes Pengiriman Murni (tanpa isi pesan)';
+    });
+}
+
 // Uji Notifikasi Lokal (tanpa server/FCM) — membuktikan channel suara/getar di perangkat
 function ujiLokal() {
     const btn = document.getElementById('btnLokal');
@@ -301,6 +353,7 @@ function ujiLokal() {
 (function() {
     const diagBrowser = document.getElementById('diagBrowser');
     const diagSW = document.getElementById('diagSW');
+    const diagKunciBrowser = document.getElementById('diagKunciBrowser');
     if (!diagBrowser) return;
 
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -322,6 +375,18 @@ function ujiLokal() {
                 const host = (sub.endpoint || '').replace(/^https?:\/\//, '').split('/')[0] || '-';
                 diagBrowser.textContent = 'Aktif (' + host + ')';
                 diagBrowser.className = 'font-bold text-emerald-600';
+
+                if (diagKunciBrowser && sub.getKey) {
+                    const b64 = key => {
+                        const p = [];
+                        key.forEach(byte => p.push(String.fromCharCode(byte)));
+                        return btoa(p.join(''));
+                    };
+                    const p256dh = sub.getKey('p256dh') ? b64(new Uint8Array(sub.getKey('p256dh'))) : '';
+                    const auth = sub.getKey('auth') ? b64(new Uint8Array(sub.getKey('auth'))) : '';
+                    diagKunciBrowser.textContent = p256dh.length + '/' + auth.length + ' karakter';
+                    diagKunciBrowser.className = 'font-bold text-slate-700';
+                }
             } else {
                 diagBrowser.textContent = 'Belum ada';
                 diagBrowser.className = 'font-bold text-red-600';

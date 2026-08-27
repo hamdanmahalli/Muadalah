@@ -32,7 +32,13 @@ class NotifikasiController extends Controller
         $deviceCount = \App\Models\PushSubscription::where('guru_id', $guru->id)->count();
         $pulseCount = \App\Models\PushEvent::where('created_at', '>=', now()->subMinutes(10))->count();
 
-        return view('guru.notifikasi-pengaturan', compact('guru', 'setting', 'deviceCount', 'pulseCount'));
+        // Informasi kunci subskripsi tersimpan (untuk deteksi korupsi data)
+        $storedKey = \App\Models\PushSubscription::where('guru_id', $guru->id)->first();
+        $storedKeyInfo = $storedKey
+            ? ['p256dh' => strlen($storedKey->p256dh), 'auth' => strlen($storedKey->auth)]
+            : null;
+
+        return view('guru.notifikasi-pengaturan', compact('guru', 'setting', 'deviceCount', 'pulseCount', 'storedKeyInfo'));
     }
 
     public function simpan(Request $request)
@@ -95,6 +101,30 @@ class NotifikasiController extends Controller
             $mode = $setting?->mode ?? 'sound';
 
             $result = $this->service->sendTestNotification($guru, $mode);
+
+            return response()->json([
+                'success' => $result['success'],
+                'message' => $result['message'],
+                'total' => $result['total'],
+                'success_count' => $result['success_count'],
+                'failed_count' => $result['failed_count'],
+                'detail' => $result['detail'] ?? [],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function testPulse()
+    {
+        try {
+            $guru = $this->getGuru();
+            if (!$guru) return response()->json(['error' => 'Unauthorized'], 401);
+
+            $result = $this->service->sendTestNoPayload($guru);
 
             return response()->json([
                 'success' => $result['success'],

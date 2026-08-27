@@ -195,6 +195,65 @@ class NotificationService
         ];
     }
 
+    public function sendTestNoPayload(Guru $guru): array
+    {
+        $subscriptions = PushSubscription::where('guru_id', $guru->id)->get();
+        $total = $subscriptions->count();
+        $success = 0;
+        $failed = 0;
+        $detail = [];
+
+        if ($total === 0) {
+            return [
+                'success' => false,
+                'total' => 0,
+                'success_count' => 0,
+                'failed_count' => 0,
+                'detail' => [],
+                'message' => 'Belum ada perangkat terhubung.',
+            ];
+        }
+
+        foreach ($subscriptions as $sub) {
+            $webPushSub = Subscription::create([
+                'endpoint' => $sub->endpoint,
+                'keys' => ['p256dh' => $sub->p256dh, 'auth' => $sub->auth],
+            ]);
+
+            // Payload null => push TANPA enkripsi. Memisahkan masalah enkripsi vs masalah pengiriman FCM.
+            $result = $this->webPush->sendOneNotification($webPushSub);
+
+            $detail[] = [
+                'host' => parse_url($sub->endpoint, PHP_URL_HOST) ?? '-',
+                'success' => $result->isSuccess(),
+                'status_code' => $result->getResponse()?->getStatusCode(),
+                'reason' => $result->getReason(),
+            ];
+
+            if ($result->isSuccess()) {
+                $success++;
+            } else {
+                $failed++;
+                if ($result->isSubscriptionExpired()) {
+                    $sub->delete();
+                }
+            }
+        }
+
+        $semuaSukses = $failed === 0 && $success > 0;
+
+        return [
+            'success' => $semuaSukses,
+            'total' => $total,
+            'success_count' => $success,
+            'failed_count' => $failed,
+            'detail' => $detail,
+            'message' => $semuaSukses
+                ? "Push mentah (tanpa payload) diterima FCM untuk {$success} perangkat."
+                : "Push mentah gagal: {$failed} dari {$total} perangkat.",
+        ];
+    }
+
     public function saveSubscription(Guru $guru, array $subscription): void
     {
         PushSubscription::updateOrCreate(
