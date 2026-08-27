@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-pesantren-v4';
+const CACHE_NAME = 'smart-pesantren-v5';
 const PRECACHE_URLS = [
     '/manifest.json',
     '/icons/icon-192x192.png',
@@ -81,19 +81,26 @@ self.addEventListener('push', function(event) {
         }
     }
 
+    const mode = data.mode === 'vibrate' ? 'vibrate' : (data.mode === 'silent' ? 'silent' : 'sound');
+
     const options = {
         body: data.body,
         icon: data.icon || '/icons/icon-192x192.png',
         badge: data.badge || '/icons/icon-192x192.png',
         tag: data.tag || 'smart-pesantren',
-        vibrate: data.mode === 'silent' ? [] : [200, 100, 200],
-        silent: data.mode === 'silent',
-        requireInteraction: false,
+        renotify: true,
+        vibrate: mode === 'silent' ? [] : [200, 100, 200],
+        silent: mode === 'silent',
         data: { url: data.url || '/dashboard-guru' },
+        actions: [
+            { action: 'open', title: 'Buka Aplikasi' }
+        ],
     };
 
     event.waitUntil(
-        self.registration.showNotification(data.title, options)
+        self.registration.showNotification(data.title, options).catch(function(err) {
+            console.log('Push notification gagal ditampilkan:', err);
+        })
     );
 });
 
