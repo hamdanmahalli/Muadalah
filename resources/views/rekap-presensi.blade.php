@@ -81,7 +81,7 @@
         </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto px-5 pt-4 scrollbar-none space-y-3 z-0">
+    <div class="flex-1 overflow-y-auto px-5 pt-4 pb-28 scrollbar-none space-y-3 z-0">
         @forelse($riwayat as $item)
             @php
                 $wrnBg = 'bg-gray-100 text-gray-600 border-gray-200';

@@ -1,4 +1,4 @@
-<div class="shrink-0 relative z-50 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe pt-2">
+<div class="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe pt-2">
     <a href="/dashboard-guru" class="flex flex-col items-center justify-center w-12 transition pb-1 group {{ ($active ?? '') === 'beranda' ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-500' }}">
         <i class="fas fa-home text-xl mb-1 group-active:scale-90 transition-transform"></i>
         <span class="text-[9px] {{ ($active ?? '') === 'beranda' ? 'font-black' : 'font-bold' }}">Beranda</span>

@@ -32,7 +32,7 @@
     </div>
 
     <!-- KONTEN -->
-    <div class="flex-1 overflow-y-auto px-5 pt-6 scrollbar-none space-y-6">
+    <div class="flex-1 overflow-y-auto px-5 pt-6 pb-28 scrollbar-none space-y-6">
         @forelse($targetMengajar as $item)
             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
                 <div class="p-5">

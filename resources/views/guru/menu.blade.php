@@ -25,7 +25,7 @@
     </div>
 
     <!-- AREA KONTEN -->
-    <div class="flex-1 overflow-y-auto bg-slate-50 relative z-10 pt-6 scrollbar-none px-5">
+    <div class="flex-1 overflow-y-auto bg-slate-50 relative z-10 pt-6 pb-28 scrollbar-none px-5">
         
         <div class="space-y-3">
             
