@@ -41,6 +41,61 @@ class NotifikasiController extends Controller
         return view('guru.notifikasi-pengaturan', compact('guru', 'setting', 'deviceCount', 'pulseCount', 'storedKeyInfo'));
     }
 
+    public function cekTerbaru()
+    {
+        $guru = $this->getGuru();
+        if (!$guru) return response()->json(['items' => []]);
+
+        $setting = GuruNotifikasiSetting::firstOrCreate(
+            ['guru_id' => $guru->id],
+            ['is_enabled' => true, 'mode' => 'sound']
+        );
+
+        if (!$setting->is_enabled) return response()->json(['items' => []]);
+
+        $now = \Carbon\Carbon::now();
+        $hariIni = map_hari($now->isoFormat('dddd'));
+        $waktuSekarang = $now->format('H:i:s');
+        $waktuAkhir = $now->copy()->addMinutes($setting->reminder_minutes)->format('H:i:s');
+
+        $hariLibur = \App\Models\AgendaKaldik::where('jenis_agenda', 'Libur')
+            ->where('tanggal_mulai', '<=', $now->toDateString())
+            ->where('tanggal_selesai', '>=', $now->toDateString())
+            ->exists();
+
+        if ($hariLibur) return response()->json(['items' => []]);
+
+        $jadwals = \App\Models\JadwalHarian::where('guru_id', $guru->id)
+            ->where('hari', $hariIni)
+            ->with(['kelas', 'pelajaran'])
+            ->get();
+
+        $items = [];
+
+        foreach ($jadwals as $jadwal) {
+            $masterJam = \App\Models\MasterJam::where('jam_ke', $jadwal->jam_ke)->first();
+            if (!$masterJam) continue;
+            $jamMulai = $masterJam->jam_mulai;
+
+            if ($jamMulai <= $waktuAkhir && $jamMulai > $waktuSekarang) {
+                $namaKelas = $jadwal->kelas->nama_kelas ?? '-';
+                $namaMapel = $jadwal->pelajaran->nama_pelajaran ?? '-';
+
+                $items[] = [
+                    'tag' => "jadwal-{$jadwal->id}-{$jadwal->jam_ke}",
+                    'title' => "Jadwal Mengajar {$setting->reminder_minutes} Menit Lagi",
+                    'body' => "Anda mengajar {$namaMapel} di {$namaKelas} pada {$jamMulai}",
+                    'mode' => $setting->mode,
+                    'icon' => '/icons/icon-192x192.png',
+                    'badge' => '/icons/icon-192x192.png',
+                    'url' => '/dashboard-guru',
+                ];
+            }
+        }
+
+        return response()->json(['items' => $items]);
+    }
+
     public function simpan(Request $request)
     {
         $guru = $this->getGuru();
