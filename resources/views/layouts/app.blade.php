@@ -17,6 +17,28 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+
+        /* GLOBAL PAGE-TRANSITION LOADING OVERLAY */
+        #page-loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            flex-direction: column;
+        }
+        #page-loader.active { display: flex; }
+        #page-loader .dots { display: flex; gap: 8px; }
+        #page-loader .dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #059669;
+            animation: dotBounce 1.2s ease-in-out infinite;
+        }
+        #page-loader .dot:nth-child(2) { animation-delay: 0.15s; }
+        #page-loader .dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes dotBounce {
+            0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
     </style>
     
     @stack('styles')
@@ -343,6 +365,15 @@
         </div>
     </div>
 
+    <!-- GLOBAL PAGE-TRANSITION LOADER -->
+    <div id="page-loader">
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
     <script>
         // JAM DIGITAL
         function updateClock() {
@@ -473,7 +504,42 @@
                 btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
             }
         });
+
+        // PAGE-TRANSITION LOADING: Tampilkan overlay saat navigasi internal
+        (function() {
+            const loader = document.getElementById('page-loader');
+            if (!loader) return;
+
+            // Sembunyikan loader saat halaman selesai dimuat
+            window.addEventListener('pageshow', () => loader.classList.remove('active'));
+
+            // Intercept semua klik link internal
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (!link) return;
+
+                // Skip jika bukan navigasi internal
+                const href = link.getAttribute('href');
+                if (!href) return;
+                if (href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
+                if (link.target === '_blank') return;
+                if (link.hasAttribute('data-no-loading')) return;
+
+                // Skip jika ada modifier key (ctrl, shift, alt, meta)
+                if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+
+                // Skip link yang sama dengan halaman saat ini
+                try {
+                    const url = new URL(href, window.location.origin);
+                    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+                } catch(ex) {}
+
+                // Tampilkan loader
+                loader.classList.add('active');
+            });
+        })();
     </script>
+
     @stack('scripts')
 </body>
 

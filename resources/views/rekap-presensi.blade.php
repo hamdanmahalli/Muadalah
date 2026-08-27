@@ -81,7 +81,7 @@
         </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto px-5 pt-4 pb-24 scrollbar-none space-y-3 z-0">
+    <div class="flex-1 overflow-y-auto px-5 pt-4 scrollbar-none space-y-3 z-0">
         @forelse($riwayat as $item)
             @php
                 $wrnBg = 'bg-gray-100 text-gray-600 border-gray-200';
@@ -110,7 +110,7 @@
         @endforelse
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe pt-2">
+    <div class="shrink-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe pt-2">
         <a href="/dashboard-guru" class="flex flex-col items-center justify-center w-12 text-slate-400 hover:text-emerald-500 transition pb-1 group"><i class="fas fa-home text-xl mb-1 group-active:scale-90 transition-transform"></i><span class="text-[9px] font-bold">Beranda</span></a>
         <a href="/kaldik" class="flex flex-col items-center justify-center w-12 text-slate-400 hover:text-emerald-500 transition pb-1 group"><i class="fas fa-calendar-alt text-xl mb-1 group-active:scale-90 transition-transform"></i><span class="text-[9px] font-bold">Kaldik</span></a>
         <div class="relative -top-6 flex justify-center items-center"><a href="/scan-kelas" class="w-16 h-16 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 text-white flex items-center justify-center text-3xl shadow-[0_8px_20px_rgba(16,185,129,0.4)] border-4 border-slate-50 transform hover:scale-105 active:scale-95 transition-all"><i class="fas fa-qrcode"></i></a></div>

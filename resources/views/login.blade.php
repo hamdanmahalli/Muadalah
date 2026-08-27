@@ -35,10 +35,139 @@
         @keyframes putar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 
+    <!-- SPLASH SCREEN ANIMASI -->
+    <style>
+        #splash-screen {
+            position: fixed; inset: 0; z-index: 99999;
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #splash-screen.fade-out { opacity: 0; visibility: hidden; }
+
+        /* Logo container dengan glow */
+        .splash-logo-wrap {
+            position: relative; width: 100px; height: 100px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 24px;
+        }
+        .splash-logo-icon {
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255,255,255,0.25);
+            border-radius: 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; color: #ffffff;
+            position: relative; z-index: 2;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        /* Glow efek bercahaya - 3 lapis */
+        .splash-glow {
+            position: absolute; inset: -15px;
+            border-radius: 30px; z-index: 1;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        .splash-glow-1 {
+            box-shadow: 0 0 40px 10px rgba(16,185,129,0.5),
+                        0 0 80px 20px rgba(16,185,129,0.3),
+                        0 0 120px 40px rgba(16,185,129,0.15);
+        }
+        .splash-glow-2 {
+            box-shadow: 0 0 30px 8px rgba(52,211,153,0.4),
+                        0 0 60px 16px rgba(52,211,153,0.2);
+            animation-delay: 0.5s;
+        }
+        .splash-glow-3 {
+            box-shadow: 0 0 20px 6px rgba(110,231,183,0.3);
+            animation-delay: 1s;
+        }
+
+        /* Partikel bercahaya kecil */
+        .splash-particle {
+            position: absolute; width: 4px; height: 4px;
+            background: #6ee7b7; border-radius: 50%;
+            animation: particleFloat 3s ease-in-out infinite;
+        }
+        .splash-particle:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+        .splash-particle:nth-child(2) { top: 25%; right: 15%; animation-delay: 0.8s; }
+        .splash-particle:nth-child(3) { bottom: 30%; left: 10%; animation-delay: 1.6s; }
+        .splash-particle:nth-child(4) { bottom: 15%; right: 20%; animation-delay: 0.4s; }
+        .splash-particle:nth-child(5) { top: 50%; left: 5%; animation-delay: 1.2s; }
+        .splash-particle:nth-child(6) { top: 40%; right: 8%; animation-delay: 2s; }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.08); }
+        }
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        @keyframes particleFloat {
+            0%, 100% { opacity: 0; transform: translateY(0) scale(0.5); }
+            25% { opacity: 1; transform: translateY(-10px) scale(1); }
+            75% { opacity: 0.5; transform: translateY(10px) scale(0.8); }
+        }
+
+        .splash-title {
+            font-size: 22px; font-weight: 900; color: #ffffff;
+            letter-spacing: -0.5px; text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+        }
+        .splash-subtitle {
+            font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6);
+            letter-spacing: 3px; text-transform: uppercase; margin-top: 6px;
+        }
+
+        /* Loading dots di bawah teks */
+        .splash-dots { display: flex; gap: 6px; margin-top: 28px; }
+        .splash-dots span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            animation: dotPulse 1.4s ease-in-out infinite;
+        }
+        .splash-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .splash-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+    </style>
+
     <!-- Elemen Loading yang akan muncul -->
     <div id="loading-overlay">
         <div class="spinner"></div>
         <p style="margin-top: 15px; font-weight: bold; color: #333;">Memverifikasi Akun...</p>
+    </div>
+
+    <!-- SPLASH SCREEN OVERLAY -->
+    <div id="splash-screen">
+        <!-- Partikel bercahaya -->
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+
+        <!-- Logo dengan efek glow -->
+        <div class="splash-logo-wrap">
+            <div class="splash-glow splash-glow-1"></div>
+            <div class="splash-glow splash-glow-2"></div>
+            <div class="splash-glow splash-glow-3"></div>
+            <div class="splash-logo-icon">
+                <i class="fas fa-mosque"></i>
+            </div>
+        </div>
+
+        <p class="splash-title">Mu'adalah Wustha</p>
+        <p class="splash-subtitle">Maqna'ul Ulum</p>
+
+        <!-- Loading dots -->
+        <div class="splash-dots">
+            <span></span><span></span><span></span>
+        </div>
     </div>
 </head>
 <body class="flex items-center justify-center min-h-screen relative overflow-hidden antialiased">
@@ -143,6 +272,17 @@
     </div>
 
     <script>
+        // SPLASH SCREEN: Fade out setelah 2.5 detik
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.classList.add('fade-out');
+                    setTimeout(function() { splash.remove(); }, 600);
+                }
+            }, 2500);
+        });
+
         // Bersihkan Service Worker lama sebelum login
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {

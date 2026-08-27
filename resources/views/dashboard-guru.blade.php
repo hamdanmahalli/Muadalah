@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <div class="flex-1 min-h-0 flex flex-col px-5 pb-[5.5rem] relative z-10">
+    <div class="flex-1 min-h-0 flex flex-col px-5 relative z-10">
         
         <div id="jadwal-carousel" class="flex-1 flex overflow-x-auto snap-x snap-mandatory gap-4 scrollbar-none items-stretch">
             
@@ -110,7 +110,7 @@
         </div>
 
         @if(count($jadwals) > 0)
-        <div class="shrink-0 flex justify-center items-center space-x-2 mt-5">
+        <div class="shrink-0 flex justify-center items-center space-x-2 mt-5 mb-6">
             @foreach($jadwals as $index => $item)
                 <div class="dot-indicator rounded-full transition-all duration-300 {{ $loop->first ? 'bg-emerald-600 w-6 h-2' : 'bg-slate-300 w-2 h-2' }}"></div>
             @endforeach
@@ -120,7 +120,7 @@
     </div>
 
     <!-- NAVIGASI BAWAH (Disinkronkan dengan Konsep Menu) -->
-    <div class="absolute bottom-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe">
+    <div class="shrink-0 z-50 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe">
         
         <a href="/dashboard-guru" class="flex flex-col items-center justify-center w-12 text-emerald-600 pb-1 group">
             <i class="fas fa-home text-xl mb-1 group-active:scale-90 transition-transform"></i>

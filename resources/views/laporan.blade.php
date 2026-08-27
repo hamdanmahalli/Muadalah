@@ -134,9 +134,17 @@
                                         - {{ \Carbon\Carbon::parse($libur->tanggal_selesai)->translatedFormat('d M Y') }}
                                     @endif)
                                 </span>
+                                @php
+                                    $kelasArr = is_string($libur->kelas_ids) ? json_decode($libur->kelas_ids, true) : (is_array($libur->kelas_ids) ? $libur->kelas_ids : []);
+                                    $namaKelasStr = (!empty($kelasArr) && is_array($kelasArr) && class_exists('\App\Models\Kelas'))
+                                        ? \App\Models\Kelas::whereIn('id', $kelasArr)->pluck('nama_kelas')->implode(', ')
+                                        : 'Tertentu';
+                                    $jamArr = is_string($libur->jam_diliburkan) ? json_decode($libur->jam_diliburkan, true) : (is_array($libur->jam_diliburkan) ? $libur->jam_diliburkan : []);
+                                    $jamTeks = (is_array($jamArr) && count($jamArr) > 0) ? (count($jamArr) > 1 ? min($jamArr) . '-' . max($jamArr) : implode(', ', $jamArr)) : '-';
+                                @endphp
                                 <p class="text-gray-500 mt-0.5">
-                                    Cakupan: <b>@if($libur->target_libur == 'semua') Seluruh Kelas @else Kelas Tertentu @endif</b> |
-                                    Waktu: <b>@if($libur->tipe_agenda == 'Penuh') Seharian Full @else Parsial @endif</b>
+                                    Cakupan: <b>{{ $libur->target_libur == 'semua' ? 'Seluruh Kelas' : 'Kelas ' . $namaKelasStr }}</b> |
+                                    Waktu: <b>{{ $libur->tipe_agenda == 'Penuh' ? 'Seharian Full' : 'Parsial Jam Ke-'.$jamTeks }}</b>
                                 </p>
                             </div>
                         </li>
