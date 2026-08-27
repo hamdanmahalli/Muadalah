@@ -127,12 +127,21 @@
             </button>
 
             <div id="testResult" class="hidden mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center"></div>
+            <div id="testDetail" class="hidden mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-white p-3"></div>
 
             <!-- Status Perangkat -->
             <div id="subStatus" class="hidden mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2"></div>
             <button id="btnHubungkan" onclick="hubungkanNotifikasi()" class="hidden mt-2 w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-blue-200 active:scale-95 transition">
                 <i class="fas fa-link mr-2"></i> Hubungkan Perangkat Ini
             </button>
+
+            <!-- Diagnosa Teknis -->
+            <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Diagnosa Teknis</p>
+                <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Perangkat terdaftar di server</span><span id="diagServer" class="font-bold text-slate-700">{{ $deviceCount }} perangkat</span></div>
+                <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Subscribsi di browser ini</span><span id="diagBrowser" class="font-bold text-slate-700">Memeriksa...</span></div>
+                <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Service Worker aktif</span><span id="diagSW" class="font-bold text-slate-700">Memeriksa...</span></div>
+            </div>
         </div>
 
         <!-- Keterangan iOS -->
@@ -216,12 +225,21 @@ function kirimTest() {
     .then(r => r.json())
     .then(data => {
         result.classList.remove('hidden');
+        const detailEl = document.getElementById('testDetail');
         if (data.success) {
             result.className = 'mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center bg-emerald-50 text-emerald-700 border border-emerald-200';
-            result.textContent = data.message;
         } else {
             result.className = 'mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center bg-red-50 text-red-700 border border-red-200';
-            result.textContent = data.message;
+        }
+        result.textContent = data.message;
+
+        if (detailEl && data.detail && data.detail.length) {
+            detailEl.classList.remove('hidden');
+            detailEl.innerHTML = data.detail.map(d =>
+                '<div class="flex items-center justify-between text-xs">' +
+                '<span class="text-slate-500 font-medium truncate mr-2"><i class="fas ' + (d.success ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500') + ' mr-1"></i>' + d.host + '</span>' +
+                '<span class="font-bold ' + (d.success ? 'text-emerald-600' : 'text-red-600') + '">HTTP ' + (d.status_code || '-') + '</span></div>'
+            ).join('');
         }
     })
     .catch(() => {
@@ -234,6 +252,44 @@ function kirimTest() {
         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Notifikasi Test';
     });
 }
+
+// Diagnosa teknis: status SW & subskripsi di browser ini
+(function() {
+    const diagBrowser = document.getElementById('diagBrowser');
+    const diagSW = document.getElementById('diagSW');
+    if (!diagBrowser) return;
+
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+        navigator.serviceWorker.ready.then(reg => {
+            const active = reg.active;
+            let swTeks = 'Tidak aktif';
+            if (active) {
+                swTeks = (active.scriptURL || '').replace(/^.*\/(sw\.js).*$/, '$1') + (active.scriptURL.includes('?v=5') ? ' (v5)' : ' (lama)');
+            }
+
+            if (diagSW) {
+                diagSW.textContent = swTeks;
+                diagSW.className = 'font-bold ' + (swTeks.includes('v5') ? 'text-emerald-600' : 'text-red-600');
+            }
+
+            return reg.pushManager.getSubscription();
+        }).then(sub => {
+            if (sub) {
+                const host = (sub.endpoint || '').replace(/^https?:\/\//, '').split('/')[0] || '-';
+                diagBrowser.textContent = 'Aktif (' + host + ')';
+                diagBrowser.className = 'font-bold text-emerald-600';
+            } else {
+                diagBrowser.textContent = 'Belum ada';
+                diagBrowser.className = 'font-bold text-red-600';
+            }
+        }).catch(err => {
+            diagBrowser.textContent = 'Error: ' + err.message;
+        });
+    } else {
+        diagBrowser.textContent = 'Browser tidak mendukung';
+        diagSW.textContent = 'Tidak didukung';
+    }
+})();
 
 // Push subscription
 let subStatusEl = document.getElementById('subStatus');

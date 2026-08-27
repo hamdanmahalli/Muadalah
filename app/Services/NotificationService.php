@@ -9,6 +9,7 @@ use App\Models\LogNotifikasi;
 use App\Models\MasterJam;
 use App\Models\PushSubscription;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
 
@@ -66,6 +67,13 @@ class NotificationService
 
                 $this->sendNotification($jadwal->guru, $jadwal, $setting->mode);
 
+                Log::info('Notifikasi jadwal dikirim', [
+                    'guru_id' => $jadwal->guru_id,
+                    'jadwal_id' => $jadwal->id,
+                    'jam_mulai' => $jamMulai,
+                    'reminder_minutes' => $setting->reminder_minutes,
+                ]);
+
                 LogNotifikasi::create([
                     'guru_id' => $jadwal->guru_id,
                     'jadwal_id' => $jadwal->id,
@@ -120,6 +128,7 @@ class NotificationService
         $total = $subscriptions->count();
         $success = 0;
         $failed = 0;
+        $detail = [];
 
         if ($total === 0) {
             return [
@@ -127,6 +136,7 @@ class NotificationService
                 'total' => 0,
                 'success_count' => 0,
                 'failed_count' => 0,
+                'detail' => [],
                 'message' => 'Belum ada perangkat terhubung. Buka Pengaturan Notifikasi lalu ketuk "Hubungkan Perangkat Ini".',
             ];
         }
@@ -148,11 +158,24 @@ class NotificationService
             ]);
 
             $result = $this->webPush->sendOneNotification($webPushSub, $payload);
+
+            $statusCode = $result->getResponse()?->getStatusCode();
+            $reason = $result->getReason();
+
+            $detail[] = [
+                'host' => parse_url($sub->endpoint, PHP_URL_HOST) ?? '-',
+                'success' => $result->isSuccess(),
+                'status_code' => $statusCode,
+                'reason' => $reason,
+            ];
+
             if ($result->isSuccess()) {
                 $success++;
             } else {
                 $failed++;
-                $sub->delete();
+                if ($result->isSubscriptionExpired()) {
+                    $sub->delete();
+                }
             }
         }
 
@@ -163,9 +186,12 @@ class NotificationService
             'total' => $total,
             'success_count' => $success,
             'failed_count' => $failed,
+            'detail' => $detail,
             'message' => $semuaSukses
                 ? "Berhasil! Notification test terkirim ke {$success} perangkat."
-                : "Sebagian gagal: {$failed} dari {$total} perangkat tidak menerima (mungkin sudah tidak aktif).",
+                : ($success > 0
+                    ? "Sebagian gagal: {$failed} dari {$total} perangkat tidak menerima (mungkin sudah tidak aktif)."
+                    : "Gagal terkirim ke semua {$total} perangkat. Periksa detail status di bawah."),
         ];
     }
 

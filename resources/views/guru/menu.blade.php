@@ -276,10 +276,15 @@
         })
         .then(r => r.json())
         .then(data => {
+            let pesan = data.message || 'Notifikasi demo berhasil dikirim!';
+            if (data.detail && data.detail.length) {
+                const ringkasan = data.detail.map(d => d.host + '=HTTP' + (d.status_code || '-')).join(', ');
+                pesan += ' [' + ringkasan + ']';
+            }
             if (data.success) {
-                tampilToast('success', data.message || 'Notifikasi demo berhasil dikirim!');
+                tampilToast('success', pesan);
             } else {
-                tampilToast('error', data.message || 'Gagal mengirim notifikasi.');
+                tampilToast('error', pesan);
             }
         })
         .catch(err => {

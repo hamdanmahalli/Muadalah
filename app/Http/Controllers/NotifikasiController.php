@@ -29,7 +29,9 @@ class NotifikasiController extends Controller
             ['is_enabled' => true, 'mode' => 'sound']
         );
 
-        return view('guru.notifikasi-pengaturan', compact('guru', 'setting'));
+        $deviceCount = \App\Models\PushSubscription::where('guru_id', $guru->id)->count();
+
+        return view('guru.notifikasi-pengaturan', compact('guru', 'setting', 'deviceCount'));
     }
 
     public function simpan(Request $request)
@@ -99,6 +101,7 @@ class NotifikasiController extends Controller
                 'total' => $result['total'],
                 'success_count' => $result['success_count'],
                 'failed_count' => $result['failed_count'],
+                'detail' => $result['detail'] ?? [],
             ]);
         } catch (\Throwable $e) {
             return response()->json([
