@@ -126,6 +126,10 @@
                 <i class="fas fa-paper-plane"></i> Kirim Notifikasi Test
             </button>
 
+            <button id="btnLokal" onclick="ujiLokal()" class="mt-2 w-full py-3 rounded-xl bg-gradient-to-r from-slate-600 to-slate-700 text-white font-bold text-sm shadow-lg shadow-slate-200 active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fas fa-bolt"></i> Uji Notifikasi Lokal (tanpa server)
+            </button>
+
             <div id="testResult" class="hidden mt-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-center"></div>
             <div id="testDetail" class="hidden mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-white p-3"></div>
 
@@ -253,6 +257,45 @@ function kirimTest() {
     });
 }
 
+// Uji Notifikasi Lokal (tanpa server/FCM) — membuktikan channel suara/getar di perangkat
+function ujiLokal() {
+    const btn = document.getElementById('btnLokal');
+    const asli = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Menampilkan...';
+
+    const optionsLokal = {
+        body: 'Ini notifikasi dari perangkat ini sendiri (tanpa server). Bunyi & getar mengikuti pengaturan sistem.',
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-192x192.png',
+        tag: 'lokal-test',
+        renotify: true,
+        vibrate: [250, 100, 250, 100, 250],
+        data: { url: '/notifikasi/pengaturan' },
+    };
+
+    const tampilkan = () =>
+        navigator.serviceWorker.ready
+            .then(reg => reg.showNotification('Uji Lokal — Bunyi & Getar', optionsLokal))
+            .then(() => setSubStatus('success', '<i class="fas fa-check-circle"></i> Notifikasi lokal dimunculkan. Apakah berbunyi & bergetar?'))
+            .catch(err => setSubStatus('error', '<i class="fas fa-times-circle"></i> Gagal: ' + err.message))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = asli;
+            });
+
+    if (Notification.permission === 'granted') {
+        tampilkan();
+    } else if (Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') tampilkan();
+            else setSubStatus('warning', '<i class="fas fa-exclamation-circle"></i> Izin ditolak. Aktifkan izin notifikasi dulu.');
+        });
+    } else {
+        setSubStatus('error', '<i class="fas fa-times-circle"></i> Izin notifikasi ditolak di browser.');
+    }
+}
+
 // Diagnosa teknis: status SW & subskripsi di browser ini
 (function() {
     const diagBrowser = document.getElementById('diagBrowser');
@@ -264,12 +307,12 @@ function kirimTest() {
             const active = reg.active;
             let swTeks = 'Tidak aktif';
             if (active) {
-                swTeks = (active.scriptURL || '').replace(/^.*\/(sw\.js).*$/, '$1') + (active.scriptURL.includes('?v=5') ? ' (v5)' : ' (lama)');
+                swTeks = (active.scriptURL || '').replace(/^.*\/(sw\.js).*$/, '$1') + (active.scriptURL.includes('?v=6') ? ' (v6)' : ' (lama)');
             }
 
             if (diagSW) {
                 diagSW.textContent = swTeks;
-                diagSW.className = 'font-bold ' + (swTeks.includes('v5') ? 'text-emerald-600' : 'text-red-600');
+                diagSW.className = 'font-bold ' + (swTeks.includes('v6') ? 'text-emerald-600' : 'text-red-600');
             }
 
             return reg.pushManager.getSubscription();

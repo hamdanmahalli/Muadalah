@@ -11,7 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        
+
+        // Endpoint telemetri dari Service Worker (tanpa CSRF token)
+        $middleware->validateCsrfTokens(except: [
+            'notifikasi/pulse',
+        ]);
+
         // FITUR BARU: Mendaftarkan Mesin Satpam Spatie (Hak Akses)
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,

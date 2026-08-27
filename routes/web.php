@@ -195,3 +195,6 @@ Route::middleware(['auth'])->group(function () {
     });
 
 }); // <--- PENUTUP BENTENG UTAMA (auth)
+
+// Telemetri push dari Service Worker (pulse) — di luar auth & CSRF (hanya mencatat log)
+Route::post('/notifikasi/pulse', [\App\Http\Controllers\NotifikasiController::class, 'pulse']);

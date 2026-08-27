@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-pesantren-v5';
+const CACHE_NAME = 'smart-pesantren-v6';
 const PRECACHE_URLS = [
     '/manifest.json',
     '/icons/icon-192x192.png',
@@ -98,8 +98,15 @@ self.addEventListener('push', function(event) {
     };
 
     event.waitUntil(
-        self.registration.showNotification(data.title, options).catch(function(err) {
-            console.log('Push notification gagal ditampilkan:', err);
+        Promise.all([
+            self.registration.showNotification(data.title, options),
+            fetch('/notifikasi/pulse', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tag: data.tag || 'unknown', title: data.title || '' }),
+            }).catch(function() {})
+        ]).catch(function(err) {
+            console.log('Push gagal diproses:', err);
         })
     );
 });

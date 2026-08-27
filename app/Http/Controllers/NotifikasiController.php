@@ -110,4 +110,16 @@ class NotifikasiController extends Controller
             ], 500);
         }
     }
+
+    public function pulse(Request $request)
+    {
+        \Illuminate\Support\Facades\Log::info('PUSH-PULSE: push sampai di perangkat', [
+            'tag' => $request->input('tag', '-'),
+            'title' => $request->input('title', '-'),
+            'waktu' => now()->toDateTimeString(),
+            'agent' => $request->userAgent(),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }
