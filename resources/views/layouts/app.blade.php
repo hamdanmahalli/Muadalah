@@ -18,26 +18,30 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* GLOBAL PAGE-TRANSITION LOADING OVERLAY */
-        #page-loader {
-            position: fixed; inset: 0; z-index: 9999;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(4px);
+        /* NAV-CLICK LOADING OVERLAY */
+        #nav-loading {
+            position: fixed; top: 130px; bottom: 80px; left: 0; right: 0; z-index: 15;
+            background: #f8fafc;
             display: none; align-items: center; justify-content: center;
-            flex-direction: column;
+            flex-direction: column; gap: 12px;
         }
-        #page-loader.active { display: flex; }
-        #page-loader .dots { display: flex; gap: 8px; }
-        #page-loader .dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: #059669;
-            animation: dotBounce 1.2s ease-in-out infinite;
+        #nav-loading.show { display: flex; }
+        #nav-loading .dots { display: flex; gap: 8px; }
+        #nav-loading .dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 12px 3px rgba(16,185,129,0.4);
+            animation: navDotBounce 1.2s ease-in-out infinite;
         }
-        #page-loader .dot:nth-child(2) { animation-delay: 0.15s; }
-        #page-loader .dot:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes dotBounce {
-            0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
-            40% { transform: scale(1); opacity: 1; }
+        #nav-loading .dot:nth-child(2) { animation-delay: 0.15s; }
+        #nav-loading .dot:nth-child(3) { animation-delay: 0.3s; }
+        #nav-loading .nav-load-text {
+            font-size: 11px; font-weight: 700; color: #94a3b8;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+        @keyframes navDotBounce {
+            0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+            40% { transform: scale(1.1); opacity: 1; }
         }
     </style>
     
@@ -365,13 +369,14 @@
         </div>
     </div>
 
-    <!-- GLOBAL PAGE-TRANSITION LOADER -->
-    <div id="page-loader">
+    <!-- NAV-CLICK LOADING OVERLAY -->
+    <div id="nav-loading">
         <div class="dots">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
         </div>
+        <span class="nav-load-text">Memuat</span>
     </div>
 
     <script>
@@ -505,39 +510,26 @@
             }
         });
 
-        // PAGE-TRANSITION LOADING: Tampilkan overlay saat navigasi internal
+        // NAV-CLICK LOADING: tampilkan overlay saat klik link navigasi
         (function() {
-            const loader = document.getElementById('page-loader');
-            if (!loader) return;
-
-            // Sembunyikan loader saat halaman selesai dimuat
-            window.addEventListener('pageshow', () => loader.classList.remove('active'));
-
-            // Intercept semua klik link internal
+            var overlay = document.getElementById('nav-loading');
+            if (!overlay) return;
             document.addEventListener('click', function(e) {
-                const link = e.target.closest('a');
+                var link = e.target.closest('a');
                 if (!link) return;
-
-                // Skip jika bukan navigasi internal
-                const href = link.getAttribute('href');
+                var href = link.getAttribute('href');
                 if (!href) return;
                 if (href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
                 if (link.target === '_blank') return;
-                if (link.hasAttribute('data-no-loading')) return;
-
-                // Skip jika ada modifier key (ctrl, shift, alt, meta)
                 if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
-
-                // Skip link yang sama dengan halaman saat ini
                 try {
-                    const url = new URL(href, window.location.origin);
-                    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+                    var url = new URL(href, window.location.origin);
+                    if (url.pathname === window.location.pathname) return;
                 } catch(ex) {}
-
-                // Tampilkan loader
-                loader.classList.add('active');
+                overlay._navTimer = setTimeout(function() { overlay.classList.add('show'); },);
             });
         })();
+
     </script>
 
     @stack('scripts')

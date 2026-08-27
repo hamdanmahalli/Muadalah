@@ -62,7 +62,18 @@
                 <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
             </button>
 
-            <!-- MENU 4: Logout (Proteksi CSRF + Loading Animasi Premium) -->
+            <!-- MENU 4: Pengaturan Notifikasi -->
+            <a href="/notifikasi/pengaturan" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                    </div>
+                    <span class="text-sm font-bold text-slate-700">Pengaturan Notifikasi</span>
+                </div>
+                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+            </a>
+
+            <!-- MENU 5: Logout (Proteksi CSRF + Loading Animasi Premium) -->
             <form method="POST" action="/logout" class="w-full mt-8" onsubmit="loadingElegan(event, this)">
                 @csrf
                 <!-- Ditambahkan min-h-[72px] untuk memastikan tinggi kotak terkunci mutlak -->

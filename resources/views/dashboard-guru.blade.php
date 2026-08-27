@@ -119,7 +119,7 @@
 
     </div>
 
-    <!-- NAVIGASI BAWAH (Disinkronkan dengan Konsep Menu) -->
+    <!-- NAVIGASI BAWAH -->
     <div class="shrink-0 z-50 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe">
         
         <a href="/dashboard-guru" class="flex flex-col items-center justify-center w-12 text-emerald-600 pb-1 group">
@@ -143,7 +143,6 @@
             <span class="text-[9px] font-bold">Rekap</span>
         </a>
 
-        <!-- PERBAIKAN: Tombol Menu (Menggunakan route cerdas Laravel) -->
         <a href="/menu" class="flex flex-col items-center justify-center w-12 text-slate-400 hover:text-emerald-500 transition pb-1 group">
             <i class="fas fa-bars text-xl mb-1 group-active:scale-90 transition-transform"></i>
             <span class="text-[9px] font-bold">Menu</span>

@@ -19,6 +19,7 @@ use App\Http\Controllers\MasterImportController;
 use App\Http\Controllers\BatasPelajaranController;
 use App\Http\Controllers\AgendaKegiatanController;
 use App\Http\Controllers\DatabaseManagerController;
+use App\Http\Controllers\NotifikasiController;
 
 
 // ==========================================================
@@ -184,6 +185,13 @@ Route::middleware(['auth'])->group(function () {
         // Halaman Profil Lengkap & Edit Biodata Guru
         Route::get('/profil', [JadwalController::class, 'profilLengkap'])->name('guru.profil.lengkap');
         Route::put('/profil/update', [JadwalController::class, 'updateProfil'])->name('guru.profil.update');
+
+        // Notifikasi
+        Route::get('/notifikasi/pengaturan', [NotifikasiController::class, 'pengaturan'])->name('guru.notifikasi');
+        Route::post('/notifikasi/simpan', [NotifikasiController::class, 'simpan']);
+        Route::post('/notifikasi/subscribe', [NotifikasiController::class, 'subscribe']);
+        Route::post('/notifikasi/unsubscribe', [NotifikasiController::class, 'unsubscribe']);
+        Route::post('/notifikasi/test', [NotifikasiController::class, 'test']);
     });
 
 }); // <--- PENUTUP BENTENG UTAMA (auth)

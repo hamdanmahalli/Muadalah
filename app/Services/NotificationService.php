@@ -1,0 +1,164 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Guru;
+use App\Models\GuruNotifikasiSetting;
+use App\Models\JadwalHarian;
+use App\Models\LogNotifikasi;
+use App\Models\MasterJam;
+use App\Models\PushSubscription;
+use Carbon\Carbon;
+use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\Subscription;
+
+class NotificationService
+{
+    private WebPush $webPush;
+
+    public function __construct()
+    {
+        $this->webPush = new WebPush([
+            'VAPID' => [
+                'subject' => config('webpush.vapid.subject'),
+                'publicKey' => config('webpush.vapid.public_key'),
+                'privateKey' => config('webpush.vapid.private_key'),
+            ],
+        ]);
+    }
+
+    public function checkAndSendNotifications(): int
+    {
+        $now = Carbon::now();
+        $hariIni = map_hari($now->isoFormat('dddd'));
+        $waktuSekarang = $now->format('H:i:s');
+        $tigaPuluhMenitLagi = $now->copy()->addMinutes(30)->format('H:i:s');
+        $hariLibur = \App\Models\AgendaKaldik::where('jenis_agenda', 'Libur')
+            ->where('tanggal_mulai', '<=', $now->toDateString())
+            ->where('tanggal_selesai', '>=', $now->toDateString())
+            ->exists();
+
+        if ($hariLibur) return 0;
+
+        $jadwals = JadwalHarian::where('hari', $hariIni)
+            ->whereHas('guru', fn($q) => $q->where('status', 'Aktif'))
+            ->with(['guru', 'kelas', 'pelajaran'])
+            ->get();
+
+        $sentCount = 0;
+
+        foreach ($jadwals as $jadwal) {
+            $masterJam = MasterJam::where('jam_ke', $jadwal->jam_ke)->first();
+            if (!$masterJam) continue;
+
+            $jamMulai = $masterJam->jam_mulai;
+
+            if ($jamMulai <= $tigaPuluhMenitLagi && $jamMulai > $waktuSekarang) {
+                $alreadySent = LogNotifikasi::where('guru_id', $jadwal->guru_id)
+                    ->where('jadwal_id', $jadwal->id)
+                    ->whereDate('tanggal', $now->toDateString())
+                    ->exists();
+
+                if ($alreadySent) continue;
+
+                $setting = GuruNotifikasiSetting::where('guru_id', $jadwal->guru_id)->first();
+                if (!$setting || !$setting->is_enabled) continue;
+
+                $this->sendNotification($jadwal->guru, $jadwal, $setting->mode);
+
+                LogNotifikasi::create([
+                    'guru_id' => $jadwal->guru_id,
+                    'jadwal_id' => $jadwal->id,
+                    'tanggal' => $now->toDateString(),
+                    'sent_at' => $now,
+                ]);
+
+                $sentCount++;
+            }
+        }
+
+        return $sentCount;
+    }
+
+    public function sendNotification(Guru $guru, JadwalHarian $jadwal, string $mode): void
+    {
+        $subscriptions = PushSubscription::where('guru_id', $guru->id)->get();
+        if ($subscriptions->isEmpty()) return;
+
+        $jam = MasterJam::where('jam_ke', $jadwal->jam_ke)->first();
+        $waktu = $jam ? $jam->jam_mulai : '-';
+        $namaKelas = $jadwal->kelas->nama_kelas ?? '-';
+        $namaMapel = $jadwal->pelajaran->nama_pelajaran ?? '-';
+
+        $title = 'Jadwal Mengajar 30 Menit Lagi';
+        $body = "Anda mengajar {$namaMapel} di {$namaKelas} pada {$waktu}";
+
+        $payload = json_encode([
+            'title' => $title,
+            'body' => $body,
+            'mode' => $mode,
+            'icon' => '/icons/icon-192x192.png',
+            'badge' => '/icons/icon-192x192.png',
+            'tag' => "jadwal-{$jadwal->id}-{$jadwal->jam_ke}",
+            'url' => '/dashboard-guru',
+        ]);
+
+        foreach ($subscriptions as $sub) {
+            $webPushSub = Subscription::create($sub->endpoint)
+                ->withPublicKey($sub->p256dh)
+                ->withAuth($sub->auth);
+
+            $this->webPush->sendOne($webPushSub, $payload);
+        }
+    }
+
+    public function sendTestNotification(Guru $guru, string $mode): bool
+    {
+        $subscriptions = PushSubscription::where('guru_id', $guru->id)->get();
+        if ($subscriptions->isEmpty()) return false;
+
+        $payload = json_encode([
+            'title' => 'Notifikasi Test',
+            'body' => 'Notifikasi berhasil dikirim! Mode: ' . $mode,
+            'mode' => $mode,
+            'icon' => '/icons/icon-192x192.png',
+            'badge' => '/icons/icon-192x192.png',
+            'tag' => 'test-notif',
+            'url' => '/dashboard-guru',
+        ]);
+
+        $sent = false;
+        foreach ($subscriptions as $sub) {
+            $webPushSub = Subscription::create($sub->endpoint)
+                ->withPublicKey($sub->p256dh)
+                ->withAuth($sub->auth);
+
+            $result = $this->webPush->sendOne($webPushSub, $payload);
+            if ($result->isSuccess()) {
+                $sent = true;
+            } else {
+                $sub->delete();
+            }
+        }
+
+        return $sent;
+    }
+
+    public function saveSubscription(Guru $guru, array $subscription): void
+    {
+        PushSubscription::updateOrCreate(
+            ['endpoint' => $subscription['endpoint']],
+            [
+                'guru_id' => $guru->id,
+                'p256dh' => $subscription['keys']['p256dh'],
+                'auth' => $subscription['keys']['auth'],
+                'user_agent' => request()->userAgent(),
+            ]
+        );
+    }
+
+    public function removeSubscription(string $endpoint): void
+    {
+        PushSubscription::where('endpoint', $endpoint)->delete();
+    }
+}
