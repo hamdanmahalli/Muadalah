@@ -104,11 +104,12 @@ class NotificationService
         ]);
 
         foreach ($subscriptions as $sub) {
-            $webPushSub = Subscription::create($sub->endpoint)
-                ->withPublicKey($sub->p256dh)
-                ->withAuth($sub->auth);
+            $webPushSub = Subscription::create([
+                'endpoint' => $sub->endpoint,
+                'keys' => ['p256dh' => $sub->p256dh, 'auth' => $sub->auth],
+            ]);
 
-            $this->webPush->sendOne($webPushSub, $payload);
+            $this->webPush->sendOneNotification($webPushSub, $payload);
         }
     }
 
@@ -129,11 +130,12 @@ class NotificationService
 
         $sent = false;
         foreach ($subscriptions as $sub) {
-            $webPushSub = Subscription::create($sub->endpoint)
-                ->withPublicKey($sub->p256dh)
-                ->withAuth($sub->auth);
+            $webPushSub = Subscription::create([
+                'endpoint' => $sub->endpoint,
+                'keys' => ['p256dh' => $sub->p256dh, 'auth' => $sub->auth],
+            ]);
 
-            $result = $this->webPush->sendOne($webPushSub, $payload);
+            $result = $this->webPush->sendOneNotification($webPushSub, $payload);
             if ($result->isSuccess()) {
                 $sent = true;
             } else {

@@ -82,17 +82,24 @@ class NotifikasiController extends Controller
 
     public function test()
     {
-        $guru = $this->getGuru();
-        if (!$guru) return response()->json(['error' => 'Unauthorized'], 401);
+        try {
+            $guru = $this->getGuru();
+            if (!$guru) return response()->json(['error' => 'Unauthorized'], 401);
 
-        $setting = GuruNotifikasiSetting::where('guru_id', $guru->id)->first();
-        $mode = $setting?->mode ?? 'sound';
+            $setting = GuruNotifikasiSetting::where('guru_id', $guru->id)->first();
+            $mode = $setting?->mode ?? 'sound';
 
-        $sent = $this->service->sendTestNotification($guru, $mode);
+            $sent = $this->service->sendTestNotification($guru, $mode);
 
-        return response()->json([
-            'success' => $sent,
-            'message' => $sent ? 'Notifikasi test berhasil dikirim!' : 'Gagal mengirim. Pastikan notifikasi diaktifkan di browser.',
-        ]);
+            return response()->json([
+                'success' => $sent,
+                'message' => $sent ? 'Notifikasi test berhasil dikirim!' : 'Gagal mengirim. Pastikan notifikasi diaktifkan di browser.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
