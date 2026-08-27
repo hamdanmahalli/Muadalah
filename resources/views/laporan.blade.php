@@ -136,7 +136,7 @@
                                 </span>
                                 <p class="text-gray-500 mt-0.5">
                                     Cakupan: <b>@if($libur->target_libur == 'semua') Seluruh Kelas @else Kelas Tertentu @endif</b> |
-                                    Waktu: <b>@if($libur->tipe_libur == 'Penuh') Seharian Full @else Parsial @endif</b>
+                                    Waktu: <b>@if($libur->tipe_agenda == 'Penuh') Seharian Full @else Parsial @endif</b>
                                 </p>
                             </div>
                         </li>

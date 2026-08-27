@@ -16,6 +16,30 @@
             opacity: 0.1;
         }
     </style>
+
+    <style>
+        /* Desain Layar Loading (Overlay) */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none; /* Disembunyikan secara default */
+            justify-content: center; align-items: center;
+            z-index: 9999; flex-direction: column;
+        }
+        /* Animasi Putaran Berputar */
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: putar 1s linear infinite;
+        }
+        @keyframes putar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+
+    <!-- Elemen Loading yang akan muncul -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; font-weight: bold; color: #333;">Memverifikasi Akun...</p>
+    </div>
 </head>
 <body class="flex items-center justify-center min-h-screen relative overflow-hidden antialiased">
 
@@ -47,7 +71,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="/login" class="space-y-5">
+            <form method="POST" id="form-login" action="/login" class="space-y-5">
                 @csrf
                 <div>
                     <label class="block text-[11px] font-extrabold text-emerald-700 uppercase tracking-widest mb-1.5 ml-1">Username </label>
@@ -117,5 +141,28 @@
             </form>
         </div>
     </div>
+
+    <script>
+        // Bersihkan Service Worker lama sebelum login
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for (var registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        document.getElementById('form-login').addEventListener('submit', function() {
+            // 1. Munculkan animasi layar penuh
+            document.getElementById('loading-overlay').style.display = 'flex';
+            
+            // 2. Kunci tombol login agar tidak diklik dua kali
+            let btnSubmit = this.querySelector('button[type="submit"]');
+            if(btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = 'Memproses...';
+            }
+        });
+    </script>
+
 </body>
 </html>

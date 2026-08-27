@@ -169,7 +169,7 @@
                         - {{ \Carbon\Carbon::parse($libur->tanggal_selesai)->translatedFormat('d M Y') }}
                     @endif)
                     &nbsp;|&nbsp; Cakupan: <b>{{ $libur->target_libur == 'semua' ? 'Seluruh Kelas' : 'Kelas ' . $namaKelasStr }}</b>
-                    &nbsp;|&nbsp; Waktu: <b>{{ $libur->tipe_libur == 'Penuh' ? 'Seharian Full' : 'Parsial Jam Ke-'.$jamTeks }}</b>
+                    &nbsp;|&nbsp; Waktu: <b>{{ $libur->tipe_agenda == 'Penuh' ? 'Seharian Full' : 'Parsial Jam Ke-'.$jamTeks }}</b>
                 </li>
             @endforeach
         </ul>

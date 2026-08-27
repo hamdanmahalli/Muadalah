@@ -18,6 +18,7 @@ use App\Http\Controllers\AgendaKaldikController;
 use App\Http\Controllers\MasterImportController;
 use App\Http\Controllers\BatasPelajaranController;
 use App\Http\Controllers\AgendaKegiatanController;
+use App\Http\Controllers\DatabaseManagerController;
 
 
 // ==========================================================
@@ -35,7 +36,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/ganti-password', [AuthController::class, 'gantiPassword']);
 
     // GERBANG PENGALIHAN CERDAS (Titik Masuk Pertama)
-    Route::get('/dashboard-utama', [App\Http\Controllers\JadwalController::class, 'dashboard'])->name('dashboard.utama');
+    Route::get('/dashboard-utama', [JadwalController::class, 'dashboard'])->name('dashboard.utama');
 
     Route::get('/', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
@@ -117,9 +118,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/master-jadwal-harian', [JadwalHarianController::class, 'index']);
         Route::post('/master-jadwal-harian', [JadwalHarianController::class, 'store']);
         Route::delete('/master-jadwal-harian/{id}', [JadwalHarianController::class, 'destroy']);
-        Route::post('/master-jadwal-harian/drag-drop', [\App\Http\Controllers\JadwalHarianController::class, 'prosesDragDrop']);
-        Route::get('/plot-jadwal/{id}/mutasi', [\App\Http\Controllers\PlotJadwalController::class, 'formMutasi']);
-        Route::post('/plot-jadwal/{id}/mutasi', [\App\Http\Controllers\PlotJadwalController::class, 'mutasiGuru']);
+        Route::post('/master-jadwal-harian/drag-drop', [JadwalHarianController::class, 'prosesDragDrop']);
+        Route::get('/plot-jadwal/{id}/mutasi', [PlotJadwalController::class, 'formMutasi']);
+        Route::post('/plot-jadwal/{id}/mutasi', [PlotJadwalController::class, 'mutasiGuru']);
     });
 
     Route::middleware(['can:akses_hari_operasional'])->group(function () {
@@ -149,9 +150,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/manajemen-akses', [RolePermissionController::class, 'update']);
     });
 
-    Route::get('/backup-restore', [\App\Http\Controllers\DatabaseManagerController::class, 'index']);
-    Route::post('/backup-restore/export', [\App\Http\Controllers\DatabaseManagerController::class, 'exportSql']);
-    Route::post('/backup-restore/import', [\App\Http\Controllers\DatabaseManagerController::class, 'importSql']);
+    Route::get('/backup-restore', [DatabaseManagerController::class, 'index']);
+    Route::post('/backup-restore/export', [DatabaseManagerController::class, 'exportSql']);
+    Route::post('/backup-restore/import', [DatabaseManagerController::class, 'importSql']);
 
 
     // ----------------------------------------------------------
@@ -179,10 +180,10 @@ Route::middleware(['auth'])->group(function () {
         // Halaman Profil Guru
         Route::get('/profil-guru', [JadwalController::class, 'profilLengkap'])->name('guru.profil');
         // Rute untuk Menu Sistem Guru
-        Route::get('/menu', [App\Http\Controllers\JadwalController::class, 'menu'])->name('guru.menu');
+        Route::get('/menu', [JadwalController::class, 'menu'])->name('guru.menu');
         // Halaman Profil Lengkap & Edit Biodata Guru
-        Route::get('/profil', [App\Http\Controllers\JadwalController::class, 'profilLengkap'])->name('guru.profil.lengkap');
-        Route::put('/profil/update', [App\Http\Controllers\JadwalController::class, 'updateProfil'])->name('guru.profil.update');
+        Route::get('/profil', [JadwalController::class, 'profilLengkap'])->name('guru.profil.lengkap');
+        Route::put('/profil/update', [JadwalController::class, 'updateProfil'])->name('guru.profil.update');
     });
 
 }); // <--- PENUTUP BENTENG UTAMA (auth)

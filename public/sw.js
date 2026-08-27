@@ -1,27 +1,54 @@
-const CACHE_NAME = 'smart-pesantren-v1';
+const CACHE_NAME = 'smart-pesantren-v2';
 const urlsToCache = [
-    '/',
     '/manifest.json'
 ];
 
-// 1. Saat asisten (Service Worker) pertama kali dipasang di HP pengguna
+// 1. Saat Service Worker pertama kali dipasang
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Asisten berhasil menyimpan data awal');
+                console.log('SW: Cache aktif');
                 return cache.addAll(urlsToCache);
             })
     );
+    // Aktifkan SW baru tanpa menunggu tab lain ditutup
+    self.skipWaiting();
 });
 
-// 2. Saat aplikasi sedang digunakan, asisten akan membantu memuat halaman
+// 2. Hapus cache lama saat update
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(keys => {
+            return Promise.all(
+                keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+            );
+        })
+    );
+    // Ambil kontrol dari SW lama segera
+    self.clients.claim();
+});
+
+// 3. Network-first: ambil dari internet dulu, fallback ke cache jika offline
 self.addEventListener('fetch', event => {
+    // Skip non-GET requests
+    if (event.request.method !== 'GET') return;
+
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then(response => {
-                // Jika data sudah diingat asisten, berikan langsung. Jika belum, ambil dari internet.
-                return response || fetch(event.request);
+                // Simpan ke cache jika response valid
+                if (response && response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Jika offline, coba ambil dari cache
+                return caches.match(event.request);
             })
     );
 });

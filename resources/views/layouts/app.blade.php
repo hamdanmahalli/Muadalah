@@ -31,13 +31,20 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('PWA Asisten gagal dipanggil:', error);
-                    });
+                // Unregister semua SW lama dulu, lalu register baru
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) {
+                        registration.unregister();
+                    }
+                    // Register SW baru
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.log('PWA Asisten gagal dipanggil:', error);
+                        });
+                });
             });
         }
     </script>
