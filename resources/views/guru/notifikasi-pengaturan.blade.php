@@ -143,6 +143,7 @@
             <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Diagnosa Teknis</p>
                 <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Perangkat terdaftar di server</span><span id="diagServer" class="font-bold text-slate-700">{{ $deviceCount }} perangkat</span></div>
+                <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Push diterima perangkat (10 mnt)</span><span id="diagPulse" class="font-bold {{ $pulseCount > 0 ? 'text-emerald-600' : 'text-slate-700' }}">{{ $pulseCount }} kali</span></div>
                 <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Subscribsi di browser ini</span><span id="diagBrowser" class="font-bold text-slate-700">Memeriksa...</span></div>
                 <div class="flex justify-between text-xs"><span class="text-slate-500 font-medium">Service Worker aktif</span><span id="diagSW" class="font-bold text-slate-700">Memeriksa...</span></div>
             </div>

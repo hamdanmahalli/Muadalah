@@ -30,8 +30,9 @@ class NotifikasiController extends Controller
         );
 
         $deviceCount = \App\Models\PushSubscription::where('guru_id', $guru->id)->count();
+        $pulseCount = \App\Models\PushEvent::where('created_at', '>=', now()->subMinutes(10))->count();
 
-        return view('guru.notifikasi-pengaturan', compact('guru', 'setting', 'deviceCount'));
+        return view('guru.notifikasi-pengaturan', compact('guru', 'setting', 'deviceCount', 'pulseCount'));
     }
 
     public function simpan(Request $request)
@@ -113,12 +114,25 @@ class NotifikasiController extends Controller
 
     public function pulse(Request $request)
     {
+        $tag = $request->input('tag', '-');
+        $title = $request->input('title', '-');
+
         \Illuminate\Support\Facades\Log::info('PUSH-PULSE: push sampai di perangkat', [
-            'tag' => $request->input('tag', '-'),
-            'title' => $request->input('title', '-'),
+            'tag' => $tag,
+            'title' => $title,
             'waktu' => now()->toDateTimeString(),
             'agent' => $request->userAgent(),
         ]);
+
+        try {
+            \App\Models\PushEvent::create([
+                'tag' => $tag,
+                'title' => $title,
+                'user_agent' => substr((string) $request->userAgent(), 0, 255),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('PUSH-PULSE gagal simpan: ' . $e->getMessage());
+        }
 
         return response()->json(['success' => true]);
     }
