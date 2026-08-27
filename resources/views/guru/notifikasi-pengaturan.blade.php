@@ -63,13 +63,14 @@
                     </div>
                     <div>
                         <p class="text-sm font-bold text-slate-800">Aktifkan Notifikasi</p>
-                        <p class="text-xs text-slate-400 mt-0.5">Pengingat 30 menit sebelum mengajar</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Pengingat sebelum mengajar</p>
                     </div>
                 </div>
                 <form id="toggleForm" action="/notifikasi/simpan" method="POST">
                     @csrf
                     <input type="hidden" name="is_enabled" id="isEnabledInput" value="{{ $setting->is_enabled ? '1' : '0' }}">
                     <input type="hidden" name="mode" id="modeInput" value="{{ $setting->mode }}">
+                    <input type="hidden" name="reminder_minutes" id="reminderInput" value="{{ $setting->reminder_minutes ?? 30 }}">
                     <div id="toggleBtn" class="notif-toggle {{ $setting->is_enabled ? 'active' : '' }}" onclick="toggleNotif()"></div>
                 </form>
             </div>
@@ -106,6 +107,18 @@
                     </div>
                     @if($setting->mode === 'silent')<i class="fas fa-check-circle text-emerald-500 ml-auto"></i>@endif
                 </div>
+            </div>
+
+            <!-- Pilihan Waktu Pengingat -->
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 mt-5">Waktu Pengingat</p>
+            <div class="flex gap-2 mb-5">
+                @php $current = $setting->reminder_minutes ?? 30; @endphp
+                @foreach([10 => '10m', 15 => '15m', 30 => '30m', 45 => '45m', 60 => '1j'] as $val => $label)
+                <button type="button" onclick="selectReminder({{ $val }}, this)"
+                    class="reminder-btn flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all {{ $current == $val ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-200' : 'bg-white border-slate-200 text-slate-500' }}">
+                    {{ $label }}
+                </button>
+                @endforeach
             </div>
 
             <!-- Tombol Test -->
@@ -169,6 +182,15 @@ function selectMode(mode, el) {
     check.className = 'fas fa-check-circle text-emerald-500 ml-auto';
     el.appendChild(check);
 
+    document.getElementById('toggleForm').submit();
+}
+
+function selectReminder(minutes, el) {
+    document.getElementById('reminderInput').value = minutes;
+    document.querySelectorAll('.reminder-btn').forEach(b => {
+        b.className = 'reminder-btn flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all bg-white border-slate-200 text-slate-500';
+    });
+    el.className = 'reminder-btn flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-200';
     document.getElementById('toggleForm').submit();
 }
 

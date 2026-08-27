@@ -32,7 +32,6 @@ class NotificationService
         $now = Carbon::now();
         $hariIni = map_hari($now->isoFormat('dddd'));
         $waktuSekarang = $now->format('H:i:s');
-        $tigaPuluhMenitLagi = $now->copy()->addMinutes(30)->format('H:i:s');
         $hariLibur = \App\Models\AgendaKaldik::where('jenis_agenda', 'Libur')
             ->where('tanggal_mulai', '<=', $now->toDateString())
             ->where('tanggal_selesai', '>=', $now->toDateString())
@@ -51,18 +50,19 @@ class NotificationService
             $masterJam = MasterJam::where('jam_ke', $jadwal->jam_ke)->first();
             if (!$masterJam) continue;
 
-            $jamMulai = $masterJam->jam_mulai;
+            $setting = GuruNotifikasiSetting::where('guru_id', $jadwal->guru_id)->first();
+            if (!$setting || !$setting->is_enabled) continue;
 
-            if ($jamMulai <= $tigaPuluhMenitLagi && $jamMulai > $waktuSekarang) {
+            $jamMulai = $masterJam->jam_mulai;
+            $waktuAkhir = $now->copy()->addMinutes($setting->reminder_minutes)->format('H:i:s');
+
+            if ($jamMulai <= $waktuAkhir && $jamMulai > $waktuSekarang) {
                 $alreadySent = LogNotifikasi::where('guru_id', $jadwal->guru_id)
                     ->where('jadwal_id', $jadwal->id)
                     ->whereDate('tanggal', $now->toDateString())
                     ->exists();
 
                 if ($alreadySent) continue;
-
-                $setting = GuruNotifikasiSetting::where('guru_id', $jadwal->guru_id)->first();
-                if (!$setting || !$setting->is_enabled) continue;
 
                 $this->sendNotification($jadwal->guru, $jadwal, $setting->mode);
 

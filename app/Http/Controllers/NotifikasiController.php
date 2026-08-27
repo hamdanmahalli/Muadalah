@@ -40,6 +40,7 @@ class NotifikasiController extends Controller
         $request->validate([
             'is_enabled' => 'required|boolean',
             'mode' => 'required|in:sound,vibrate,silent',
+            'reminder_minutes' => 'required|integer|in:10,15,30,45,60',
         ]);
 
         GuruNotifikasiSetting::updateOrCreate(
@@ -47,6 +48,7 @@ class NotifikasiController extends Controller
             [
                 'is_enabled' => $request->boolean('is_enabled'),
                 'mode' => $request->mode,
+                'reminder_minutes' => $request->reminder_minutes,
             ]
         );
 
