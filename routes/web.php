@@ -193,7 +193,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/notifikasi/unsubscribe', [NotifikasiController::class, 'unsubscribe']);
         Route::post('/notifikasi/test', [NotifikasiController::class, 'test']);
         Route::post('/notifikasi/test-pulse', [NotifikasiController::class, 'testPulse']);
-        Route::get('/notifikasi/cek-terbaru', [NotifikasiController::class, 'cekTerbaru']);
     });
 
 }); // <--- PENUTUP BENTENG UTAMA (auth)

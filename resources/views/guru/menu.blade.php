@@ -73,20 +73,6 @@
                 <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
             </a>
 
-            <!-- MENU DEMO TEST (DIHAPUS SETELAH SELESAI UJI) -->
-            <button onclick="kirimDemoTest(this)" id="btn-demo-notif" class="w-full flex items-center justify-between bg-gradient-to-r from-purple-50 to-fuchsia-50 p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(168,85,247,0.1)] border border-purple-200 hover:border-purple-300 group">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center text-white group-hover:bg-purple-600 transition-colors">
-                        <i class="fas fa-paper-plane text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="text-sm font-bold text-slate-700">Kirim Notifikasi Demo</span>
-                        <p class="text-[10px] font-medium text-purple-500 mt-0.5">Uji coba di luar jam sekolah</p>
-                    </div>
-                </div>
-                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-            </button>
-
             <!-- MENU: Hapus Cache & Muat Ulang -->
             <button onclick="hapusCacheReload(this)" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-sky-200 group">
                 <div class="flex items-center space-x-4">
@@ -260,40 +246,6 @@
         el.style.transform = 'translateY(0)';
         clearTimeout(el._t);
         el._t = setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(12px)'; }, 4000);
-    }
-
-    // DEMO TEST NOTIFIKASI (DIHAPUS SETELAH SELESAI UJI)
-    function kirimDemoTest(btn) {
-        const asli = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-lg"></i> Mengirim...';
-        fetch('/notifikasi/test', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(r => r.json())
-        .then(data => {
-            let pesan = data.message || 'Notifikasi demo berhasil dikirim!';
-            if (data.detail && data.detail.length) {
-                const ringkasan = data.detail.map(d => d.host + '=HTTP' + (d.status_code || '-')).join(', ');
-                pesan += ' [' + ringkasan + ']';
-            }
-            if (data.success) {
-                tampilToast('success', pesan);
-            } else {
-                tampilToast('error', pesan);
-            }
-        })
-        .catch(err => {
-            tampilToast('error', 'Gagal mengirim. Periksa koneksi.');
-        })
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerHTML = asli;
-        });
     }
 
     // HAPUS CACHE & MUAT ULANG

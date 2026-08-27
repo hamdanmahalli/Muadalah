@@ -30,6 +30,10 @@ class NotificationService
 
     public function checkAndSendNotifications(): int
     {
+        // PENGINGAT DINONAKTIFKAN SEMENTARA (sampai versi APK).
+        // Aktifkan kembali dengan set NOTIFIKASI_AKTIF=true di .env lalu clear cache.
+        if (!filter_var(env('NOTIFIKASI_AKTIF', false), FILTER_VALIDATE_BOOLEAN)) return 0;
+
         $now = Carbon::now();
         $hariIni = map_hari($now->isoFormat('dddd'));
         $waktuSekarang = $now->format('H:i:s');

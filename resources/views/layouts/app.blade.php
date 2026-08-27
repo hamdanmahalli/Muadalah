@@ -561,63 +561,6 @@
             setState();
         })();
 
-        @if(auth()->check() && auth()->user()->hasAnyRole(['Guru', 'Dewan Guru']))
-        // PENGINGAT REAL-TIME (POLLING): jalur cadangan tanpa FCM — jalan saat app terbuka.
-        // Server menandai jadwal "sudah waktunya" lewat /notifikasi/cek-terbaru.
-        (function() {
-            if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-            if (Notification.permission !== 'granted') return;
-
-            var STORAGE_KEY = 'nd_shown_v1';
-            function ambilTersimpan() {
-                try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-                catch(e) { return []; }
-            }
-            function simpanTersimpan(arr) {
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(-200))); }
-                catch(e) {}
-            }
-            function sudahDitampilkan(tag) { return ambilTersimpan().indexOf(tag) !== -1; }
-            function tandaiDitampilkan(tag) {
-                var arr = ambilTersimpan();
-                if (arr.indexOf(tag) === -1) arr.push(tag);
-                simpanTersimpan(arr);
-            }
-
-            function tampilkan(item) {
-                if (!item || sudahDitampilkan(item.tag)) return;
-                var silentMode = item.mode === 'silent';
-                navigator.serviceWorker.ready.then(function(reg) {
-                    return reg.showNotification(item.title || 'Pengingat Mengajar', {
-                        body: item.body || '',
-                        icon: item.icon || '/icons/icon-192x192.png',
-                        badge: item.badge || '/icons/icon-192x192.png',
-                        tag: item.tag,
-                        renotify: true,
-                        vibrate: silentMode ? [] : [200, 100, 200],
-                        silent: silentMode,
-                        data: { url: item.url || '/dashboard-guru' },
-                    });
-                }).then(function() {
-                    tandaiDitampilkan(item.tag);
-                }).catch(function() {});
-            }
-
-            function cekPengingat() {
-                if (!navigator.onLine) return;
-                fetch('/notifikasi/cek-terbaru', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        (data.items || []).forEach(tampilkan);
-                    })
-                    .catch(function() {});
-            }
-
-            cekPengingat();
-            setInterval(cekPengingat, 45000);
-        })();
-        @endif
-
     </script>
 
     @stack('scripts')
