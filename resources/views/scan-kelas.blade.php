@@ -2,6 +2,10 @@
 @section('title', 'Scan Kehadiran Kelas - SmartPesantren')
 
 @section('content')
+@push('styles')
+    {{-- Turbo: jangan simpan snapshot halaman kamera (hindari scanner macet saat Back/Forward) --}}
+    <meta name="turbo-cache-control" content="no-cache">
+@endpush
 <style>
     header, aside { display: none !important; }
     main { padding: 0 !important; background-color: #f8fafc !important; overflow: hidden !important; }
@@ -35,7 +39,7 @@
     }
 </style>
 
-<div class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
+<div data-turbo="true" class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
     
     <!-- HEADER STICKY (Kembali ke Halaman Sebelumnya Secara Dinamis) -->
     <div class="shrink-0 bg-white border-b border-slate-100 px-4 py-4 flex items-center shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-20">
@@ -123,7 +127,7 @@
 <!-- Library Html5Qrcode -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    (function() {
         const pesanArea = document.getElementById('pesan-area');
         const pesanTeks = document.getElementById('pesan-teks');
         let isProcessing = false;
@@ -326,6 +330,19 @@
             console.error("Gagal mengakses kamera:", err);
             tampilkanPesan('Gagal mengakses kamera. Pastikan izin kamera diaktifkan di browser Anda.', 'bg-rose-50 text-rose-700 border border-rose-200');
         });
-    });
+
+        // Ekspos instance untuk dibersihkan saat meninggalkan halaman (navigasi Turbo / SPA)
+        window.__html5QrEl = html5QrCode;
+        function hentikanKamera() {
+            try {
+                if (window.__html5QrEl && typeof window.__html5QrEl.stop === 'function') {
+                    window.__html5QrEl.stop().catch(function() {});
+                }
+            } catch (err) {}
+            window.__html5QrEl = null;
+        }
+        document.addEventListener('turbo:before-visit', hentikanKamera);
+        window.addEventListener('pagehide', hentikanKamera);
+    })();
 </script>
 @endsection

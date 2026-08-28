@@ -15,7 +15,7 @@
     }
 </style>
 
-<div class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
+<div data-turbo="true" class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
     
     <div class="absolute top-0 w-full h-[45%] bg-gradient-to-br from-emerald-600 to-teal-800 rounded-b-[40px] shadow-lg z-0"></div>
     <div class="absolute -top-20 -right-20 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl z-0"></div>
@@ -125,7 +125,8 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    (function() {
+        // Berjalan baik pada muat penuh maupun saat Turbo menukar konten (script dieksekusi ulang)
         const carousel = document.getElementById('jadwal-carousel');
         const dots = document.querySelectorAll('.dot-indicator');
 
@@ -144,6 +145,6 @@
                 });
             });
         }
-    });
+    })();
 </script>
 @endsection

@@ -10,7 +10,7 @@
     @supports (padding-bottom: env(safe-area-inset-bottom)) { .pb-safe { padding-bottom: env(safe-area-inset-bottom); } }
 </style>
 
-<div class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
+<div data-turbo="true" class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
     
     <!-- HEADER STICKY (Dengan Tombol Kembali) -->
     <div class="shrink-0 bg-white border-b border-slate-100 px-4 py-4 flex items-center shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-20">
@@ -124,7 +124,7 @@
 
     <!-- TOMBOL SIMPAN MELAYANG (FLOATING ACTION BUTTON) -->
     <div class="absolute bottom-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-5 py-4 pb-safe">
-        <button type="button" onclick="document.getElementById('form-profil').submit()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] text-white font-black text-sm py-3.5 rounded-2xl transition-all shadow-[0_8px_20px_rgba(16,185,129,0.3)] flex items-center justify-center group">
+        <button type="submit" form="form-profil" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] text-white font-black text-sm py-3.5 rounded-2xl transition-all shadow-[0_8px_20px_rgba(16,185,129,0.3)] flex items-center justify-center group">
             <i class="fas fa-save mr-2.5 text-lg group-hover:scale-110 transition-transform"></i> Simpan Perubahan Biodata
         </button>
     </div>

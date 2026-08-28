@@ -13,6 +13,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Turbo Drive: navigasi AJAX anti-kedip antar halaman (scope di halaman guru via data-turbo) -->
+    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8/dist/turbo.es2017-umd.js" data-turbo-eval="false"></script>
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -80,7 +83,7 @@
     </script>
     <!-- ============================================= -->
 </head>
-        <body class="bg-gray-50 flex h-screen overflow-hidden text-sm antialiased">
+        <body data-turbo="false" class="bg-gray-50 flex h-screen overflow-hidden text-sm antialiased">
 
             <!-- OFFLINE BANNER -->
             <div id="offline-banner" class="bg-gradient-to-r from-amber-500 to-red-500 text-white shadow-lg shadow-red-300/40">
@@ -406,8 +409,12 @@
                 clockElement.innerText = hours + ':' + minutes + ':' + seconds;
             }
         }
-        setInterval(updateClock, 1000);
         updateClock();
+        // GUARD TURBO: <body> ditukar saat navigasi SPA, mencegah timer jam menumpuk
+        if (!window.__shellClockGuard) {
+            window.__shellClockGuard = 1;
+            setInterval(updateClock, 1000);
+        }
 
         // TOGGLE SIDEBAR MOBILE
         function toggleSidebar() {
