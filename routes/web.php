@@ -67,6 +67,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/agenda-kegiatan/{id}/proyektor', [AgendaKegiatanController::class, 'proyektor']);
     Route::get('/agenda-kegiatan/{id}/laporan', [AgendaKegiatanController::class, 'laporan']);
     Route::post('/agenda-kegiatan/{id}/manual', [AgendaKegiatanController::class, 'hadirManual']);
+    Route::get('/agenda-kegiatan/{id}/scan-qr', [AgendaKegiatanController::class, 'scanQR']);
+    Route::post('/agenda-kegiatan/{id}/scan-proses-guru', [AgendaKegiatanController::class, 'prosesScanQR']);
     Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetakPdf']);
     Route::get('/api/agenda-kegiatan/{id}/realtime', [AgendaKegiatanController::class, 'getKehadiranRealtime']);
     

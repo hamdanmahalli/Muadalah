@@ -89,6 +89,42 @@
         #offline-banner .offline-sub {
             margin: 2px 0 0; font-size: 12px; font-weight: 600; color: #10b981;
         }
+
+        /* NOTIFIKASI REUSABLE: kartu atas, auto-hilang, tema emerald */
+        #notif-stack {
+            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+            z-index: 210; width: min(92%, 360px);
+            display: flex; flex-direction: column; gap: 8px;
+            pointer-events: none;
+        }
+        .notif-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            animation: notif-in 0.3s ease both;
+            pointer-events: auto;
+        }
+        .notif-item.hide { animation: notif-out 0.3s ease both; }
+        .notif-item .notif-ikon {
+            width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
+        }
+        .notif-item .notif-teks { line-height: 1.2; min-width: 0; }
+        .notif-item .notif-judul { margin: 0; font-size: 14px; font-weight: 800; color: #0f172a; }
+        .notif-item .notif-sub { margin: 2px 0 0; font-size: 11px; font-weight: 600; color: #64748b; }
+        /* Varian warna */
+        .notif-item.success .notif-ikon { background: rgba(16,185,129,0.14); color: #059669; }
+        .notif-item.error .notif-ikon { background: rgba(244,63,94,0.14); color: #e11d48; }
+        .notif-item.info .notif-ikon { background: rgba(99,102,241,0.14); color: #4f46e5; }
+        .notif-item.success { border: 1px solid rgba(16,185,129,0.2); }
+        .notif-item.error { border: 1px solid rgba(244,63,94,0.2); }
+        .notif-item.info { border: 1px solid rgba(99,102,241,0.2); }
+        @keyframes notif-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes notif-out { to { opacity: 0; transform: translateY(-14px); } }
     </style>
     
     @stack('styles')
@@ -126,6 +162,9 @@
                     <p class="offline-sub">Data tidak bisa diperbarui</p>
                 </div>
             </div>
+
+            <!-- NOTIFIKASI REUSABLE (atas, auto-hilang) -->
+            <div id="notif-stack" role="status" aria-live="polite"></div>
 
             <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
                 <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
@@ -668,6 +707,33 @@
             if (event && event.stopPropagation) event.stopPropagation();
             tampilToastOffline(pesan || 'Fitur memerlukan koneksi internet');
             return false;
+        };
+
+        // =====================================================
+        // NOTIFIKASI REUSABLE (atas, auto-hilang)
+        //   tampilNotif('success'|'error'|'info', judul, sub)
+        // =====================================================
+        window.tampilNotif = function(tipe, judul, sub) {
+            var stack = document.getElementById('notif-stack');
+            if (!stack) return;
+
+            var ikonMap = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            var item = document.createElement('div');
+            item.className = 'notif-item ' + (tipe || 'info');
+            item.innerHTML =
+                '<div class="notif-ikon"><i class="fas ' + (ikonMap[tipe] || ikonMap.info) + '"></i></div>' +
+                '<div class="notif-teks">' +
+                    '<p class="notif-judul"></p>' +
+                    '<p class="notif-sub"></p>' +
+                '</div>';
+            item.querySelector('.notif-judul').textContent = judul || '';
+            item.querySelector('.notif-sub').textContent = sub || '';
+            stack.appendChild(item);
+
+            setTimeout(function() {
+                item.classList.add('hide');
+                setTimeout(function() { item.remove(); }, 320);
+            }, 2600);
         };
 
         function isMutationMethod(method) {

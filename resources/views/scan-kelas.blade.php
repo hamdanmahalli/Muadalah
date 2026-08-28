@@ -42,24 +42,37 @@
 <div data-turbo="true" class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
     
     <!-- HEADER STICKY (Kembali ke Halaman Sebelumnya Secara Dinamis) -->
-    <div class="shrink-0 bg-white border-b border-slate-100 px-4 py-4 flex items-center shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-20">
-        <a href="javascript:history.back()" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-slate-100 hover:text-emerald-600 active:scale-95 transition-all">
-            <i class="fas fa-arrow-left"></i>
-        </a>
-        <div class="flex-1 px-4">
-            <h2 class="text-base font-black text-slate-800 tracking-tight">Scan Barcode Kelas</h2>
-            <p class="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Arahkan kamera ke QR Code</p>
+    <div class="shrink-0 bg-white border-b border-slate-100 px-4 pt-4 pb-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-20">
+        <div class="flex items-center">
+            <a href="javascript:history.back()" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-slate-100 hover:text-emerald-600 active:scale-95 transition-all">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex-1 px-4">
+                <h2 class="text-base font-black text-slate-800 tracking-tight">Scan Barcode Kelas</h2>
+                <p class="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Kehadiran & QR Pribadi</p>
+            </div>
+        </div>
+
+        <!-- TAB: Scan QR | QR Code -->
+        <div class="flex mt-3 gap-1 bg-slate-100 p-1 rounded-2xl">
+            <button type="button" onclick="pindahTab('scan')" id="tab-scan"
+                class="w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all
+                       text-emerald-700 bg-white shadow-sm">
+                <i class="fas fa-qrcode"></i> Scan QR
+            </button>
+            <button type="button" onclick="pindahTab('qr')" id="tab-qr"
+                class="w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all
+                       text-slate-400">
+                <i class="fas fa-user-tag"></i> QR Code
+            </button>
         </div>
     </div>
 
     <!-- AREA KONTEN UTAMA -->
     <div class="flex-1 overflow-y-auto bg-slate-50 relative z-10 p-5 scrollbar-none flex flex-col justify-center items-center">
         
-        <!-- KOTAK NOTIFIKASI -->
-        <div id="pesan-area" class="hidden w-full mb-4 p-4 rounded-2xl text-center font-bold text-sm shadow-sm transition-all animate-[sweep_0.3s_ease-in-out]">
-            <span id="pesan-teks"></span>
-        </div>
-
+        <!-- ============ PANEL 1: SCAN QR (KAMERA) ============ -->
+        <div id="panel-scan" class="w-full">
         <!-- FRAME KAMERA ELEGAN (Sancod Builder Premium UI) -->
         <div class="w-full bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative flex flex-col items-center overflow-hidden transition-all duration-300" id="kamera-card">
             
@@ -101,6 +114,35 @@
                 Pastikan posisi QR Code berada di dalam kotak bingkai.
             </p>
         </div>
+        </div><!-- /panel-scan -->
+
+        <!-- ============ PANEL 2: QR CODE PRIBADI GURU ============ -->
+        <div id="panel-qr" class="hidden w-full">
+            <div class="w-full bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center">
+                <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 mb-4">
+                    <i class="fas fa-user-tag text-[10px] mr-1.5"></i> QR Pribadi Guru
+                </span>
+
+                @if($guru && $qrPribadi)
+                <div class="w-[210px] h-[210px] bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-center p-2 shadow-inner">
+                    <img src="data:image/svg+xml,{{ $qrPribadi }}" alt="QR Pribadi {{ $guru->nama_guru }}" class="w-full h-full object-contain rounded-lg">
+                </div>
+                <div class="text-center mt-4">
+                    <p class="text-base font-black text-slate-800">{{ $guru->nama_guru }}</p>
+                    <p class="text-xs font-bold text-emerald-600">NIG: {{ $guru->nig }}</p>
+                </div>
+                <p class="text-[11px] font-medium text-slate-400 text-center mt-4 leading-relaxed">
+                    Tunjukkan QR ini kepada TU saat absen kegiatan.<br>
+                    TU akan memindainya sebagai bukti kehadiran Anda.
+                </p>
+                @else
+                <div class="w-[210px] h-[210px] rounded-2xl bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center">
+                    <i class="fas fa-user-slash text-4xl text-slate-300"></i>
+                </div>
+                <p class="text-sm font-bold text-slate-500 mt-4 text-center">Profil guru tidak ditemukan.<br>Hubungi admin untuk data akun Anda.</p>
+                @endif
+            </div>
+        </div><!-- /panel-qr -->
 
     </div>
 
@@ -128,16 +170,8 @@
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
     (function() {
-        const pesanArea = document.getElementById('pesan-area');
-        const pesanTeks = document.getElementById('pesan-teks');
         let isProcessing = false;
         let html5QrCode;
-
-        function tampilkanPesan(teks, bgClass, textClass) {
-            pesanArea.className = `w-full mb-4 p-4 rounded-2xl text-center font-bold text-sm shadow-sm ${bgClass} ${textClass}`;
-            pesanTeks.innerHTML = teks;
-            pesanArea.classList.remove('hidden');
-        }
 
         let jadwalIdsPiketSementara = []; // Memori sementara untuk menyimpan ID
 
@@ -224,19 +258,10 @@
             
             // 0. Saat offline tidak bisa mengirimkan kehadiran
             if (typeof wajibOnline === 'function' && !wajibOnline(null, 'Scan Hadir memerlukan koneksi internet')) {
-                setKameraUI('error', 'Anda sedang offline. Sambungkan internet untuk scan kehadiran.');
-                setTimeout(() => {
-                    setKameraUI('reset');
-                    isProcessing = false;
-                }, 3000);
+                if (typeof tampilNotif === 'function') tampilNotif('error', 'Mode Offline', 'Scan kehadiran butuh internet.');
+                setTimeout(() => { isProcessing = false; }, 2000);
                 return;
             }
-            
-            // 1. Matikan kamera secara visual, munculkan animasi memproses
-            setKameraUI('processing');
-            
-            // Hapus pesanArea karena fungsinya sudah digantikan oleh Overlay Kamera
-            if(pesanArea) pesanArea.classList.add('hidden');
 
             fetch('/scan-proses', {
                 method: 'POST',
@@ -250,40 +275,29 @@
             .then(data => {
                 if (data.status === 'success') {
                     // Skenario Normal (Jadwal Sendiri)
-                    setKameraUI('success', data.pesan);
+                    if (typeof tampilNotif === 'function') tampilNotif('success', 'Hadir Tercatat', data.pesan);
                     if (navigator.vibrate) navigator.vibrate(200);
-                    
-                    setTimeout(() => {
-                        setKameraUI('reset');
-                        isProcessing = false;
-                    }, 3500);
+                    isProcessing = false;
                 } 
                 else if (data.status === 'confirm_piket') {
                     // Skenario Inval (Jadwal Orang Lain)
                     setKameraUI('piket');
                     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                    
                     document.getElementById('teks-konfirmasi-piket').innerHTML = data.pesan;
                     jadwalIdsPiketSementara = data.data.jadwal_ids;
                     document.getElementById('modal-piket').classList.remove('hidden');
+                    isProcessing = false;
                 }
                 else {
                     // Skenario Error
-                    setKameraUI('error', data.pesan);
+                    if (typeof tampilNotif === 'function') tampilNotif('error', 'Gagal', data.pesan);
                     if (navigator.vibrate) navigator.vibrate([300]);
-                    
-                    setTimeout(() => { 
-                        setKameraUI('reset');
-                        isProcessing = false; 
-                    }, 4000);
+                    isProcessing = false;
                 }
             })
             .catch(error => {
-                setKameraUI('error', 'Gagal terhubung ke server.');
-                setTimeout(() => { 
-                    setKameraUI('reset');
-                    isProcessing = false; 
-                }, 3000);
+                if (typeof tampilNotif === 'function') tampilNotif('error', 'Gagal', 'Gagal terhubung ke server.');
+                isProcessing = false;
             });
         }
 
@@ -314,43 +328,74 @@
                 btnLanjut.innerHTML = 'Ya, Saya Inval';
                 btnLanjut.disabled = false;
                 
-                // Ubah overlay jadi sukses warna hijau
-                setKameraUI('success', data.pesan);
+                if (typeof tampilNotif === 'function') tampilNotif('success', 'Hadir Tercatat', data.pesan);
                 if (navigator.vibrate) navigator.vibrate(200);
-
-                setTimeout(() => {
-                    setKameraUI('reset');
-                    isProcessing = false;
-                }, 4000);
+                isProcessing = false;
             });
         }
 
         html5QrCode = new Html5Qrcode("reader");
-        
+        window.__html5QrEl = html5QrCode;
+        let kameraBerjalan = false;
+
         const config = { 
             fps: 10, 
             qrbox: { width: 180, height: 180 } 
         };
 
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            onScanSuccess
-        ).catch(err => {
-            console.error("Gagal mengakses kamera:", err);
-            tampilkanPesan('Gagal mengakses kamera. Pastikan izin kamera diaktifkan di browser Anda.', 'bg-rose-50 text-rose-700 border border-rose-200');
-        });
+        // Nyalakan kamera (hanya jika belum jalan)
+        function mulaiKamera() {
+            if (kameraBerjalan) return;
+            if (!html5QrCode) return;
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                config, 
+                onScanSuccess
+            ).then(function() {
+                kameraBerjalan = true;
+            }).catch(function(err) {
+                console.error("Gagal mengakses kamera:", err);
+                if (typeof tampilNotif === 'function') tampilNotif('error', 'Kamera', 'Gagal mengakses kamera. Aktifkan izin kamera di browser.');
+            });
+        }
 
-        // Ekspos instance untuk dibersihkan saat meninggalkan halaman (navigasi Turbo / SPA)
-        window.__html5QrEl = html5QrCode;
+        // Matikan kamera (saat pindah tab / keluar halaman)
         function hentikanKamera() {
+            if (!kameraBerjalan) return;
+            kameraBerjalan = false;
             try {
-                if (window.__html5QrEl && typeof window.__html5QrEl.stop === 'function') {
-                    window.__html5QrEl.stop().catch(function() {});
+                if (html5QrCode && typeof html5QrCode.stop === 'function') {
+                    html5QrCode.stop().catch(function() {});
                 }
             } catch (err) {}
-            window.__html5QrEl = null;
         }
+
+        // Fungsi pindah tab (dipanggil dari tombol tab)
+        window.pindahTab = function(nama) {
+            const panelScan = document.getElementById('panel-scan');
+            const panelQr = document.getElementById('panel-qr');
+            const tabScan = document.getElementById('tab-scan');
+            const tabQr = document.getElementById('tab-qr');
+
+            if (nama === 'scan') {
+                panelScan.classList.remove('hidden');
+                panelQr.classList.add('hidden');
+                tabScan.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-emerald-700 bg-white shadow-sm";
+                tabQr.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-slate-400";
+                mulaiKamera();
+            } else {
+                panelQr.classList.remove('hidden');
+                panelScan.classList.add('hidden');
+                tabQr.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-emerald-700 bg-white shadow-sm";
+                tabScan.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-slate-400";
+                hentikanKamera();
+            }
+        };
+
+        // Mulai di tab Scan QR (kamera dinyalakan)
+        mulaiKamera();
+
+        // Bersihkan kamera saat meninggalkan halaman (navigasi Turbo / SPA)
         document.addEventListener('turbo:before-visit', hentikanKamera);
         window.addEventListener('pagehide', hentikanKamera);
     })();

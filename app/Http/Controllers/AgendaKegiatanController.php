@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AgendaKegiatan;
 use App\Models\Periode;
+use App\Models\Guru;
+use App\Models\KehadiranKegiatan;
 
 class AgendaKegiatanController extends Controller
 {
@@ -186,5 +188,73 @@ class AgendaKegiatanController extends Controller
             'data_hadir' => $dataHadir,
             'data_belum' => $dataBelumHadir
         ]);
+    }
+
+    // ==========================================================
+    // 4. FUNGSI: Halaman Kamera TU untuk Memindai QR Guru
+    //    (Guru tanpa internet -> TU pindai QR pribadi guru)
+    // ==========================================================
+    public function scanQR($id)
+    {
+        $agenda = AgendaKegiatan::findOrFail($id);
+        return view('admin.agenda-scan-guru', compact('agenda'));
+    }
+
+    // ==========================================================
+    // 5. FUNGSI: Memproses Hasil Pindai QR Guru (GURU-<NIG>)
+    // ==========================================================
+    public function prosesScanQR(Request $request, $id)
+    {
+        try {
+            $agenda = AgendaKegiatan::findOrFail($id);
+
+            if (!$agenda->is_open) {
+                return response()->json(['status' => 'error', 'pesan' => 'Absensi untuk kegiatan ini sudah ditutup oleh TU.']);
+            }
+
+            $qr_data = $request->qr_data;
+
+            // QR guru berformat GURU-<NIG>
+            if (strpos($qr_data, 'GURU-') !== 0) {
+                return response()->json(['status' => 'error', 'pesan' => 'QR tidak dikenali! Pindai QR Code pribadi guru.']);
+            }
+
+            $nig = substr($qr_data, 5);
+            if ($nig === '') {
+                return response()->json(['status' => 'error', 'pesan' => 'QR guru tidak valid (NIG kosong).']);
+            }
+
+            $guru = Guru::where('nig', $nig)->first();
+            if (!$guru) {
+                return response()->json(['status' => 'error', 'pesan' => 'Guru dengan NIG ' . $nig . ' tidak ditemukan.']);
+            }
+
+            // Catat kehadiran kegiatan (anti double-scan)
+            $kehadiran = KehadiranKegiatan::firstOrNew([
+                'agenda_kegiatan_id' => $agenda->id,
+                'guru_id' => $guru->id,
+            ]);
+
+            if ($kehadiran->exists) {
+                return response()->json([
+                    'status' => 'info',
+                    'pesan' => $guru->nama_guru . ' sudah tercatat hadir sebelumnya.'
+                ]);
+            }
+
+            $kehadiran->waktu_hadir = now();
+            $kehadiran->metode = 'Scan QR Guru';
+            $kehadiran->status = 'Hadir';
+            $kehadiran->keterangan = null;
+            $kehadiran->save();
+
+            return response()->json([
+                'status' => 'success',
+                'pesan' => $guru->nama_guru . ' (NIG ' . $guru->nig . ') tercatat hadir di ' . $agenda->nama_kegiatan . '!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'pesan' => 'Kesalahan sistem: ' . $e->getMessage()]);
+        }
     }
 }

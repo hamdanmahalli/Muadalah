@@ -8,13 +8,25 @@ use App\Models\Kelas;
 use App\Models\JadwalHarian;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ScanController extends Controller
 {
-    // Membuka halaman kamera di HP Guru
+    // Membuka halaman kamera di HP Guru (dengan tab QR Code pribadi guru)
     public function index()
     {
-        return view('scan-kelas');
+        $user = auth()->user();
+        $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $qrPribadi = null;
+
+        if ($guru) {
+            // Format QR identitas guru: GURU-<NIG> (untuk dipindai TU saat absen kegiatan)
+            // Pakai format SVG (tidak butuh ekstensi imagick), dikirim sebagai data URI
+            $isiQR = 'GURU-' . $guru->nig;
+            $qrPribadi = rawurlencode((string) QrCode::format('svg')->size(320)->margin(2)->generate($isiQR));
+        }
+
+        return view('scan-kelas', compact('guru', 'qrPribadi'));
     }
 
     // Mesin pemroses saat kamera berhasil membaca QR Code

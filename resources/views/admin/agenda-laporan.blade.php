@@ -17,12 +17,18 @@
         </div>
     </div>
     
-    <!-- TOMBOL CETAK PDF -->
-    <a href="/agenda-kegiatan/{{ $agenda->id }}/pdf" target="_blank" class="inline-flex items-center justify-center px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white border border-rose-200 hover:border-rose-500 font-bold text-sm rounded-xl transition-all shadow-sm">
-        <i class="fas fa-file-pdf mr-2"></i> Cetak PDF Laporan
-    </a>
-</div>
+    <div class="flex items-center gap-3">
+        <!-- TOMBOL SCAN QR GURU -->
+        <a href="/agenda-kegiatan/{{ $agenda->id }}/scan-qr" class="inline-flex items-center justify-center px-5 py-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-200 hover:border-emerald-500 font-bold text-sm rounded-xl transition-all shadow-sm">
+            <i class="fas fa-qrcode mr-2"></i> Scan QR Guru
+        </a>
 
+        <!-- TOMBOL CETAK PDF -->
+        <a href="/agenda-kegiatan/{{ $agenda->id }}/pdf" target="_blank" class="inline-flex items-center justify-center px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white border border-rose-200 hover:border-rose-500 font-bold text-sm rounded-xl transition-all shadow-sm">
+            <i class="fas fa-file-pdf mr-2"></i> Cetak PDF Laporan
+        </a>
+    </div>
+</div>
 @if(session('sukses'))
 <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-6 flex items-center shadow-sm">
     <i class="fas fa-check-circle text-xl mr-3"></i>
