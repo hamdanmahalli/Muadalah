@@ -1,8 +1,9 @@
-const CACHE_NAME = 'smart-pesantren-v6';
+const CACHE_NAME = 'smart-pesantren-v7';
 const PRECACHE_URLS = [
     '/manifest.json',
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
+    '/offline.html',
     '/dashboard-guru',
     '/kaldik',
     '/rekap-presensi',
@@ -15,10 +16,16 @@ const isStaticAsset = url => {
 };
 
 // 1. Saat Service Worker pertama kali dipasang: simpan halaman inti agar bisa dibuka offline
+//    Menggunakan add() per URL (bukan addAll) agar satu URL yang gagal (mis. karena redirect login)
+//    tidak membatalkan seluruh proses instalasi cache.
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(PRECACHE_URLS))
+            .then(cache => {
+                return Promise.allSettled(
+                    PRECACHE_URLS.map(url => cache.add(url))
+                );
+            })
             .then(() => self.skipWaiting())
     );
 });
@@ -37,6 +44,15 @@ self.addEventListener('activate', event => {
 // 3. Strategi caching:
 //    - Aset statis (icon/manifest): cache-first (cepat, tidak pernah berubah)
 //    - Halaman HTML: network-first (fresh saat online, cache saat offline)
+//    - Ketika offline & tidak ada cache: sajikan /offline.html agar tidak layar hitam
+const serveOfflineFallback = event => {
+    // Sajikan file fallback untuk permintaan navigasi halaman
+    if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+        return caches.match('/offline.html');
+    }
+    return Response.error();
+};
+
 self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') return;
 
@@ -65,7 +81,12 @@ self.addEventListener('fetch', event => {
                 }
                 return response;
             })
-            .catch(() => caches.match(event.request))
+            .catch(() =>
+                caches.match(event.request).then(cached => {
+                    if (cached) return cached;
+                    return serveOfflineFallback(event);
+                })
+            )
     );
 });
 

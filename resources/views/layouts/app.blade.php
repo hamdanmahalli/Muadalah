@@ -70,7 +70,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js?v=6')
+                navigator.serviceWorker.register('/sw.js?v=7')
                     .then(registration => {
                         console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
                         return registration.update();
@@ -576,6 +576,50 @@
             window.addEventListener('offline', setState);
             setState();
         })();
+
+        // =====================================================
+        // GUARD OFFLINE GLOBAL:
+        //   - wajibOnline(event): mencegah aksi menu saat offline,
+        //     namun elemen tetap terlihat (tidak disembunyikan).
+        //   - Cek navigator.onLine dan tampilkan toast bila offline.
+        // =====================================================
+        window.__toastOffline = null;
+        function tampilToastOffline(pesan) {
+            if (!window.__toastOffline) {
+                var t = document.createElement('div');
+                t.id = 'toast-offline';
+                t.style.cssText = 'position:fixed;left:16px;right:16px;bottom:96px;z-index:200;background:#f59e0b;color:#fff;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.2);opacity:0;transform:translateY(10px);transition:opacity .25s ease,transform .25s ease;';
+                document.body.appendChild(t);
+                window.__toastOffline = t;
+            }
+            var t = window.__toastOffline;
+            t.textContent = pesan;
+            t.style.opacity = '1';
+            t.style.transform = 'translateY(0)';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(function() {
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(10px)';
+            }, 2200);
+        }
+        window.wajibOnline = function(event, pesan) {
+            if (navigator.onLine) return true;
+            if (event && event.preventDefault) event.preventDefault();
+            if (event && event.stopPropagation) event.stopPropagation();
+            tampilToastOffline(pesan || 'Fitur memerlukan koneksi internet');
+            return false;
+        };
+
+        // Blocker global untuk tautan/aksi offline (bottom-nav & kartu menu)
+        // Menangkap klik secara delegasi agar tetap berfungsi saat navigasi Turbo
+        window.addEventListener('click', function(e) {
+            if (navigator.onLine) return;
+            var el = e.target && e.target.closest ? e.target.closest('[data-offline-block]') : null;
+            if (!el) return;
+            e.preventDefault();
+            e.stopPropagation();
+            tampilToastOffline(el.getAttribute('data-offline-msg') || 'Fitur memerlukan koneksi internet');
+        }, true);
 
     </script>
 
