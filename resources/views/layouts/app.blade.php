@@ -126,59 +126,96 @@
         @keyframes notif-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes notif-out { to { opacity: 0; transform: translateY(-14px); } }
 
-        /* ============================================================
-           SIDEBAR COLLAPSIBLE (Boardto style) - hanya di desktop (md+)
-           ============================================================ */
-        #sidebar { transition: width 0.3s ease; }
-        @media (min-width: 768px) {
-            #sidebar { width: 16rem; }
-            #sidebar.sidebar-collapsed { width: 5rem; }
-            #sidebar.sidebar-collapsed .sb-text { display: none; }
-            #sidebar.sidebar-collapsed .sb-group-title { display: none; }
-            #sidebar.sidebar-collapsed .sb-brand-text { display: none; }
-            #sidebar.sidebar-collapsed .sb-item { justify-content: center; padding-left: 0; padding-right: 0; }
-            #sidebar.sidebar-collapsed .sb-icon { margin: 0; }
-            #sidebar.sidebar-collapsed .sb-brand { justify-content: center; padding-left: 0; padding-right: 0; }
+        /* ============ GARIS AKSEN VERTIKAL (pojok kiri) ============ */
+        .sb-accent {
+            position: absolute; left: 0; top: 50%;
+            width: 6px; height: 32px;
+            border-radius: 0 6px 6px 0;
+            background: #059669;              /* emerald-600 */
+            opacity: 0;
+            transform: translate(-8px, -50%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
+        .group:hover .sb-accent { opacity: 1; transform: translate(0, -50%); }
+        .sb-accent-on { opacity: 1; transform: translate(0, -50%); }
 
-        /* Item sidebar gaya Boardto */
+        /* ============ ITEM MENU (anak) ============ */
         .sb-item {
             display: flex; align-items: center;
-            padding: 10px 12px;
-            border-radius: 0.75rem;
-            font-weight: 700; font-size: 14px;
-            transition: all 0.2s ease;
+            padding: 10px 20px;
+            border-radius: 1rem;
+            font-weight: 600; font-size: 14px;
+            color: #64748b;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
         }
         .sb-icon {
-            width: 34px; height: 34px; flex-shrink: 0;
-            border-radius: 10px;
+            width: 32px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            font-size: 15px;
+            font-size: 16px;
             margin-right: 12px;
             transition: all 0.2s ease;
         }
         .sb-item.sb-active {
             background: #10b981; color: #fff;
-            box-shadow: 0 4px 15px -3px rgba(16,185,129,0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px -8px rgba(16,185,129,0.55);
         }
-        .sb-item.sb-active .sb-icon { background: rgba(255,255,255,0.2); color: #fff; }
-        .sb-item.sb-inactive { color: #64748b; }
-        .sb-item.sb-inactive:hover { background: #f1f5f9; color: #0f766e; }
-        .sb-item.sb-inactive:hover .sb-icon { background: #ecfdf5; color: #059669; }
-
-        .sb-group-title {
-            font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
-            text-transform: uppercase; color: #10b981;
-            padding: 0 12px; margin: 18px 0 6px;
+        .sb-item.sb-active .sb-icon { color: #fff; }
+        .sb-item.sb-inactive:hover {
+            background: #ecfdf5; color: #0f766e;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px -10px rgba(16,185,129,0.45);
         }
+        .sb-item.sb-inactive:hover .sb-icon { color: #059669; }
 
-        /* Header modern (Boardto) */
+        /* ============ GRUP ACCORDION ============ */
+        .sb-group { margin-bottom: 8px; }
+        .sb-group-toggle {
+            display: flex; align-items: center;
+            width: 100%;
+            padding: 10px 20px;
+            border-radius: 1rem;
+            font-weight: 700; font-size: 14px;
+            color: #475569;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+        .sb-group-toggle:hover {
+            background: #ecfdf5; color: #0f766e;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px -10px rgba(16,185,129,0.4);
+        }
+        .sb-group-toggle:hover .sb-gicon { color: #059669; }
+        .sb-group.sb-open .sb-group-toggle {
+            background: #10b981; color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px -9px rgba(16,185,129,0.5);
+        }
+        .sb-group.sb-open .sb-group-toggle .sb-gicon { color: #fff; }
+        .sb-gicon {
+            width: 32px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            margin-right: 12px;
+            color: #059669;
+            transition: color 0.2s ease;
+        }
+        .sb-chev { margin-left: auto; font-size: 12px; color: #94a3b8; transition: transform 0.25s ease; }
+        .sb-group.sb-open .sb-chev { transform: rotate(180deg); color: rgba(255,255,255,0.85); }
+        .sb-sub {
+            display: none;
+            padding: 6px 0 0 6px;
+            margin-left: 6px;
+        }
+        .sb-group.sb-open > .sb-sub { display: block; }
+
+        /* Header modern (Boardto) - tanpa garis bawah */
         .app-header {
             height: 5rem;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.9);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid #e2e8f0;
         }
     </style>
     
@@ -221,8 +258,8 @@
             <!-- NOTIFIKASI REUSABLE (atas, auto-hilang) -->
             <div id="notif-stack" role="status" aria-live="polite"></div>
 
-            <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out overflow-hidden">
-                <div class="h-20 sb-brand shrink-0 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
+            <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
+                <div class="h-20 sb-brand shrink-0 flex items-center justify-between px-5">
                     <div class="flex items-center">
                         <span class="text-emerald-500 text-2xl mr-3"><i class="fas fa-mosque"></i></span>
                         <span class="sb-brand-text font-black text-lg text-slate-800 tracking-tight">Muadalah Wustha</span>
@@ -233,161 +270,261 @@
                 </div>
                 
                 <div class="flex-1 overflow-y-auto py-2 px-3 scrollbar-none">
-                    <div class="sb-group-title">Menu Utama</div>
-                    <nav class="space-y-1 pb-3">
-                        @can('akses_dashboard')
-                        <a href="/dashboard-utama" class="sb-item {{ request()->is('/') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-desktop"></i></div>
-                            <span class="sb-text">Dashboard</span>
-                        </a>
-                        @endcan
 
-                        @can('akses_dashboard_guru')
-                        <a href="/dashboard-guru" class="sb-item {{ request()->is('dashboard-guru') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                            <span class="sb-text">Beranda Guru</span>
-                        </a>
-                        @endcan
-                        
-                        @can('akses_meja_kontrol')
-                        <a href="/meja-kontrol" class="sb-item {{ request()->is('meja-kontrol') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-tv"></i></div>
-                            <span class="sb-text">Meja Kontrol</span>
-                        </a>
-                        @endcan
+                    @php
+                        $gMenuUtama   = request()->is('/', 'dashboard-guru', 'meja-kontrol', 'laporan', 'jadwal-saya', 'pabrik-barcode', 'scan-kelas', 'agenda-kegiatan*');
+                        $gBasis       = request()->is('master-guru*', 'master-pelajaran*', 'batas-pelajaran*', 'master-kelas*', 'master-import*');
+                        $gAkademik    = request()->is('master-periode*', 'agenda-kaldik*', 'master-hari-operasional*', 'master-plot-jadwal*', 'master-jadwal-harian*');
+                        $gSetup       = request()->is('setup-user', 'user*', 'manajemen-akses', 'backup-restore*');
+                    @endphp
 
-                        @can('akses_laporan')
-                        <a href="/laporan" class="sb-item {{ request()->is('laporan') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-print"></i></div>
-                            <span class="sb-text">Rekap Laporan</span>
-                        </a>
-                        @endcan
-
-                        @can('akses_jadwal_saya')
-                        <a href="/jadwal-saya" class="sb-item {{ request()->is('jadwal-saya') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-calendar-check"></i></div>
-                            <span class="sb-text">Jadwal Saya</span>
-                        </a>
-                        @endcan
-
-                        @can('akses_jadwal_saya')
-                        <a href="/pabrik-barcode" class="sb-item {{ request()->is('pabrik-barcode') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-barcode"></i></div>
-                            <span class="sb-text">Cetak Barcode</span>
-                        </a>
-                        @endcan
-
-                        @can('akses_jadwal_saya')
-                        <a href="/scan-kelas" class="sb-item {{ request()->is('scan-kelas') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-qrcode"></i></div>
-                            <span class="sb-text">Scan Hadir</span>
-                        </a>
-                        @endcan
-
-                        <a href="/agenda-kegiatan" class="sb-item {{ request()->is('agenda-kegiatan*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-calendar-alt"></i></div>
-                            <span class="sb-text">Agenda Kegiatan</span>
-                        </a>
-                    </nav>
+                    <!-- GRUP: MENU UTAMA -->
+                    <div class="sb-group {{ $gMenuUtama ? 'sb-open' : '' }}">
+                        <div class="relative flex items-center group">
+                            <span class="sb-accent {{ $gMenuUtama ? 'sb-accent-on' : '' }}"></span>
+                            <button type="button" class="sb-group-toggle" onclick="sbSelectGroup(this)">
+                                <span class="sb-gicon"><i class="fas fa-th-large"></i></span>
+                                <span class="sb-glabel">Menu Utama</span>
+                                <i class="fas fa-chevron-down sb-chev"></i>
+                            </button>
+                        </div>
+                        <div class="sb-sub">
+                            @can('akses_dashboard')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('/') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/dashboard-utama" class="sb-item {{ request()->is('/') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-desktop"></i></div>
+                                    <span class="sb-text">Dashboard</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_dashboard_guru')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('dashboard-guru') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/dashboard-guru" class="sb-item {{ request()->is('dashboard-guru') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                                    <span class="sb-text">Beranda Guru</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_meja_kontrol')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('meja-kontrol') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/meja-kontrol" class="sb-item {{ request()->is('meja-kontrol') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-tv"></i></div>
+                                    <span class="sb-text">Meja Kontrol</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_laporan')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('laporan') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/laporan" class="sb-item {{ request()->is('laporan') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-print"></i></div>
+                                    <span class="sb-text">Rekap Laporan</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_jadwal_saya')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('jadwal-saya') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/jadwal-saya" class="sb-item {{ request()->is('jadwal-saya') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-calendar-check"></i></div>
+                                    <span class="sb-text">Jadwal Saya</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_jadwal_saya')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('pabrik-barcode') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/pabrik-barcode" class="sb-item {{ request()->is('pabrik-barcode') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-barcode"></i></div>
+                                    <span class="sb-text">Cetak Barcode</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_jadwal_saya')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('scan-kelas') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/scan-kelas" class="sb-item {{ request()->is('scan-kelas') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-qrcode"></i></div>
+                                    <span class="sb-text">Scan Hadir</span>
+                                </a>
+                            </div>
+                            @endcan
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('agenda-kegiatan*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/agenda-kegiatan" class="sb-item {{ request()->is('agenda-kegiatan*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-calendar-alt"></i></div>
+                                    <span class="sb-text">Agenda Kegiatan</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
                     @canany(['akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas'])
-                    <div class="sb-group-title border-t border-slate-100">Basis Data Master</div>
-                    <nav class="space-y-1 pb-3">
-                        @can('akses_master_guru')
-                        <a href="/master-guru" class="sb-item {{ request()->is('master-guru*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                            <span class="sb-text">Master Guru</span>
-                        </a>
-                        @endcan
-                        
-                        @can('akses_master_pelajaran')
-                        <a href="/master-pelajaran" class="sb-item {{ request()->is('master-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-book-open"></i></div>
-                            <span class="sb-text">Master Pelajaran</span>
-                        </a>
-                        @endcan
-
-                        @can('akses_master_pelajaran')
-                        <a href="/batas-pelajaran" class="sb-item {{ request()->is('batas-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-layer-group"></i></div>
-                            <span class="sb-text">Batas Pelajaran</span>
-                        </a>
-                        @endcan
-                        
-                        @can('akses_master_kelas')
-                        <a href="/master-kelas" class="sb-item {{ request()->is('master-kelas*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-school"></i></div>
-                            <span class="sb-text">Master Kelas</span>
-                        </a>
-                        @endcan
-                        
-                        @can('akses_master_guru')
-                        <a href="/master-import" class="sb-item {{ request()->is('master-import*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-file-excel"></i></div>
-                            <span class="sb-text">Pusat Import</span>
-                        </a>
-                        @endcan
-                    </nav>
+                    <!-- GRUP: BASIS DATA MASTER -->
+                    <div class="sb-group {{ $gBasis ? 'sb-open' : '' }}">
+                        <div class="relative flex items-center group">
+                            <span class="sb-accent {{ $gBasis ? 'sb-accent-on' : '' }}"></span>
+                            <button type="button" class="sb-group-toggle" onclick="sbSelectGroup(this)">
+                                <span class="sb-gicon"><i class="fas fa-database"></i></span>
+                                <span class="sb-glabel">Basis Data Master</span>
+                                <i class="fas fa-chevron-down sb-chev"></i>
+                            </button>
+                        </div>
+                        <div class="sb-sub">
+                            @can('akses_master_guru')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-guru*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-guru" class="sb-item {{ request()->is('master-guru*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                                    <span class="sb-text">Master Guru</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_master_pelajaran')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-pelajaran*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-pelajaran" class="sb-item {{ request()->is('master-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-book-open"></i></div>
+                                    <span class="sb-text">Master Pelajaran</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_master_pelajaran')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('batas-pelajaran*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/batas-pelajaran" class="sb-item {{ request()->is('batas-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-layer-group"></i></div>
+                                    <span class="sb-text">Batas Pelajaran</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_master_kelas')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-kelas*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-kelas" class="sb-item {{ request()->is('master-kelas*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-school"></i></div>
+                                    <span class="sb-text">Master Kelas</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_master_guru')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-import*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-import" class="sb-item {{ request()->is('master-import*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-file-excel"></i></div>
+                                    <span class="sb-text">Pusat Import</span>
+                                </a>
+                            </div>
+                            @endcan
+                        </div>
+                    </div>
                     @endcanany
 
                     @canany(['akses_master_periode', 'akses_hari_libur', 'akses_hari_operasional', 'akses_target_mengajar', 'akses_jadwal_harian'])
-                    <div class="sb-group-title border-t border-slate-100">Akademik &amp; Jadwal</div>
-                    <nav class="space-y-1 pb-3">
-                        @can('akses_master_periode')
-                        <a href="/master-periode" class="sb-item {{ request()->is('master-periode*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-calendar-check"></i></div>
-                            <span class="sb-text">Master Periode</span>
-                        </a>
-                        @endcan
-                        @can('akses_hari_libur')
-                        <a href="/agenda-kaldik" class="sb-item {{ request()->is('agenda-kaldik*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-calendar-times"></i></div>
-                            <span class="sb-text">Kalender Pendidikan</span>
-                        </a>
-                        @endcan
-                        @can('akses_hari_operasional')
-                        <a href="/master-hari-operasional" class="sb-item {{ request()->is('master-hari-operasional*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-calendar-week"></i></div>
-                            <span class="sb-text">Hari Operasional</span>
-                        </a>
-                        @endcan
-                        @can('akses_target_mengajar')
-                        <a href="/master-plot-jadwal" class="sb-item {{ request()->is('master-plot-jadwal*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-sitemap"></i></div>
-                            <span class="sb-text">Target Mengajar</span>
-                        </a>
-                        @endcan
-                        @can('akses_jadwal_harian')
-                        <a href="/master-jadwal-harian" class="sb-item {{ request()->is('master-jadwal-harian*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-calendar-alt"></i></div>
-                            <span class="sb-text">Jadwal Harian</span>
-                        </a>
-                        @endcan
-                    </nav>
+                    <!-- GRUP: AKADEMIK & JADWAL -->
+                    <div class="sb-group {{ $gAkademik ? 'sb-open' : '' }}">
+                        <div class="relative flex items-center group">
+                            <span class="sb-accent {{ $gAkademik ? 'sb-accent-on' : '' }}"></span>
+                            <button type="button" class="sb-group-toggle" onclick="sbSelectGroup(this)">
+                                <span class="sb-gicon"><i class="fas fa-calendar-alt"></i></span>
+                                <span class="sb-glabel">Akademik &amp; Jadwal</span>
+                                <i class="fas fa-chevron-down sb-chev"></i>
+                            </button>
+                        </div>
+                        <div class="sb-sub">
+                            @can('akses_master_periode')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-periode*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-periode" class="sb-item {{ request()->is('master-periode*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-calendar-check"></i></div>
+                                    <span class="sb-text">Master Periode</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_hari_libur')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('agenda-kaldik*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/agenda-kaldik" class="sb-item {{ request()->is('agenda-kaldik*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-calendar-times"></i></div>
+                                    <span class="sb-text">Kalender Pendidikan</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_hari_operasional')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-hari-operasional*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-hari-operasional" class="sb-item {{ request()->is('master-hari-operasional*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-calendar-week"></i></div>
+                                    <span class="sb-text">Hari Operasional</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_target_mengajar')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-plot-jadwal*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-plot-jadwal" class="sb-item {{ request()->is('master-plot-jadwal*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-sitemap"></i></div>
+                                    <span class="sb-text">Target Mengajar</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_jadwal_harian')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('master-jadwal-harian*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/master-jadwal-harian" class="sb-item {{ request()->is('master-jadwal-harian*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-calendar-alt"></i></div>
+                                    <span class="sb-text">Jadwal Harian</span>
+                                </a>
+                            </div>
+                            @endcan
+                        </div>
+                    </div>
                     @endcanany
                     
                     @canany(['akses_manajemen_user', 'akses_manajemen_akses'])
-                    <div class="sb-group-title border-t border-slate-100">Setup &amp; Lainnya</div>
-                    <nav class="space-y-1 pb-3">
-                        @can('akses_manajemen_user')
-                        <a href="/setup-user" class="sb-item {{ request()->is('setup-user') || request()->is('user*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-users-cog"></i></div>
-                            <span class="sb-text">Setup User</span>
-                        </a>
-                        @endcan
-                        @can('akses_manajemen_akses')
-                        <a href="/manajemen-akses" class="sb-item {{ request()->is('manajemen-akses') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-key"></i></div>
-                            <span class="sb-text">Hak Akses</span>
-                        </a>
-                        @endcan
-
-                        <a href="/backup-restore" class="sb-item {{ request()->is('backup-restore*') ? 'sb-active' : 'sb-inactive' }}">
-                            <div class="sb-icon"><i class="fas fa-database"></i></div>
-                            <span class="sb-text">Manajemen Database</span>
-                        </a>
-                    </nav>
+                    <!-- GRUP: SETUP & LAINNYA -->
+                    <div class="sb-group {{ $gSetup ? 'sb-open' : '' }}">
+                        <div class="relative flex items-center group">
+                            <span class="sb-accent {{ $gSetup ? 'sb-accent-on' : '' }}"></span>
+                            <button type="button" class="sb-group-toggle" onclick="sbSelectGroup(this)">
+                                <span class="sb-gicon"><i class="fas fa-cog"></i></span>
+                                <span class="sb-glabel">Setup &amp; Lainnya</span>
+                                <i class="fas fa-chevron-down sb-chev"></i>
+                            </button>
+                        </div>
+                        <div class="sb-sub">
+                            @can('akses_manajemen_user')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('setup-user') || request()->is('user*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/setup-user" class="sb-item {{ request()->is('setup-user') || request()->is('user*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-users-cog"></i></div>
+                                    <span class="sb-text">Setup User</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_manajemen_akses')
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('manajemen-akses') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/manajemen-akses" class="sb-item {{ request()->is('manajemen-akses') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-key"></i></div>
+                                    <span class="sb-text">Hak Akses</span>
+                                </a>
+                            </div>
+                            @endcan
+                            <div class="relative flex items-center group">
+                                <span class="sb-accent {{ request()->is('backup-restore*') ? 'sb-accent-on' : '' }}"></span>
+                                <a href="/backup-restore" class="sb-item {{ request()->is('backup-restore*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon"><i class="fas fa-database"></i></div>
+                                    <span class="sb-text">Manajemen Database</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     @endcanany
+
                 </div>
             </aside>
 
@@ -401,9 +538,10 @@
                 <button onclick="toggleSidebar()" type="button" class="md:hidden text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 p-2 rounded-xl focus:outline-none transition">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <button onclick="toggleSidebarCollapse()" id="sidebar-collapse-btn" type="button" class="hidden md:flex mr-3 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 p-2 rounded-xl focus:outline-none transition cursor-pointer">
-                    <i id="collapse-chevron" class="fas fa-chevron-left text-sm"></i>
-                </button>
+                <div class="hidden md:flex items-center text-slate-600 font-medium ml-2">
+                    <i class="fas fa-mosque text-emerald-500 mr-2"></i>
+                    <span class="font-black text-slate-800 tracking-tight">Muadalah Wustha</span>
+                </div>
 
                 <div class="flex items-center space-x-2 md:hidden">
                     <span class="text-emerald-500 text-xl"><i class="fas fa-mosque"></i></span>
@@ -572,26 +710,40 @@
             if (backdrop) backdrop.classList.toggle('hidden');
         }
 
-        // TOGGLE SIDEBAR COLLAPSE (desktop, hanya ikon)
-        function toggleSidebarCollapse() {
-            const sidebar = document.getElementById('sidebar');
-            const collapsed = sidebar.classList.toggle('sidebar-collapsed');
-            const chevron = document.getElementById('collapse-chevron');
-            if (chevron) chevron.classList.toggle('fa-chevron-left', collapsed);
-            if (chevron) chevron.classList.toggle('fa-chevron-right', !collapsed);
-            try { localStorage.setItem('sb-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+        // ============ ACCORDION GRUP SIDEBAR (hover buka, klik tetap) ============
+        // Klik header grup: buka grup ini & tutup yang lain (agar "tetap" terbuka)
+        function sbSelectGroup(btn) {
+            const group = btn.closest('.sb-group');
+            if (!group) return;
+            document.querySelectorAll('.sb-group.sb-open').forEach(function (g) {
+                if (g !== group) g.classList.remove('sb-open');
+            });
+            group.classList.add('sb-open');
         }
 
-        (function applySidebarCollapse() {
-            try {
-                if (localStorage.getItem('sb-collapsed') === '1') {
-                    const sidebar = document.getElementById('sidebar');
-                    const chevron = document.getElementById('collapse-chevron');
-                    if (sidebar) sidebar.classList.add('sidebar-collapsed');
-                    if (chevron) { chevron.classList.remove('fa-chevron-left'); chevron.classList.add('fa-chevron-right'); }
-                }
-            } catch (e) {}
-        })();
+        // Hover menuju sebuah grup: buka grup itu & tutup yang lain
+        document.querySelectorAll('.sb-group').forEach(function (group) {
+            group.addEventListener('mouseenter', function () {
+                document.querySelectorAll('.sb-group.sb-open').forEach(function (g) {
+                    if (g !== group) g.classList.remove('sb-open');
+                });
+                group.classList.add('sb-open');
+            });
+        });
+
+        // Setelah navigasi Turbo, pasang ulang listener hover (body diganti)
+        document.addEventListener('turbo:load', function () {
+            document.querySelectorAll('.sb-group').forEach(function (group) {
+                if (group.__sbHoverBound) return;
+                group.__sbHoverBound = true;
+                group.addEventListener('mouseenter', function () {
+                    document.querySelectorAll('.sb-group.sb-open').forEach(function (g) {
+                        if (g !== group) g.classList.remove('sb-open');
+                    });
+                    group.classList.add('sb-open');
+                });
+            });
+        });
 
         // TOGGLE DROPDOWN USER
         function toggleUserMenu() {
