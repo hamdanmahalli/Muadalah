@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-pesantren-v7';
+const CACHE_NAME = 'smart-pesantren-v8';
 const PRECACHE_URLS = [
     '/manifest.json',
     '/icons/icon-192x192.png',
@@ -7,6 +7,7 @@ const PRECACHE_URLS = [
     '/dashboard-guru',
     '/kaldik',
     '/rekap-presensi',
+    '/scan-kelas',
     '/menu'
 ];
 

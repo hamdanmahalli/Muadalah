@@ -47,14 +47,47 @@
             40% { transform: scale(1.1); opacity: 1; }
         }
 
-        /* OFFLINE BANNER */
+        /* OFFLINE NOTIF: kartu "Mode Ofline" di atas layar, tema emerald, bisa diusap ke atas */
         #offline-banner {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 60;
-            transform: translateY(-100%);
-            transition: transform 0.35s ease;
+            position: fixed; top: -150px; left: 50%; transform: translateX(-50%);
+            z-index: 60;
+            display: flex; align-items: center; gap: 14px;
+            width: min(92%, 340px);
+            padding: 13px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(16, 185, 129, 0.18);
+            box-shadow: 0 12px 32px rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            pointer-events: auto;
+            opacity: 0;
+            transition: top 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+            cursor: grab;
+            touch-action: pan-y;
         }
         #offline-banner.show {
-            transform: translateY(0);
+            top: 16px; opacity: 1;
+        }
+        #offline-banner.gone {
+            top: -150px; opacity: 0;
+        }
+        #offline-banner .offline-ikon {
+            width: 44px; height: 44px; flex-shrink: 0;
+            border-radius: 14px;
+            background: rgba(16, 185, 129, 0.12);
+            display: flex; align-items: center; justify-content: center;
+            color: #059669;
+            font-size: 20px;
+        }
+        #offline-banner .offline-teks {
+            line-height: 1.2; min-width: 0;
+        }
+        #offline-banner .offline-judul {
+            margin: 0; font-size: 16px; font-weight: 800; color: #047857;
+        }
+        #offline-banner .offline-sub {
+            margin: 2px 0 0; font-size: 12px; font-weight: 600; color: #10b981;
         }
     </style>
     
@@ -70,7 +103,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js?v=7')
+                navigator.serviceWorker.register('/sw.js?v=8')
                     .then(registration => {
                         console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
                         return registration.update();
@@ -85,14 +118,12 @@
 </head>
         <body data-turbo="false" class="bg-gray-50 flex h-screen overflow-hidden text-sm antialiased">
 
-            <!-- OFFLINE BANNER -->
-            <div id="offline-banner" class="bg-gradient-to-r from-amber-500 to-red-500 text-white shadow-lg shadow-red-300/40">
-                <div class="flex items-center gap-3 px-4 py-2.5">
-                    <i class="fas fa-wifi-slash text-sm"></i>
-                    <div class="flex-1">
-                        <p class="text-xs font-bold">Anda sedang offline</p>
-                        <p class="text-[10px] text-white/80">Data yang tampil adalah data terakhir saat online</p>
-                    </div>
+            <!-- OFFLINE NOTIF: Mode Ofline -->
+            <div id="offline-banner" role="alert" aria-label="Mode Ofline">
+                <div class="offline-ikon"><i class="fas fa-wifi-slash"></i></div>
+                <div class="offline-teks">
+                    <p class="offline-judul">Mode Offline</p>
+                    <p class="offline-sub">Data tidak bisa diperbarui</p>
                 </div>
             </div>
 
@@ -561,27 +592,56 @@
             window.addEventListener('pageshow', sembunyikan);
         })();
 
-        // OFFLINE BANNER: tampilkan saat koneksi putus
+        // OFFLINE NOTIF: tampilkan kartu "Mode Ofline", bisa diusap ke atas untuk menutup
         (function() {
             var banner = document.getElementById('offline-banner');
             if (!banner) return;
+            var dismissed = false;
             function setState() {
                 if (!navigator.onLine) {
-                    banner.classList.add('show');
+                    // Tampilkan hanya jika belum diusap pada sesi offline ini
+                    if (!dismissed) banner.classList.add('show');
+                    banner.classList.remove('gone');
                 } else {
-                    banner.classList.remove('show');
+                    banner.classList.remove('show', 'gone');
+                    dismissed = false;
                 }
             }
             window.addEventListener('online', setState);
             window.addEventListener('offline', setState);
             setState();
+
+            // Swipe ke atas untuk menutup notifikasi
+            var startY = null;
+            function mulaiUsap(e) {
+                var touch = e.touches ? e.touches[0] : e;
+                startY = touch.clientY;
+                if (e.target.closest && !e.target.closest('#offline-banner')) startY = null;
+            }
+            function selesaiUsap(e) {
+                if (startY === null) return;
+                var touch = e.changedTouches ? e.changedTouches[0] : e;
+                var deltaY = touch.clientY - startY;
+                startY = null;
+                // Usap ke atas bernilai negatif
+                if (deltaY < -40) {
+                    dismissed = true;
+                    banner.classList.remove('show');
+                    banner.classList.add('gone');
+                }
+            }
+            banner.addEventListener('touchstart', mulaiUsap, { passive: true });
+            banner.addEventListener('touchend', selesaiUsap, { passive: true });
+            banner.addEventListener('mousedown', mulaiUsap);
+            banner.addEventListener('mouseup', selesaiUsap);
         })();
 
         // =====================================================
         // GUARD OFFLINE GLOBAL:
-        //   - wajibOnline(event): mencegah aksi menu saat offline,
-        //     namun elemen tetap terlihat (tidak disembunyikan).
-        //   - Cek navigator.onLine dan tampilkan toast bila offline.
+        //   - wajibOnline(event): mencegah aksi penulisan data saat
+        //     offline, namun halaman tetap bisa dibuka & dilihat.
+        //   - Blokir fetch non-GET & submit form saat offline,
+        //     KECUALI logout (/logout) yang tetap boleh jalan.
         // =====================================================
         window.__toastOffline = null;
         function tampilToastOffline(pesan) {
@@ -610,15 +670,41 @@
             return false;
         };
 
-        // Blocker global untuk tautan/aksi offline (bottom-nav & kartu menu)
-        // Menangkap klik secara delegasi agar tetap berfungsi saat navigasi Turbo
-        window.addEventListener('click', function(e) {
+        function isMutationMethod(method) {
+            method = (method || 'GET').toUpperCase();
+            return method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE';
+        }
+        function isLogoutUrl(url) {
+            try {
+                var p = new URL(url, window.location.origin).pathname;
+                return p === '/logout';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Blokir fetch penulisan data (scan, ganti password, notifikasi, profil, dll.) saat offline
+        (function() {
+            var gemuk = window.fetch;
+            window.fetch = function(input, init) {
+                var url = typeof input === 'string' ? input : (input && input.url);
+                var method = (init && init.method) || (input && input.method) || 'GET';
+                if (!navigator.onLine && isMutationMethod(method) && !isLogoutUrl(url)) {
+                    tampilToastOffline('Perlu koneksi internet untuk menyimpan/update data');
+                    return Promise.reject(new Error('Offline: tidak dapat menyimpan data'));
+                }
+                return gemuk.apply(this, arguments);
+            };
+        })();
+
+        // Blokir submit form (kecuali logout) saat offline
+        document.addEventListener('submit', function(e) {
             if (navigator.onLine) return;
-            var el = e.target && e.target.closest ? e.target.closest('[data-offline-block]') : null;
-            if (!el) return;
+            var form = e.target;
+            if (form && isLogoutUrl(form.action)) return;
             e.preventDefault();
             e.stopPropagation();
-            tampilToastOffline(el.getAttribute('data-offline-msg') || 'Fitur memerlukan koneksi internet');
+            tampilToastOffline('Perlu koneksi internet untuk menyimpan/update data');
         }, true);
 
     </script>

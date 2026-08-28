@@ -30,7 +30,7 @@
         <div class="space-y-3">
             
             <!-- MENU 1: Profil Saya -->
-            <a href="{{ route('guru.profil.lengkap') }}" data-offline-block data-offline-msg="Profil Saya memerlukan koneksi internet" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
+            <a href="{{ route('guru.profil.lengkap') }}" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
                 <div class="flex items-center space-x-4">
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                         <i class="fas fa-user text-lg"></i>
@@ -41,7 +41,7 @@
             </a>
 
             <!-- MENU 2: Tentang Aplikasi -->
-            <button onclick="bukaModal('modal-tentang', 'bg-tentang', 'box-tentang')" data-offline-block data-offline-msg="Fitur memerlukan koneksi internet" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
+            <button onclick="bukaModal('modal-tentang', 'bg-tentang', 'box-tentang')" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
                 <div class="flex items-center space-x-4">
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                         <i class="fas fa-info-circle text-lg"></i>
@@ -52,7 +52,7 @@
             </button>
 
             <!-- MENU 3: Ganti Password (Memanggil Fungsi Global dari app.blade.php) -->
-            <button onclick="bukaModalGantiPassword()" data-offline-block data-offline-msg="Ganti Password memerlukan koneksi internet" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
+            <button onclick="bukaModalGantiPassword()" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
                 <div class="flex items-center space-x-4">
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                         <i class="fas fa-lock text-lg"></i>
@@ -63,7 +63,7 @@
             </button>
 
             <!-- MENU 4: Pengaturan Notifikasi -->
-            <a href="/notifikasi/pengaturan" data-offline-block data-offline-msg="Pengaturan Notifikasi memerlukan koneksi internet" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
+            <a href="/notifikasi/pengaturan" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
                 <div class="flex items-center space-x-4">
                     <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
                         <i class="fas fa-bell text-lg"></i>
@@ -85,7 +85,7 @@
             </button>
 
             <!-- MENU 5: Logout (Proteksi CSRF + Loading Animasi Premium) -->
-            <form method="POST" action="/logout" class="w-full mt-8" onsubmit="loadingElegan(event, this)" data-offline-block data-offline-msg="Keluar Sistem memerlukan koneksi internet">
+            <form method="POST" action="/logout" class="w-full mt-8" onsubmit="loadingElegan(event, this)">
                 @csrf
                 <!-- Ditambahkan min-h-[72px] untuk memastikan tinggi kotak terkunci mutlak -->
                 <button id="btn-logout" type="submit" class="relative w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 hover:border-rose-100 hover:shadow-[0_8px_20px_rgba(225,29,72,0.08)] group cursor-pointer text-left overflow-hidden min-h-[72px]">

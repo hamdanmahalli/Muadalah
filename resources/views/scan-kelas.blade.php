@@ -222,6 +222,16 @@
             if (isProcessing) return; 
             isProcessing = true;
             
+            // 0. Saat offline tidak bisa mengirimkan kehadiran
+            if (typeof wajibOnline === 'function' && !wajibOnline(null, 'Scan Hadir memerlukan koneksi internet')) {
+                setKameraUI('error', 'Anda sedang offline. Sambungkan internet untuk scan kehadiran.');
+                setTimeout(() => {
+                    setKameraUI('reset');
+                    isProcessing = false;
+                }, 3000);
+                return;
+            }
+            
             // 1. Matikan kamera secara visual, munculkan animasi memproses
             setKameraUI('processing');
             
