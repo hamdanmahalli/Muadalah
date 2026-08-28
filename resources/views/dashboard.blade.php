@@ -36,54 +36,62 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
-        <div class="bg-white rounded-2xl shadow-sm border border-sky-100 p-6 flex flex-col hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-            <div class="flex justify-between items-start mb-2">
-                <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+        <div class="bg-gradient-to-br from-emerald-400 to-teal-600 rounded-3xl p-6 text-white shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-8 opacity-10 text-[110px] group-hover:scale-110 transition-transform"><i class="fas fa-calendar-alt"></i></div>
+            <div class="flex justify-between items-start mb-5 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
                     <i class="fas fa-calendar-alt"></i>
                 </div>
-                <h2 class="text-3xl font-black text-gray-800">{{ $totalJadwal ?? 0 }}</h2>
+                <span class="bg-white/20 text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-md border border-white/20">Hari Ini</span>
             </div>
-            <p class="text-gray-400 font-bold text-[11px] uppercase tracking-wider mb-5">Total Jadwal Hari Ini</p>
-            <a href="/meja-kontrol" class="text-sky-600 hover:text-sky-800 font-bold mt-auto text-xs border-t pt-4 border-gray-50 flex justify-between items-center transition">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-50/90 relative z-10 mb-1">Total Jadwal</p>
+            <h2 class="text-4xl font-black text-white relative z-10 mb-5">{{ $totalJadwal ?? 0 }}</h2>
+            <a href="/meja-kontrol" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/20 text-xs font-bold hover:text-emerald-50 transition">
                 Buka Meja Kontrol <i class="fas fa-arrow-right"></i>
             </a>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-emerald-100 p-6 flex flex-col hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-            <div class="flex justify-between items-start mb-2">
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+        <div class="bg-gradient-to-br from-teal-400 to-cyan-600 rounded-3xl p-6 text-white shadow-lg shadow-teal-500/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-8 opacity-10 text-[110px] group-hover:scale-110 transition-transform"><i class="fas fa-user-check"></i></div>
+            <div class="flex justify-between items-start mb-5 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
                     <i class="fas fa-user-check"></i>
                 </div>
-                <h2 class="text-3xl font-black text-gray-800">{{ $guruHadir ?? 0 }}</h2>
+                <span class="bg-white/20 text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-md border border-white/20">Live</span>
             </div>
-            <p class="text-gray-400 font-bold text-[11px] uppercase tracking-wider mb-5">Guru Terkonfirmasi Hadir</p>
-            <a href="/laporan" class="text-emerald-600 hover:text-emerald-800 font-bold mt-auto text-xs border-t pt-4 border-gray-50 flex justify-between items-center transition">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-teal-50/90 relative z-10 mb-1">Guru Terkonfirmasi Hadir</p>
+            <h2 class="text-4xl font-black text-white relative z-10 mb-5">{{ $guruHadir ?? 0 }}</h2>
+            <a href="/laporan" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/20 text-xs font-bold hover:text-teal-50 transition">
                 Lihat Laporan <i class="fas fa-arrow-right"></i>
             </a>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6 flex flex-col hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-            <div class="flex justify-between items-start mb-2">
-                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+        <div class="bg-gradient-to-br from-rose-400 to-red-500 rounded-3xl p-6 text-white shadow-lg shadow-rose-500/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-8 opacity-10 text-[110px] group-hover:scale-110 transition-transform"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="flex justify-between items-start mb-5 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <h2 class="text-3xl font-black text-gray-800">{{ $guruIzinKosong ?? 0 }}</h2>
+                <span class="bg-white/20 text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-md border border-white/20">Perlu Tindak</span>
             </div>
-            <p class="text-gray-400 font-bold text-[11px] uppercase tracking-wider mb-5">Izin / Kelas Kosong</p>
-            <a href="/meja-kontrol" class="text-rose-600 hover:text-rose-800 font-bold mt-auto text-xs border-t pt-4 border-gray-50 flex justify-between items-center transition">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-rose-50/90 relative z-10 mb-1">Izin / Kelas Kosong</p>
+            <h2 class="text-4xl font-black text-white relative z-10 mb-5">{{ $guruIzinKosong ?? 0 }}</h2>
+            <a href="/meja-kontrol" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/20 text-xs font-bold hover:text-rose-50 transition">
                 Tindak Lanjuti <i class="fas fa-arrow-right"></i>
             </a>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-indigo-100 p-6 flex flex-col hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-            <div class="flex justify-between items-start mb-2">
-                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+        <div class="bg-gradient-to-br from-slate-700 to-slate-900 rounded-3xl p-6 text-white shadow-lg shadow-slate-700/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-8 opacity-10 text-[110px] group-hover:scale-110 transition-transform"><i class="fas fa-users"></i></div>
+            <div class="flex justify-between items-start mb-5 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
                     <i class="fas fa-users"></i>
                 </div>
-                <h2 class="text-3xl font-black text-gray-800">{{ $totalGuru ?? \App\Models\Guru::count() }}</h2>
+                <span class="bg-white/10 text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10">Registrasi</span>
             </div>
-            <p class="text-gray-400 font-bold text-[11px] uppercase tracking-wider mb-5">Total Guru Terdaftar</p>
-            <a href="/master-guru" class="text-indigo-600 hover:text-indigo-800 font-bold mt-auto text-xs border-t pt-4 border-gray-50 flex justify-between items-center transition">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-300 relative z-10 mb-1">Total Guru Terdaftar</p>
+            <h2 class="text-4xl font-black text-white relative z-10 mb-5">{{ $totalGuru ?? \App\Models\Guru::count() }}</h2>
+            <a href="/master-guru" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/10 text-xs font-bold hover:text-slate-300 transition">
                 Lihat Data <i class="fas fa-arrow-right"></i>
             </a>
         </div>

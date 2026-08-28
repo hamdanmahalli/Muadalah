@@ -125,6 +125,61 @@
         .notif-item.info { border: 1px solid rgba(99,102,241,0.2); }
         @keyframes notif-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes notif-out { to { opacity: 0; transform: translateY(-14px); } }
+
+        /* ============================================================
+           SIDEBAR COLLAPSIBLE (Boardto style) - hanya di desktop (md+)
+           ============================================================ */
+        #sidebar { transition: width 0.3s ease; }
+        @media (min-width: 768px) {
+            #sidebar { width: 16rem; }
+            #sidebar.sidebar-collapsed { width: 5rem; }
+            #sidebar.sidebar-collapsed .sb-text { display: none; }
+            #sidebar.sidebar-collapsed .sb-group-title { display: none; }
+            #sidebar.sidebar-collapsed .sb-brand-text { display: none; }
+            #sidebar.sidebar-collapsed .sb-item { justify-content: center; padding-left: 0; padding-right: 0; }
+            #sidebar.sidebar-collapsed .sb-icon { margin: 0; }
+            #sidebar.sidebar-collapsed .sb-brand { justify-content: center; padding-left: 0; padding-right: 0; }
+        }
+
+        /* Item sidebar gaya Boardto */
+        .sb-item {
+            display: flex; align-items: center;
+            padding: 10px 12px;
+            border-radius: 0.75rem;
+            font-weight: 700; font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .sb-icon {
+            width: 34px; height: 34px; flex-shrink: 0;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+            margin-right: 12px;
+            transition: all 0.2s ease;
+        }
+        .sb-item.sb-active {
+            background: #10b981; color: #fff;
+            box-shadow: 0 4px 15px -3px rgba(16,185,129,0.5);
+        }
+        .sb-item.sb-active .sb-icon { background: rgba(255,255,255,0.2); color: #fff; }
+        .sb-item.sb-inactive { color: #64748b; }
+        .sb-item.sb-inactive:hover { background: #f1f5f9; color: #0f766e; }
+        .sb-item.sb-inactive:hover .sb-icon { background: #ecfdf5; color: #059669; }
+
+        .sb-group-title {
+            font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+            text-transform: uppercase; color: #10b981;
+            padding: 0 12px; margin: 18px 0 6px;
+        }
+
+        /* Header modern (Boardto) */
+        .app-header {
+            height: 5rem;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e2e8f0;
+        }
     </style>
     
     @stack('styles')
@@ -166,155 +221,170 @@
             <!-- NOTIFIKASI REUSABLE (atas, auto-hilang) -->
             <div id="notif-stack" role="status" aria-live="polite"></div>
 
-            <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
-                <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+            <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out overflow-hidden">
+                <div class="h-20 sb-brand shrink-0 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
                     <div class="flex items-center">
-                        <span class="text-green-600 text-2xl mr-3"><i class="fas fa-mosque"></i></span>
-                        <span class="font-bold text-lg text-gray-800">Muadalah Wustha</span>
+                        <span class="text-emerald-500 text-2xl mr-3"><i class="fas fa-mosque"></i></span>
+                        <span class="sb-brand-text font-black text-lg text-slate-800 tracking-tight">Muadalah Wustha</span>
                     </div>
                     <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 focus:outline-none transition p-1">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
                 
-                <div class="flex-1 overflow-y-auto py-4">
-                    <div class="px-6 mb-2 text-xs font-bold text-green-600 uppercase tracking-wider">Menu Utama</div>
-                    <nav class="space-y-1 pb-6">
+                <div class="flex-1 overflow-y-auto py-2 px-3 scrollbar-none">
+                    <div class="sb-group-title">Menu Utama</div>
+                    <nav class="space-y-1 pb-3">
                         @can('akses_dashboard')
-                        <a href="/dashboard-utama" class="flex items-center px-6 py-3 {{ request()->is('/') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-desktop w-6"></i> Dashboard
+                        <a href="/dashboard-utama" class="sb-item {{ request()->is('/') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-desktop"></i></div>
+                            <span class="sb-text">Dashboard</span>
                         </a>
                         @endcan
 
                         @can('akses_dashboard_guru')
-                        <a href="/dashboard-guru" class="flex items-center px-6 py-3 {{ request()->is('dashboard-guru') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-chalkboard-teacher w-6"></i> Beranda Guru
+                        <a href="/dashboard-guru" class="sb-item {{ request()->is('dashboard-guru') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                            <span class="sb-text">Beranda Guru</span>
                         </a>
                         @endcan
                         
                         @can('akses_meja_kontrol')
-                        <a href="/meja-kontrol" class="flex items-center px-6 py-3 {{ request()->is('meja-kontrol') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-tv w-6"></i> Meja Kontrol
+                        <a href="/meja-kontrol" class="sb-item {{ request()->is('meja-kontrol') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-tv"></i></div>
+                            <span class="sb-text">Meja Kontrol</span>
                         </a>
                         @endcan
 
                         @can('akses_laporan')
-                        <a href="/laporan" class="flex items-center px-6 py-3 {{ request()->is('laporan') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-print w-6"></i> Rekap Laporan
+                        <a href="/laporan" class="sb-item {{ request()->is('laporan') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-print"></i></div>
+                            <span class="sb-text">Rekap Laporan</span>
                         </a>
                         @endcan
 
                         @can('akses_jadwal_saya')
-                        <a href="/jadwal-saya" class="flex items-center px-6 py-3 {{ request()->is('jadwal-saya') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-check w-6"></i> Jadwal Saya
+                        <a href="/jadwal-saya" class="sb-item {{ request()->is('jadwal-saya') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-calendar-check"></i></div>
+                            <span class="sb-text">Jadwal Saya</span>
                         </a>
                         @endcan
 
                         @can('akses_jadwal_saya')
-                        <a href="/pabrik-barcode" class="flex items-center px-6 py-3 {{ request()->is('pabrik-barcode') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-check w-6"></i> Cetak Barcode
+                        <a href="/pabrik-barcode" class="sb-item {{ request()->is('pabrik-barcode') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-barcode"></i></div>
+                            <span class="sb-text">Cetak Barcode</span>
                         </a>
                         @endcan
 
                         @can('akses_jadwal_saya')
-                        <a href="/scan-kelas" class="flex items-center px-6 py-3 {{ request()->is('scan-kelas') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-check w-6"></i> Scan Hadir
+                        <a href="/scan-kelas" class="sb-item {{ request()->is('scan-kelas') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-qrcode"></i></div>
+                            <span class="sb-text">Scan Hadir</span>
                         </a>
                         @endcan
 
-                        <!-- Menu Agenda & Kehadiran Kegiatan -->
-                        <a href="/agenda-kegiatan" class="flex items-center px-6 py-3 {{ request()->is('agenda-kegiatan*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-check w-6"></i> Agenda Kegiatan
+                        <a href="/agenda-kegiatan" class="sb-item {{ request()->is('agenda-kegiatan*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <span class="sb-text">Agenda Kegiatan</span>
                         </a>
                     </nav>
 
                     @canany(['akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas'])
-                    <div class="px-6 mb-2 text-xs font-bold text-green-600 uppercase tracking-wider border-t border-gray-100 pt-4">Basis Data Master</div>
-                    <nav class="space-y-1 pb-6">
+                    <div class="sb-group-title border-t border-slate-100">Basis Data Master</div>
+                    <nav class="space-y-1 pb-3">
                         @can('akses_master_guru')
-                        <a href="/master-guru" class="flex items-center px-6 py-3 {{ request()->is('master-guru*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-chalkboard-teacher w-6"></i> Master Guru
+                        <a href="/master-guru" class="sb-item {{ request()->is('master-guru*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                            <span class="sb-text">Master Guru</span>
                         </a>
                         @endcan
                         
                         @can('akses_master_pelajaran')
-                        <a href="/master-pelajaran" class="flex items-center px-6 py-3 {{ request()->is('master-pelajaran*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-book-open w-6"></i> Master Pelajaran
+                        <a href="/master-pelajaran" class="sb-item {{ request()->is('master-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-book-open"></i></div>
+                            <span class="sb-text">Master Pelajaran</span>
                         </a>
                         @endcan
 
                         @can('akses_master_pelajaran')
-                        <a href="/batas-pelajaran" class="flex items-center px-6 py-3 {{ request()->is('batas-pelajaran*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-book-open w-6"></i> Batas Pelajaran
+                        <a href="/batas-pelajaran" class="sb-item {{ request()->is('batas-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-layer-group"></i></div>
+                            <span class="sb-text">Batas Pelajaran</span>
                         </a>
                         @endcan
                         
                         @can('akses_master_kelas')
-                        <a href="/master-kelas" class="flex items-center px-6 py-3 {{ request()->is('master-kelas*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-school w-6"></i> Master Kelas
+                        <a href="/master-kelas" class="sb-item {{ request()->is('master-kelas*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-school"></i></div>
+                            <span class="sb-text">Master Kelas</span>
                         </a>
                         @endcan
                         
-                        <!-- TAMBAHAN: TOMBOL PUSAT IMPORT -->
                         @can('akses_master_guru')
-                        <a href="/master-import" class="flex items-center px-6 py-3 {{ request()->is('master-import*') ? 'bg-indigo-50 text-indigo-700 border-r-4 border-indigo-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600 transition font-medium' }}">
-                            <i class="fas fa-file-excel w-6"></i> Pusat Import
+                        <a href="/master-import" class="sb-item {{ request()->is('master-import*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-file-excel"></i></div>
+                            <span class="sb-text">Pusat Import</span>
                         </a>
                         @endcan
                     </nav>
                     @endcanany
 
                     @canany(['akses_master_periode', 'akses_hari_libur', 'akses_hari_operasional', 'akses_target_mengajar', 'akses_jadwal_harian'])
-                    <div class="px-6 mb-2 text-xs font-bold text-green-600 uppercase tracking-wider border-t border-gray-100 pt-4">Akademik & Jadwal</div>
-                    <nav class="space-y-1 pb-6">
+                    <div class="sb-group-title border-t border-slate-100">Akademik &amp; Jadwal</div>
+                    <nav class="space-y-1 pb-3">
                         @can('akses_master_periode')
-                        <a href="/master-periode" class="flex items-center px-6 py-3 {{ request()->is('master-periode*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-check w-6"></i> Master Periode
+                        <a href="/master-periode" class="sb-item {{ request()->is('master-periode*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-calendar-check"></i></div>
+                            <span class="sb-text">Master Periode</span>
                         </a>
                         @endcan
                         @can('akses_hari_libur')
-                        <a href="/agenda-kaldik" class="flex items-center px-6 py-3 {{ request()->is('agenda-kaldik*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-times w-6"></i> Kalender Pendidikan
+                        <a href="/agenda-kaldik" class="sb-item {{ request()->is('agenda-kaldik*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-calendar-times"></i></div>
+                            <span class="sb-text">Kalender Pendidikan</span>
                         </a>
                         @endcan
                         @can('akses_hari_operasional')
-                        <a href="/master-hari-operasional" class="flex items-center px-6 py-3 {{ request()->is('master-hari-operasional*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-week w-6"></i> Hari Operasional
+                        <a href="/master-hari-operasional" class="sb-item {{ request()->is('master-hari-operasional*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-calendar-week"></i></div>
+                            <span class="sb-text">Hari Operasional</span>
                         </a>
                         @endcan
                         @can('akses_target_mengajar')
-                        <a href="/master-plot-jadwal" class="flex items-center px-6 py-3 {{ request()->is('master-plot-jadwal*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-sitemap w-6"></i> Target Mengajar
+                        <a href="/master-plot-jadwal" class="sb-item {{ request()->is('master-plot-jadwal*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-sitemap"></i></div>
+                            <span class="sb-text">Target Mengajar</span>
                         </a>
                         @endcan
                         @can('akses_jadwal_harian')
-                        <a href="/master-jadwal-harian" class="flex items-center px-6 py-3 {{ request()->is('master-jadwal-harian*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-calendar-alt w-6"></i> Jadwal Harian
+                        <a href="/master-jadwal-harian" class="sb-item {{ request()->is('master-jadwal-harian*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <span class="sb-text">Jadwal Harian</span>
                         </a>
                         @endcan
                     </nav>
                     @endcanany
                     
                     @canany(['akses_manajemen_user', 'akses_manajemen_akses'])
-                    <div class="px-6 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider border-t border-gray-100 pt-4">Setup & Lainnya</div>
-                    <nav class="space-y-1">
+                    <div class="sb-group-title border-t border-slate-100">Setup &amp; Lainnya</div>
+                    <nav class="space-y-1 pb-3">
                         @can('akses_manajemen_user')
-                        <a href="/setup-user" class="flex items-center px-6 py-3 {{ request()->is('setup-user') || request()->is('user*') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-users-cog w-6"></i> Setup User
+                        <a href="/setup-user" class="sb-item {{ request()->is('setup-user') || request()->is('user*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-users-cog"></i></div>
+                            <span class="sb-text">Setup User</span>
                         </a>
                         @endcan
                         @can('akses_manajemen_akses')
-                        <a href="/manajemen-akses" class="flex items-center px-6 py-3 {{ request()->is('manajemen-akses') ? 'bg-green-50 text-green-700 border-r-4 border-green-600 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-green-600 transition font-medium' }}">
-                            <i class="fas fa-key w-6 text-center"></i> Hak Akses
+                        <a href="/manajemen-akses" class="sb-item {{ request()->is('manajemen-akses') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-key"></i></div>
+                            <span class="sb-text">Hak Akses</span>
                         </a>
                         @endcan
 
-                        <!-- Menu Sidebar: Manajemen Database -->
-                        <a href="/backup-restore" class="flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all {{ request()->is('backup-restore*') ? 'bg-indigo-600 text-white shadow-[0_4px_15px_-3px_rgba(79,70,229,0.4)]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                            <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 {{ request()->is('backup-restore*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500' }}">
-                                <i class="fas fa-database text-sm"></i>
-                            </div>
-                            <span>Manajemen Database</span>
+                        <a href="/backup-restore" class="sb-item {{ request()->is('backup-restore*') ? 'sb-active' : 'sb-inactive' }}">
+                            <div class="sb-icon"><i class="fas fa-database"></i></div>
+                            <span class="sb-text">Manajemen Database</span>
                         </a>
                     </nav>
                     @endcanany
@@ -325,67 +395,75 @@
 
             <div class="flex-1 flex flex-col overflow-hidden">
                 
-                <header class="sticky top-0 z-50 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 shadow-sm w-full">
+                <header class="app-header sticky top-0 z-50 flex items-center justify-between px-4 md:px-6 w-full">
 
-            <div class="flex items-center space-x-3">
-                <button onclick="toggleSidebar()" type="button" class="md:hidden text-gray-600 hover:text-green-600 hover:bg-green-50 p-2 rounded-xl focus:outline-none transition">
+            <div class="flex items-center min-w-0">
+                <button onclick="toggleSidebar()" type="button" class="md:hidden text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 p-2 rounded-xl focus:outline-none transition">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <div class="hidden md:block text-gray-600 font-medium">
-                    Assalamu'alaikum, Selamat datang di Muadalah Wustha Maqna'ul Ulum!
+                <button onclick="toggleSidebarCollapse()" id="sidebar-collapse-btn" type="button" class="hidden md:flex mr-3 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 p-2 rounded-xl focus:outline-none transition cursor-pointer">
+                    <i id="collapse-chevron" class="fas fa-chevron-left text-sm"></i>
+                </button>
+
+                <div class="flex items-center space-x-2 md:hidden">
+                    <span class="text-emerald-500 text-xl"><i class="fas fa-mosque"></i></span>
+                    <span class="font-black text-slate-800 text-base tracking-tight">Muadalah</span>
                 </div>
-                
+
                 @php
                     $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
                     $teksPeriode = $periodeAktif ? 'TA. ' . $periodeAktif->tahun_ajaran . ' (' . $periodeAktif->semester . ')' : '⚠ Periode Belum Diatur';
-                    $warnaPeriode = $periodeAktif ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-red-50 text-red-700 border-red-200 animate-pulse';
+                    $warnaPeriode = $periodeAktif ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200 animate-pulse';
                 @endphp
-                <div class="hidden lg:flex ml-4 px-3 py-1.5 rounded-lg text-xs font-bold border {{ $warnaPeriode }} items-center shadow-sm">
+                <div class="hidden xl:flex ml-3 px-3 py-1.5 rounded-lg text-xs font-bold border {{ $warnaPeriode }} items-center shadow-sm">
                     <i class="fas fa-calendar-check mr-2"></i> {{ $teksPeriode }}
-                </div>
-
-                <div class="flex items-center md:hidden">
-                    <span class="text-green-600 text-xl mr-2"><i class="fas fa-mosque"></i></span>
-                    <span class="font-bold text-gray-800 text-base tracking-tight">Muadalah</span>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-4 text-gray-600 relative">
-                <button class="hover:text-green-600 transition hidden sm:block"><i class="fas fa-bell text-lg"></i></button>
+            <div class="flex items-center space-x-3 sm:space-x-4 text-slate-600 relative">
+                <div class="relative hidden lg:block">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                    <input type="text" id="global-search" placeholder="Cari menu..." class="w-56 bg-slate-100/80 focus:bg-white border border-transparent focus:border-emerald-200 placeholder:text-slate-400 pl-11 pr-4 py-2 rounded-full text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-100 transition" />
+                </div>
+
+                <button class="relative hover:text-emerald-600 hover:bg-emerald-50 p-2.5 rounded-xl transition cursor-pointer w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                </button>
 
                 <div class="relative">
-                    <button onclick="toggleUserMenu()" class="flex items-center space-x-2 focus:outline-none hover:bg-gray-50 p-1 rounded-lg transition">
+                    <button onclick="toggleUserMenu()" class="flex items-center space-x-2 focus:outline-none hover:bg-slate-50 p-1.5 rounded-xl transition cursor-pointer w-full">
                         <div class="text-right hidden md:block">
-                            <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ auth()->user()->role ?? 'ADMIN INSTANSI' }}</p>
-                            <p class="text-sm font-bold text-green-700">{{ auth()->user()->name ?? 'Nama User' }}</p>
+                            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">{{ auth()->user()->role ?? 'ADMIN INSTANSI' }}</p>
+                            <p class="text-sm font-black text-emerald-700">{{ auth()->user()->name ?? 'Nama User' }}</p>
                         </div>
-                        <div class="h-9 w-9 rounded-full bg-green-600 flex items-center justify-center text-white shadow-sm border-2 border-white">
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md border-2 border-white">
                             <i class="fas fa-user"></i>
                         </div>
-                        <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                        <i class="fas fa-chevron-down text-xs text-slate-400"></i>
                     </button>
 
-                    <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden transform transition-all">
-                        <div class="p-4 border-b border-gray-100 flex items-center space-x-3 bg-gray-50">
-                            <div class="h-12 w-12 rounded-full bg-gray-700 flex items-center justify-center text-white flex-shrink-0 shadow-inner">
+                    <div id="user-dropdown" class="hidden absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden transform transition-all">
+                        <div class="p-4 border-b border-slate-100 flex items-center space-x-3 bg-gradient-to-br from-emerald-50 to-teal-50">
+                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white flex-shrink-0 shadow-md">
                                 <i class="fas fa-user text-xl"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-gray-800">{{ auth()->user()->name ?? 'Nama User' }}</p>
-                                <p class="text-xs text-gray-500 font-semibold">{{ auth()->user()->role ?? 'Role' }}</p>
+                                <p class="text-sm font-black text-slate-800">{{ auth()->user()->name ?? 'Nama User' }}</p>
+                                <p class="text-xs text-slate-500 font-semibold">{{ auth()->user()->role ?? 'Role' }}</p>
                             </div>
                         </div>
 
                         <div class="p-2">
-                            <button type="button" onclick="bukaModalGantiPassword()" class="w-full flex items-center px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 rounded-lg transition text-left cursor-pointer">
-                                <i class="fas fa-key w-6 text-gray-400"></i> Ganti Password
+                            <button type="button" onclick="bukaModalGantiPassword()" class="w-full flex items-center px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition text-left cursor-pointer">
+                                <i class="fas fa-key w-6 text-slate-400"></i> Ganti Password
                             </button>
                         </div>
                         
-                        <div class="p-3 border-t border-gray-100 bg-gray-50">
+                        <div class="p-3 border-t border-slate-100 bg-slate-50">
                             <form method="POST" action="/logout">
                                 @csrf
-                                <button type="submit" class="flex items-center justify-center w-full px-4 py-2 text-sm font-bold text-white bg-red-500 hover:bg-red-600 rounded-lg transition shadow-sm cursor-pointer">
+                                <button type="submit" class="flex items-center justify-center w-full px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 rounded-lg transition shadow-sm cursor-pointer">
                                     Logout <i class="fas fa-sign-out-alt ml-2"></i>
                                 </button>
                             </form>
@@ -493,6 +571,27 @@
             if (sidebar) sidebar.classList.toggle('-translate-x-full');
             if (backdrop) backdrop.classList.toggle('hidden');
         }
+
+        // TOGGLE SIDEBAR COLLAPSE (desktop, hanya ikon)
+        function toggleSidebarCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            const collapsed = sidebar.classList.toggle('sidebar-collapsed');
+            const chevron = document.getElementById('collapse-chevron');
+            if (chevron) chevron.classList.toggle('fa-chevron-left', collapsed);
+            if (chevron) chevron.classList.toggle('fa-chevron-right', !collapsed);
+            try { localStorage.setItem('sb-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+        }
+
+        (function applySidebarCollapse() {
+            try {
+                if (localStorage.getItem('sb-collapsed') === '1') {
+                    const sidebar = document.getElementById('sidebar');
+                    const chevron = document.getElementById('collapse-chevron');
+                    if (sidebar) sidebar.classList.add('sidebar-collapsed');
+                    if (chevron) { chevron.classList.remove('fa-chevron-left'); chevron.classList.add('fa-chevron-right'); }
+                }
+            } catch (e) {}
+        })();
 
         // TOGGLE DROPDOWN USER
         function toggleUserMenu() {

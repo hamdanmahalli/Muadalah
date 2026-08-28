@@ -8,41 +8,40 @@
 @endpush
 <style>
     header, aside { display: none !important; }
-    main { padding: 0 !important; background-color: #f8fafc !important; overflow: hidden !important; }
-    body { overflow: hidden !important; background-color: #f8fafc !important; }
+    #app main { padding: 0 !important; background-color: #000 !important; overflow: hidden !important; }
+    body { overflow: hidden !important; background-color: #000 !important; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
     .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     @supports (padding-bottom: env(safe-area-inset-bottom)) { .pb-safe { padding-bottom: env(safe-area-inset-bottom); } }
-    
-    /* Animasi Garis Scanner Elegan */
-    @keyframes scanLine {
-        0% { top: 0%; opacity: 0.8; }
-        50% { opacity: 1; }
-        100% { top: 95%; opacity: 0.8; }
-    }
-    .scanner-line {
-        position: absolute;
-        left: 10%;
-        right: 10%;
-        height: 2px;
-        background: #10b981;
-        box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
-        animation: scanLine 2s infinite ease-in-out alternate;
-    }
-    
-    /* Memastikan elemen video di dalam reader memenuhi area secara presisi */
+
+    /* Memastikan elemen video memenuhi area kamera secara presisi */
     #reader video {
         object-fit: cover !important;
         width: 100% !important;
         height: 100% !important;
-        border-radius: 1rem;
+    }
+
+    /* Animasi Garis Scanner */
+    @keyframes scanLine {
+        0% { top: 4%; opacity: 0.8; }
+        50% { opacity: 1; }
+        100% { top: 92%; opacity: 0.8; }
+    }
+    .scanner-line {
+        position: absolute;
+        left: 12%;
+        right: 12%;
+        height: 2px;
+        background: #10b981;
+        box-shadow: 0 0 12px #10b981, 0 0 24px #10b981;
+        animation: scanLine 2s infinite ease-in-out alternate;
     }
 </style>
 
-<div data-turbo="true" class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
-    
-    <!-- HEADER STICKY (Kembali ke Halaman Sebelumnya Secara Dinamis) -->
-    <div class="shrink-0 bg-white border-b border-slate-100 px-4 pt-4 pb-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-20">
+<div data-turbo="true" class="max-w-md mx-auto h-[100dvh] bg-black flex flex-col relative font-sans overflow-hidden">
+
+    <!-- HEADER: kembali + judul + TAB -->
+    <div class="shrink-0 bg-white px-4 pt-4 pb-3 z-30">
         <div class="flex items-center">
             <a href="javascript:history.back()" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-slate-100 hover:text-emerald-600 active:scale-95 transition-all">
                 <i class="fas fa-arrow-left"></i>
@@ -55,12 +54,12 @@
 
         <!-- TAB: Scan QR | QR Code -->
         <div class="flex mt-3 gap-1 bg-slate-100 p-1 rounded-2xl">
-            <button type="button" onclick="pindahTab('scan')" id="tab-scan"
+            <button type="button" id="tab-scan"
                 class="w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all
                        text-emerald-700 bg-white shadow-sm">
                 <i class="fas fa-qrcode"></i> Scan QR
             </button>
-            <button type="button" onclick="pindahTab('qr')" id="tab-qr"
+            <button type="button" id="tab-qr"
                 class="w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all
                        text-slate-400">
                 <i class="fas fa-user-tag"></i> QR Code
@@ -68,85 +67,67 @@
         </div>
     </div>
 
-    <!-- AREA KONTEN UTAMA -->
-    <div class="flex-1 overflow-y-auto bg-slate-50 relative z-10 p-5 scrollbar-none flex flex-col justify-center items-center">
-        
-        <!-- ============ PANEL 1: SCAN QR (KAMERA) ============ -->
-        <div id="panel-scan" class="w-full">
-        <!-- FRAME KAMERA ELEGAN (Sancod Builder Premium UI) -->
-        <div class="w-full bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative flex flex-col items-center overflow-hidden transition-all duration-300" id="kamera-card">
-            
-            <div class="w-full text-center mb-3">
-                <span id="badge-status" class="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 transition-colors duration-300">
-                    <i class="fas fa-circle text-[6px] mr-1.5 animate-pulse"></i> Kamera Aktif
-                </span>
-            </div>
+    <!-- AREA KAMERA FULL SCREEN (di bawah tab) -->
+    <div id="panel-scan" class="flex-1 relative overflow-hidden z-0 flex flex-col bg-black">
+        <!-- Area video kamera (layar hitam penuh) -->
+        <div class="flex-1 relative min-h-0">
+            <div id="reader" class="absolute inset-0"></div>
 
-            <!-- KOTAK KAMERA -->
-            <div class="w-full bg-slate-900 rounded-2xl overflow-hidden relative h-[250px] shadow-inner flex items-center justify-center">
-                
-                <!-- Layer Kamera Asli -->
-                <div id="reader" class="w-full h-full absolute inset-0"></div>
-                
-                <!-- LAYER OVERLAY KACA BURAM (Ukuran Font Ramah Lansia & UI Premium) -->
-                <div id="kamera-overlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/85 backdrop-blur-lg opacity-0 pointer-events-none transition-all duration-500 transform scale-105 p-4 text-center">
-                    
-                    <!-- Ikon diperbesar dari w-16/text-3xl menjadi w-20/text-4xl -->
-                    <div id="overlay-icon" class="w-20 h-20 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_40px_rgba(99,102,241,0.6)] transition-all duration-300">
-                        <i class="fas fa-circle-notch fa-spin"></i>
-                    </div>
-                    
-                    <!-- Teks Utama: Diperbesar ke text-lg/xl dengan efek bayangan menyala -->
-                    <p id="overlay-text" class="text-white font-black tracking-widest text-lg md:text-xl uppercase drop-shadow-md">MEMPROSES</p>
-                    
-                    <!-- Subteks: Dari 10px menjadi 14px (text-sm), dibuat lebih tebal (font-bold) -->
-                    <p id="overlay-subtext" class="text-slate-200 text-sm mt-2 font-bold leading-snug drop-shadow-sm px-2">Sinkronisasi ke server...</p>
-                </div>
+            <!-- Garis laser pemandu -->
+            <div id="laser-line" class="scanner-line pointer-events-none z-10 transition-opacity duration-300"></div>
 
-                <!-- GARIS LASER SCANNER PEMANDU -->
-                <div id="laser-line" class="scanner-line pointer-events-none z-10 transition-opacity duration-300"></div>
-                
-                <!-- KOTAK PANDUAN FOCUS -->
-                <div id="focus-box" class="absolute w-[180px] h-[180px] border-2 border-emerald-400/60 rounded-xl pointer-events-none z-10 shadow-[0_0_15px_rgba(16,185,129,0.2)] transition-opacity duration-300"></div>
-            </div>
-
-            <p id="teks-bantuan" class="text-[11px] font-medium text-slate-400 text-center mt-3 transition-opacity duration-300">
-                Pastikan posisi QR Code berada di dalam kotak bingkai.
+            <!-- Caption di atas layar hitam (antara kotak fokus & pembatas putih) -->
+            <p id="teks-bantuan" class="absolute inset-x-0 bottom-3 z-20 text-white text-[12px] font-semibold text-center transition-opacity duration-300">
+                Arahkan kamera ke QR Code
             </p>
-        </div>
-        </div><!-- /panel-scan -->
 
-        <!-- ============ PANEL 2: QR CODE PRIBADI GURU ============ -->
-        <div id="panel-qr" class="hidden w-full">
-            <div class="w-full bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center">
-                <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 mb-4">
-                    <i class="fas fa-user-tag text-[10px] mr-1.5"></i> QR Pribadi Guru
-                </span>
-
-                @if($guru && $qrPribadi)
-                <div class="w-[210px] h-[210px] bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-center p-2 shadow-inner">
-                    <img src="data:image/svg+xml,{{ $qrPribadi }}" alt="QR Pribadi {{ $guru->nama_guru }}" class="w-full h-full object-contain rounded-lg">
+            <!-- Panel Hasil Sukses (kamera dimatikan) -->
+            <div id="panel-sukses" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm px-6 text-center">
+                <div class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-5 shadow-[0_0_40px_rgba(16,185,129,0.6)]">
+                    <i class="fas fa-check"></i>
                 </div>
-                <div class="text-center mt-4">
-                    <p class="text-base font-black text-slate-800">{{ $guru->nama_guru }}</p>
-                    <p class="text-xs font-bold text-emerald-600">NIG: {{ $guru->nig }}</p>
-                </div>
-                <p class="text-[11px] font-medium text-slate-400 text-center mt-4 leading-relaxed">
-                    Tunjukkan QR ini kepada TU saat absen kegiatan.<br>
-                    TU akan memindainya sebagai bukti kehadiran Anda.
-                </p>
-                @else
-                <div class="w-[210px] h-[210px] rounded-2xl bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center">
-                    <i class="fas fa-user-slash text-4xl text-slate-300"></i>
-                </div>
-                <p class="text-sm font-bold text-slate-500 mt-4 text-center">Profil guru tidak ditemukan.<br>Hubungi admin untuk data akun Anda.</p>
-                @endif
+                <p id="sukses-nama" class="text-white font-black tracking-widest text-xl uppercase drop-shadow-md">Hadir Tercatat</p>
+                <p id="sukses-pesan" class="text-slate-200 text-sm mt-2 font-bold leading-snug drop-shadow-sm px-2"></p>
+                <button type="button" id="btn-scan-lagi"
+                    class="mt-6 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-md shadow-emerald-500/30 transition-all active:scale-95">
+                    <i class="fas fa-camera mr-2"></i> Pindai Lagi
+                </button>
             </div>
-        </div><!-- /panel-qr -->
+        </div>
 
+        <!-- Pembatas putih di bagian bawah -->
+        <div class="shrink-0 bg-white border-t border-slate-200 relative z-20 h-10"></div>
     </div>
 
-    <!-- MODAL KONFIRMASI PIKET (Tersembunyi secara default) -->
+    <!-- ============ PANEL 2: QR CODE PRIBADI GURU ============ -->
+    <div id="panel-qr" class="hidden flex-1 z-0 bg-gray-50 overflow-y-auto scrollbar-none p-5 flex flex-col items-center justify-center">
+        <div class="w-full bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center">
+            <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 mb-4">
+                <i class="fas fa-user-tag text-[10px] mr-1.5"></i> QR Pribadi Guru
+            </span>
+
+            @if($guru && $qrPribadi)
+            <div class="w-[210px] h-[210px] bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-center p-2 shadow-inner">
+                <img src="data:image/svg+xml,{{ $qrPribadi }}" alt="QR Pribadi {{ $guru->nama_guru }}" class="w-full h-full object-contain rounded-lg">
+            </div>
+            <div class="text-center mt-4">
+                <p class="text-base font-black text-slate-800">{{ $guru->nama_guru }}</p>
+                <p class="text-xs font-bold text-emerald-600">NIG: {{ $guru->nig }}</p>
+            </div>
+            <p class="text-[11px] font-medium text-slate-400 text-center mt-4 leading-relaxed">
+                Tunjukkan QR ini kepada TU saat absen kegiatan.<br>
+                TU akan memindainya sebagai bukti kehadiran Anda.
+            </p>
+            @else
+            <div class="w-[210px] h-[210px] rounded-2xl bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center">
+                <i class="fas fa-user-slash text-4xl text-slate-300"></i>
+            </div>
+            <p class="text-sm font-bold text-slate-500 mt-4 text-center">Profil guru tidak ditemukan.<br>Hubungi admin untuk data akun Anda.</p>
+            @endif
+        </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI PIKET -->
     <div id="modal-piket" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4">
         <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl transform scale-100 transition-transform">
             <div class="p-6 text-center">
@@ -154,9 +135,7 @@
                     <i class="fas fa-exchange-alt"></i>
                 </div>
                 <h3 class="text-xl font-black text-slate-800 tracking-tight mb-2">Deteksi Jadwal Berbeda</h3>
-                <p id="teks-konfirmasi-piket" class="text-sm text-slate-600 leading-relaxed font-medium mb-6">
-                    <!-- Teks dari server akan masuk ke sini -->
-                </p>
+                <p id="teks-konfirmasi-piket" class="text-sm text-slate-600 leading-relaxed font-medium mb-6"></p>
                 <div class="flex gap-3">
                     <button onclick="batalPiket()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-colors active:scale-95">Bukan</button>
                     <button id="btn-lanjut-piket" onclick="lanjutPiket()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-500/30 transition-all active:scale-95">Ya, Saya Inval</button>
@@ -171,92 +150,34 @@
 <script>
     (function() {
         let isProcessing = false;
-        let html5QrCode;
+        let html5QrCode = null;
+        let kameraBerjalan = false;
+        let jadwalIdsPiketSementara = [];
 
-        let jadwalIdsPiketSementara = []; // Memori sementara untuk menyimpan ID
+        const panelScan = document.getElementById('panel-scan');
+        const panelQr = document.getElementById('panel-qr');
+        const panelSukses = document.getElementById('panel-sukses');
+        const tabScan = document.getElementById('tab-scan');
+        const tabQr = document.getElementById('tab-qr');
+        const laser = document.getElementById('laser-line');
 
-        // FUNGSI PENGENDALI ANTARMUKA (Sancod Builder UI Engine - Aksesibilitas Lansia)
-        function setKameraUI(state, pesanUtama = '', pesanSub = '') {
-            const overlay = document.getElementById('kamera-overlay');
-            const icon = document.getElementById('overlay-icon');
-            const text = document.getElementById('overlay-text');
-            const subtext = document.getElementById('overlay-subtext');
-            const laser = document.getElementById('laser-line');
-            const focusBox = document.getElementById('focus-box');
-            const badge = document.getElementById('badge-status');
-            const card = document.getElementById('kamera-card');
-
-            if (state !== 'reset') {
-                overlay.classList.remove('opacity-0', 'pointer-events-none', 'scale-105');
-                overlay.classList.add('opacity-100', 'scale-100');
-                laser.style.opacity = '0';
-                focusBox.style.opacity = '0';
-            }
-
-            if (state === 'processing') {
-                card.className = "w-full bg-white p-5 rounded-3xl border border-indigo-200 shadow-[0_0_20px_rgba(99,102,241,0.1)] relative flex flex-col items-center overflow-hidden transition-all duration-300";
-                badge.className = "inline-block px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-100 transition-colors duration-300";
-                badge.innerHTML = '<i class="fas fa-spinner fa-spin text-[10px] mr-1.5"></i> Memproses';
-                
-                // Ikon dan shadow diperbesar
-                icon.className = "w-20 h-20 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_40px_rgba(99,102,241,0.6)]";
-                icon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-                text.innerText = 'MEMPROSES';
-                subtext.innerText = 'Menyandikan data kehadiran...';
-            } 
-            else if (state === 'success') {
-                card.className = "w-full bg-white p-5 rounded-3xl border border-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.1)] relative flex flex-col items-center overflow-hidden transition-all duration-300";
-                badge.className = "inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 transition-colors duration-300";
-                badge.innerHTML = '<i class="fas fa-check text-[10px] mr-1.5"></i> Selesai';
-
-                icon.className = "w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_40px_rgba(16,185,129,0.6)]";
-                icon.innerHTML = '<i class="fas fa-check"></i>';
-                text.innerText = 'BERHASIL';
-                text.classList.replace('text-white', 'text-emerald-400');
-                subtext.innerHTML = pesanUtama; 
-            }
-            else if (state === 'error') {
-                card.className = "w-full bg-white p-5 rounded-3xl border border-rose-200 shadow-[0_0_20px_rgba(225,29,72,0.1)] relative flex flex-col items-center overflow-hidden transition-all duration-300";
-                badge.className = "inline-block px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-rose-100 transition-colors duration-300";
-                badge.innerHTML = '<i class="fas fa-times text-[10px] mr-1.5"></i> Error';
-
-                icon.className = "w-20 h-20 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_40px_rgba(225,29,72,0.6)]";
-                icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-                text.innerText = 'DITOLAK';
-                text.classList.replace('text-white', 'text-rose-400');
-                subtext.innerHTML = pesanUtama;
-            }
-            else if (state === 'piket') {
-                card.className = "w-full bg-white p-5 rounded-3xl border border-blue-200 shadow-[0_0_20px_rgba(59,130,246,0.1)] relative flex flex-col items-center overflow-hidden transition-all duration-300";
-                badge.className = "inline-block px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 transition-colors duration-300 animate-pulse";
-                badge.innerHTML = '<i class="fas fa-user-shield text-[10px] mr-1.5"></i> Mode Inval';
-
-                icon.className = "w-20 h-20 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_40px_rgba(59,130,246,0.6)]";
-                icon.innerHTML = '<i class="fas fa-exchange-alt"></i>';
-                text.innerText = 'BEDA JADWAL';
-                text.classList.replace('text-white', 'text-blue-400');
-                subtext.innerHTML = 'Menunggu konfirmasi Anda...';
-            }
-            else if (state === 'reset') {
-                card.className = "w-full bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative flex flex-col items-center overflow-hidden transition-all duration-300";
-                badge.className = "inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 transition-colors duration-300";
-                badge.innerHTML = '<i class="fas fa-circle text-[6px] mr-1.5 animate-pulse"></i> Kamera Aktif';
-                
-                // Kembalikan ukuran dan warna teks utama saat reset
-                text.className = 'text-white font-black tracking-widest text-lg md:text-xl uppercase drop-shadow-md';
-
-                overlay.classList.remove('opacity-100', 'scale-100');
-                overlay.classList.add('opacity-0', 'pointer-events-none', 'scale-105');
-                laser.style.opacity = '1';
-                focusBox.style.opacity = '1';
-            }
+        // ===== TAMPILKAN / SEMBUNYIKAN PANEL SUKSES (kamera dimatikan) =====
+        function tampilSukses(nama, pesan) {
+            document.getElementById('sukses-nama').textContent = nama;
+            document.getElementById('sukses-pesan').textContent = pesan;
+            panelSukses.classList.remove('hidden');
+            laser.style.opacity = '0';
+        }
+        function sembunyiSukses() {
+            panelSukses.classList.add('hidden');
+            laser.style.opacity = '1';
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            if (isProcessing) return; 
+            if (isProcessing) return;
             isProcessing = true;
-            
-            // 0. Saat offline tidak bisa mengirimkan kehadiran
+
+            // Saat offline tidak bisa mengirimkan kehadiran
             if (typeof wajibOnline === 'function' && !wajibOnline(null, 'Scan Hadir memerlukan koneksi internet')) {
                 if (typeof tampilNotif === 'function') tampilNotif('error', 'Mode Offline', 'Scan kehadiran butuh internet.');
                 setTimeout(() => { isProcessing = false; }, 2000);
@@ -274,14 +195,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Skenario Normal (Jadwal Sendiri)
-                    if (typeof tampilNotif === 'function') tampilNotif('success', 'Hadir Tercatat', data.pesan);
+                    // Sukses: matikan kamera + tampilkan panel sukses
+                    hentikanKamera();
                     if (navigator.vibrate) navigator.vibrate(200);
-                    isProcessing = false;
-                } 
+                    tampilSukses('Hadir Tercatat', data.pesan || 'Kehadiran Anda telah tercatat.');
+                }
                 else if (data.status === 'confirm_piket') {
-                    // Skenario Inval (Jadwal Orang Lain)
-                    setKameraUI('piket');
+                    // Kamera tetap aktif, munculkan modal konfirmasi
                     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     document.getElementById('teks-konfirmasi-piket').innerHTML = data.pesan;
                     jadwalIdsPiketSementara = data.data.jadwal_ids;
@@ -289,7 +209,7 @@
                     isProcessing = false;
                 }
                 else {
-                    // Skenario Error
+                    // Error: kamera tetap aktif agar bisa scan ulang
                     if (typeof tampilNotif === 'function') tampilNotif('error', 'Gagal', data.pesan);
                     if (navigator.vibrate) navigator.vibrate([300]);
                     isProcessing = false;
@@ -301,14 +221,13 @@
             });
         }
 
-        // Fungsi Jika Guru Menekan Batal di Modal Piket
+        // Batal di modal piket
         window.batalPiket = function() {
             document.getElementById('modal-piket').classList.add('hidden');
-            setKameraUI('reset'); // Kembalikan kamera
-            isProcessing = false; // Buka kunci scanner
+            isProcessing = false;
         }
 
-        // Fungsi Jika Guru Menekan "Ya, Saya Inval"
+        // "Ya, Saya Inval"
         window.lanjutPiket = function() {
             let btnLanjut = document.getElementById('btn-lanjut-piket');
             btnLanjut.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
@@ -327,29 +246,36 @@
                 document.getElementById('modal-piket').classList.add('hidden');
                 btnLanjut.innerHTML = 'Ya, Saya Inval';
                 btnLanjut.disabled = false;
-                
-                if (typeof tampilNotif === 'function') tampilNotif('success', 'Hadir Tercatat', data.pesan);
+
+                hentikanKamera();
                 if (navigator.vibrate) navigator.vibrate(200);
-                isProcessing = false;
+                tampilSukses('Hadir Tercatat', data.pesan || 'Kehadiran Anda telah tercatat.');
             });
         }
 
-        html5QrCode = new Html5Qrcode("reader");
-        window.__html5QrEl = html5QrCode;
-        let kameraBerjalan = false;
+        // ===== KAMERA =====
+        function initKamera() {
+            if (typeof Html5Qrcode === 'undefined') {
+                if (typeof tampilNotif === 'function') tampilNotif('error', 'Kamera', 'Library kamera gagal dimuat. Muat ulang halaman.');
+                return;
+            }
+            if (html5QrCode) return;
+            try {
+                html5QrCode = new Html5Qrcode("reader");
+                window.__html5QrEl = html5QrCode;
+            } catch (err) {
+                console.error("Gagal init kamera:", err);
+            }
+        }
 
-        const config = { 
-            fps: 10, 
-            qrbox: { width: 180, height: 180 } 
-        };
-
-        // Nyalakan kamera (hanya jika belum jalan)
         function mulaiKamera() {
             if (kameraBerjalan) return;
+            if (!html5QrCode) { initKamera(); }
             if (!html5QrCode) return;
+
             html5QrCode.start(
-                { facingMode: "environment" }, 
-                config, 
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 180, height: 180 } },
                 onScanSuccess
             ).then(function() {
                 kameraBerjalan = true;
@@ -359,7 +285,6 @@
             });
         }
 
-        // Matikan kamera (saat pindah tab / keluar halaman)
         function hentikanKamera() {
             if (!kameraBerjalan) return;
             kameraBerjalan = false;
@@ -370,18 +295,14 @@
             } catch (err) {}
         }
 
-        // Fungsi pindah tab (dipanggil dari tombol tab)
-        window.pindahTab = function(nama) {
-            const panelScan = document.getElementById('panel-scan');
-            const panelQr = document.getElementById('panel-qr');
-            const tabScan = document.getElementById('tab-scan');
-            const tabQr = document.getElementById('tab-qr');
-
+        // ===== TAB =====
+        function pindahTab(nama) {
             if (nama === 'scan') {
                 panelScan.classList.remove('hidden');
                 panelQr.classList.add('hidden');
                 tabScan.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-emerald-700 bg-white shadow-sm";
                 tabQr.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-slate-400";
+                sembunyiSukses();
                 mulaiKamera();
             } else {
                 panelQr.classList.remove('hidden');
@@ -390,12 +311,35 @@
                 tabScan.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-slate-400";
                 hentikanKamera();
             }
-        };
+        }
+        window.pindahTab = pindahTab;
 
-        // Mulai di tab Scan QR (kamera dinyalakan)
-        mulaiKamera();
+        tabScan.addEventListener('click', function() { pindahTab('scan'); });
+        tabQr.addEventListener('click', function() { pindahTab('qr'); });
+        document.getElementById('btn-scan-lagi').addEventListener('click', function() {
+            sembunyiSukses();
+            mulaiKamera();
+        });
 
-        // Bersihkan kamera saat meninggalkan halaman (navigasi Turbo / SPA)
+        // ===== START AMAN (hanya saat halaman terlihat + retry) =====
+        function cobaMulaiKamera() {
+            if (document.visibilityState === 'visible') {
+                // Mulai hanya jika tab scan aktif
+                if (!panelScan.classList.contains('hidden')) {
+                    mulaiKamera();
+                }
+            }
+        }
+
+        window.addEventListener('load', function() { setTimeout(cobaMulaiKamera, 300); });
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(cobaMulaiKamera, 300); });
+        document.addEventListener('turbo:load', function() { setTimeout(cobaMulaiKamera, 300); });
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') cobaMulaiKamera();
+        });
+        window.addEventListener('pageshow', function() { setTimeout(cobaMulaiKamera, 300); });
+
+        // Bersihkan saat meninggalkan halaman
         document.addEventListener('turbo:before-visit', hentikanKamera);
         window.addEventListener('pagehide', hentikanKamera);
     })();

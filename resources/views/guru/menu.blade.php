@@ -29,6 +29,19 @@
         
         <div class="space-y-3">
             
+            @can('akses_dashboard')
+            <!-- MENU 0: Dashboard Utama (khusus pengguna yang punya akses dashboard utama) -->
+            <a href="/dashboard-utama" class="w-full flex items-center justify-between bg-emerald-600 p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(16,185,129,0.25)] group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                        <i class="fas fa-desktop text-lg"></i>
+                    </div>
+                    <span class="text-sm font-bold text-white">Dashboard Utama</span>
+                </div>
+                <i class="fas fa-chevron-right text-white/70 text-xs"></i>
+            </a>
+            @endcan
+
             <!-- MENU 1: Profil Saya -->
             <a href="{{ route('guru.profil.lengkap') }}" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
                 <div class="flex items-center space-x-4">
