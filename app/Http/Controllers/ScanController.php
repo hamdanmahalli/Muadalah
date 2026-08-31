@@ -106,6 +106,7 @@ class ScanController extends Controller
             // 4. Identifikasi Hari dan Waktu Sekarang
             $hariIni = map_hari(\Carbon\Carbon::now()->format('l'));
             $tanggalSekarang = \Carbon\Carbon::now()->format('Y-m-d');
+            $waktuSekarang = \Carbon\Carbon::now()->format('H:i:s');
 
             // 5. AMBIL JADWAL YANG VALID PADA HARI INI (Konsep Effective-Dated)
             $semuaJadwalRuanganIni = JadwalHarian::with(['guru', 'pelajaran'])

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -357,7 +357,7 @@
                     @php
                         $gMenuUtama   = request()->is('/', 'dashboard-guru', 'meja-kontrol', 'monitoring-kehadiran*', 'laporan', 'jadwal-saya', 'pabrik-barcode', 'scan-kelas', 'agenda-kegiatan*');
                         $gBasis       = request()->is('master-guru*', 'master-pelajaran*', 'batas-pelajaran*', 'master-kelas*', 'master-import*');
-                        $gAkademik    = request()->is('master-periode*', 'agenda-kaldik*', 'master-hari-operasional*', 'master-plot-jadwal*', 'master-jadwal-harian*', 'riwayat-mutasi*');
+                        $gAkademik    = request()->is('master-periode*', 'agenda-kaldik*', 'pengumuman*', 'master-hari-operasional*', 'master-plot-jadwal*', 'master-jadwal-harian*', 'riwayat-mutasi*');
                         $gSetup       = request()->is('setup-user', 'user*', 'manajemen-akses', 'backup-restore*', 'panduan-aplikasi*');
                     @endphp
 
@@ -497,7 +497,7 @@
                     </div>
                     @endcanany
 
-                    @canany(['akses_master_periode', 'akses_hari_libur', 'akses_hari_operasional', 'akses_target_mengajar', 'akses_jadwal_harian', 'akses_riwayat_mutasi'])
+                    @canany(['akses_master_periode', 'akses_hari_libur', 'akses_hari_operasional', 'akses_target_mengajar', 'akses_jadwal_harian', 'akses_riwayat_mutasi', 'akses_pengumuman'])
                     <!-- GRUP: AKADEMIK & JADWAL -->
                     <div class="sb-group {{ $gAkademik ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
@@ -521,6 +521,15 @@
                                 <a href="/agenda-kaldik" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('agenda-kaldik*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-times text-xl"></i></div>
                                     <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Kalender Pendidikan</span>
+                                </a>
+                            </div>
+                            @endcan
+
+                            @can('akses_pengumuman')
+                            <div class="relative flex items-center group">
+                                <a href="/pengumuman" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('pengumuman*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-bullhorn text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Pengumuman</span>
                                 </a>
                             </div>
                             @endcan
@@ -1098,3 +1107,6 @@
 
 
 </html>
+
+
+

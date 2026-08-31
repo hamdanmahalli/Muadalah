@@ -21,6 +21,7 @@ use App\Http\Controllers\AgendaKegiatanController;
 use App\Http\Controllers\DatabaseManagerController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\MonitoringKehadiranController;
+use App\Http\Controllers\PengumumanController;
 
 
 // ==========================================================
@@ -119,6 +120,7 @@ Route::middleware(['auth'])->group(function () {
     // ZONA AKADEMIK & JADWAL
     // ----------------------------------------------------------
     Route::resource('agenda-kaldik', AgendaKaldikController::class)->middleware('can:akses_hari_libur');
+    Route::resource('pengumuman', PengumumanController::class)->middleware('can:akses_pengumuman');
 
     Route::middleware(['can:akses_target_mengajar'])->group(function () {
         Route::get('/master-plot-jadwal', [PlotJadwalController::class, 'index']);

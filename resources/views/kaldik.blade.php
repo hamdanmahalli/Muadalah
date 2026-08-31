@@ -61,7 +61,7 @@
                             <p class="text-lg font-black text-slate-800 leading-tight">{{ $item->telah_berlalu }} <span class="text-[10px] font-semibold text-slate-400">/ {{ $item->target_total }}</span></p>
                         </div>
 
-                        @if($agendaUts && $item->sisa_pertemuan_pra_uts > 0)
+                        @if($agendaUts)
                             <div class="w-px h-8 bg-slate-200 mx-2"></div>
                             <div class="text-center flex-1">
                                 <p class="text-[9px] font-bold text-amber-500 uppercase tracking-wider mb-1">Sisa Pra-UTS</p>

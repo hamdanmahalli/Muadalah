@@ -691,7 +691,17 @@ class JadwalController extends Controller
             }
         }
 
-        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif'));
+        $pengumumans = \App\Models\Pengumuman::where('aktif', true)
+                        ->where(function ($q) {
+                            $q->whereNull('tanggal_mulai')->orWhere('tanggal_mulai', '<=', date('Y-m-d'));
+                        })
+                        ->where(function ($q) {
+                            $q->whereNull('tanggal_selesai')->orWhere('tanggal_selesai', '>=', date('Y-m-d'));
+                        })
+                        ->latest()
+                        ->get();
+
+        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans'));
     }
 
     // ==========================================================
@@ -744,3 +754,5 @@ class JadwalController extends Controller
         return back()->with('status', 'Biodata profil berhasil diperbarui!');
     }
 }
+
+

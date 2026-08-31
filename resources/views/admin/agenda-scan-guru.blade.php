@@ -92,6 +92,7 @@
     let isProcessing = false;
     let html5QrCode = null;
     let kameraBerjalan = false;
+    let scanSelesai = false;
 
     const panelSukses = document.getElementById('panel-sukses');
     const laser = document.getElementById('laser-line');
@@ -130,6 +131,7 @@
         .then(data => {
             if (data.status === 'success') {
                 // Sukses: matikan kamera + tampilkan panel sukses
+                scanSelesai = true;
                 hentikanKamera();
                 if (navigator.vibrate) navigator.vibrate(200);
                 tampilSukses('Hadir Tercatat', data.pesan);
@@ -192,12 +194,14 @@
     }
 
     document.getElementById('btn-scan-lagi').addEventListener('click', function() {
+        scanSelesai = false;
         sembunyiSukses();
         mulaiKamera();
     });
 
     // START AMAN
     function cobaMulaiKamera() {
+        if (scanSelesai) return;
         if (document.visibilityState === 'visible') mulaiKamera();
     }
     window.addEventListener('load', function() { setTimeout(cobaMulaiKamera, 300); });

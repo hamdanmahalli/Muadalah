@@ -75,103 +75,126 @@
             $jmlHariMengajar = is_array($jadwals) ? count($jadwals) : 0;
         @endphp
 
-        <!-- ===== KARTU RINGKASAN GRADIEN (alá saldo BYOND) ===== -->
-        <div class="bg-gradient-to-br from-emerald-700 via-emerald-700 to-teal-800 rounded-3xl p-5 shadow-[0_22px_45px_-18px_rgba(6,78,59,0.7)] relative overflow-hidden">
-            <div class="absolute -right-10 -top-12 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-            <div class="absolute -left-8 -bottom-14 w-40 h-40 bg-teal-400/25 rounded-full blur-2xl pointer-events-none"></div>
 
-            <div class="flex items-center justify-between mb-4 relative z-10">
-                <div class="flex items-center gap-2">
-                    <span class="w-8 h-8 rounded-xl bg-white/15 backdrop-blur text-white flex items-center justify-center"><i class="fas fa-gauge-high text-sm"></i></span>
-                    <h3 class="text-sm font-black text-white tracking-tight">Ringkasan Hari Ini</h3>
-                </div>
-                <span class="px-2.5 py-1 rounded-full bg-white text-emerald-700 text-[10px] font-black uppercase tracking-wider shadow-md">
-                    {{ $hariIniLokalStats }}
-                </span>
-            </div>
+        <!-- ===== PAPAN PENGUMUMAN (carousel geser otomatis) ===== -->
+        @php
+            $warnaPengumuman = [
+                'emerald' => 'from-emerald-600 to-teal-700',
+                'blue' => 'from-blue-600 to-sky-700',
+                'amber' => 'from-amber-500 to-orange-600',
+                'rose' => 'from-rose-500 to-pink-700',
+                'violet' => 'from-violet-600 to-purple-700',
+                'cyan' => 'from-cyan-500 to-sky-600',
+                'indigo' => 'from-indigo-600 to-blue-700',
+            ];
+        @endphp
 
-            <div class="grid grid-cols-3 divide-x divide-white/15 relative z-10">
-                <div class="pr-3">
-                    <p class="text-[10px] font-bold text-emerald-100 uppercase tracking-wider mb-1">Kelas</p>
-                    <p class="text-3xl font-black text-white leading-none">{{ $jmlKelasHariIni }}</p>
-                </div>
-                <div class="px-3">
-                    <p class="text-[10px] font-bold text-emerald-100 uppercase tracking-wider mb-1">Jam</p>
-                    <p class="text-3xl font-black text-white leading-none">{{ $jmlJamHariIni }}</p>
-                </div>
-                <div class="pl-3">
-                    <p class="text-[10px] font-bold text-emerald-100 uppercase tracking-wider mb-1">Hari Aktif</p>
-                    <p class="text-3xl font-black text-white leading-none">{{ $jmlHariMengajar }}</p>
+        @if(count($pengumumans) > 0)
+        <div id="pengumuman-carousel" class="flex overflow-x-auto snap-x snap-mandatory gap-3 scrollbar-none -mx-5 px-5 pb-1">
+            @foreach($pengumumans as $peng)
+            <div class="snap-center shrink-0 w-full rounded-3xl p-6 shadow-[0_22px_45px_-18px_rgba(15,23,42,0.5)] relative overflow-hidden bg-gradient-to-br {{ $warnaPengumuman[$peng->warna] ?? $warnaPengumuman['emerald'] }}">
+                @if($peng->gambar)
+                <div class="absolute inset-0 bg-cover bg-center pointer-events-none" style="background-image:url('{{ asset('storage/' . $peng->gambar) }}');"></div>
+                @else
+                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 200 200%27%3E%3Cg fill=%27none%27 stroke=%27white%27 stroke-width=%271.5%27%3E%3Cpath d=%27M100 10 L190 190 H10 Z%27/%3E%3Cpath d=%27M100 45 L155 190 H45 Z%27/%3E%3Cpath d=%27M100 80 L120 190 H80 Z%27/%3E%3Ccircle cx=%27100%27 cy=%27100%27 r=%2770%27/%3E%3Ccircle cx=%27100%27 cy=%27100%27 r=%2750%27/%3E%3Ccircle cx=%27100%27 cy=%27100%27 r=%2730%27/%3E%3C/g%3E%3C/svg%3E');background-size:200px 200px;background-repeat:repeat;background-position:center;"></div>
+                <div class="absolute -right-10 -top-12 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-14 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                @endif
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-7 h-7 rounded-full bg-amber-400 border border-amber-300 flex items-center justify-center text-amber-900 shadow-sm"><i class="fas fa-bullhorn text-xs"></i></span>
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pengumuman</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight leading-snug">{{ $peng->judul }}</h3>
+                    @if($peng->isi)
+                    <p class="text-sm font-medium text-slate-600 leading-relaxed mt-2">{{ $peng->isi }}</p>
+                    @endif
                 </div>
             </div>
+            @endforeach
         </div>
-
-        <!-- ===== MENU LAYANAN (tile solid warna, à la BYOND) ===== -->
-        <div class="flex items-center justify-between mt-7 mb-1">
+        @if(count($pengumumans) > 1)
+        <div class="flex justify-center items-center space-x-2 mt-3">
+            @foreach($pengumumans as $index => $p)
+                <div class="dot-pengumuman rounded-full transition-all duration-300 {{ $loop->first ? 'bg-slate-700 w-6 h-2' : 'bg-slate-300 w-2 h-2' }}"></div>
+            @endforeach
+        </div>
+        @endif
+        @else
+        <div class="bg-gradient-to-br from-slate-600 to-slate-800 rounded-3xl p-6 shadow-[0_22px_45px_-18px_rgba(15,23,42,0.5)] relative overflow-hidden">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="w-8 h-8 rounded-xl bg-white/15 backdrop-blur text-white flex items-center justify-center"><i class="fas fa-bullhorn text-sm"></i></span>
+                <h3 class="text-sm font-black text-white tracking-tight">Papan Pengumuman</h3>
+            </div>
+            <p class="text-xs font-medium text-white/80 leading-relaxed">Belum ada pengumuman untuk saat ini.</p>
+        </div>
+        @endif
+        <div class="flex items-center justify-between mt-7 mb-4">
             <h3 class="text-[15px] font-black text-slate-900 tracking-tight">Layanan</h3>
             <span class="text-[10px] font-bold text-slate-400">Ketuk untuk akses cepat</span>
         </div>
 
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4 mb-2.5">Absensi &amp; Kehadiran</p>
-        <div class="grid grid-cols-4 gap-3">
-            <a href="/scan-kelas" class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(6,182,212,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-qrcode text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Scan Hadir</span>
+        
+        <div class="grid grid-cols-4 gap-x-3 gap-y-3 mx-4">
+            <!-- 4 menu pertama tampil -->
+            <a href="/scan-kelas" class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(6,182,212,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-qrcode text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Scan Hadir</span>
             </a>
-            <a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-chart-simple text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Rekap</span>
+            <a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-list-check text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Rekap</span>
             </a>
-            <a href="/agenda-kegiatan" class="bg-gradient-to-br from-rose-500 to-rose-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(244,63,94,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-calendar-day text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Agenda</span>
+            <a href="/agenda-kegiatan" class="bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(244,63,94,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-calendar-day text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Agenda</span>
             </a>
-            <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-id-badge text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">QR Pribadi</span>
+            <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-id-badge text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">QR Pribadi</span>
             </button>
+
+            <!-- sisanya terlipat -->
+            <div id="menu-tersembunyi" class="col-span-4 grid grid-cols-4 gap-x-3 gap-y-3 mt-4 hidden">
+            <a href="/jadwal-saya" class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(99,102,241,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-calendar-days text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Jadwal</span>
+            </a>
+            <a href="/kaldik" class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(245,158,11,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-book-open text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Kaldik</span>
+            </a>
+            <button onclick="tampilToast('info', 'Ganti Jam segera hadir.'); return false;" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-arrows-rotate text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Ganti Jam</span>
+            </button>
+            <button onclick="tampilToast('info', 'Cuti / Izin segera hadir.'); return false;" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(236,72,153,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-paper-plane text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Cuti/Izin</span>
+            </button>
+            <a href="{{ route('guru.profil.lengkap') }}" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(16,185,129,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-user text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Profil</span>
+            </a>
+            <button onclick="tampilToast('info', 'Nilai Ujian segera hadir.'); return false;" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-chart-column text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Nilai Ujian</span>
+            </button>
+            <a href="/notifikasi/pengaturan" class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(20,184,166,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-bell text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Notifikasi</span>
+            </a>
+            <button onclick="tampilToast('info', 'Wali Kelas segera hadir.'); return false;" class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(51,65,85,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-chalkboard-user text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Wali Kelas</span>
+            </button>
+            </div>
         </div>
 
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-6 mb-2.5">Akademik</p>
-        <div class="grid grid-cols-4 gap-3">
-            <a href="/jadwal-saya" class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(99,102,241,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-calendar-days text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Jadwal</span>
-            </a>
-            <a href="/kaldik" class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(245,158,11,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-book-open text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Kaldik</span>
-            </a>
-            <button onclick="tampilToast('info', 'Ganti Jam segera hadir.'); return false;" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-arrows-rotate text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Ganti Jam</span>
-            </button>
-            <button onclick="tampilToast('info', 'Cuti / Izin segera hadir.'); return false;" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(236,72,153,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-paper-plane text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Cuti/Izin</span>
-            </button>
-        </div>
-
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-6 mb-2.5">Akun &amp; Informasi</p>
-        <div class="grid grid-cols-4 gap-3">
-            <a href="{{ route('guru.profil.lengkap') }}" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(16,185,129,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-user text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Profil</span>
-            </a>
-            <button onclick="tampilToast('info', 'Pengumuman segera hadir.'); return false;" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-bullhorn text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Pengumuman</span>
-            </button>
-            <a href="/notifikasi/pengaturan" class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(20,184,166,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-bell text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Notifikasi</span>
-            </a>
-            <a href="/menu" class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl px-1 pt-4 pb-3 flex flex-col items-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(51,65,85,0.7)] active:scale-95 transition-all">
-                <i class="fas fa-grid-2 text-xl text-white"></i>
-                <span class="text-[9px] font-black text-white/95 tracking-wide leading-tight text-center">Semua</span>
-            </a>
-        </div>
-
+        <button onclick="toggleMenuLainnya(this)" class="mx-auto mt-4 flex items-center gap-2 text-[10px] font-black text-slate-500 hover:text-emerald-600 transition-colors">
+            <span class="menu-toggle-text">Tampilkan Semua</span>
+            <i class="fas fa-chevron-down menu-toggle-chev text-[8px] mt-0.5"></i>
+        </button>
         <!-- ===== JADWAL HARI INI (list alá riwayat transaksi) ===== -->
         <div class="flex items-center justify-between mt-7 mb-3">
             <h3 class="text-[15px] font-black text-slate-900 tracking-tight">Jadwal Hari Ini</h3>
@@ -285,6 +308,52 @@
         }
     })();
 
+    (function() {
+        const pCarousel = document.getElementById('pengumuman-carousel');
+        const pDots = document.querySelectorAll('.dot-pengumuman');
+        if (pCarousel && pDots.length > 0) {
+            let index = 0;
+            const total = pDots.length;
+            const cardWidth = () => pCarousel.querySelector('.snap-center')?.offsetWidth || pCarousel.clientWidth;
+            const updateDots = () => {
+                pDots.forEach((dot, i) => {
+                    if (i === index) {
+                        dot.className = 'dot-pengumuman rounded-full transition-all duration-300 bg-slate-700 w-6 h-2';
+                    } else {
+                        dot.className = 'dot-pengumuman rounded-full transition-all duration-300 bg-slate-300 w-2 h-2';
+                    }
+                });
+            };
+            const goTo = (i) => {
+                index = (i + total) % total;
+                pCarousel.scrollTo({ left: index * (cardWidth() + 12), behavior: 'smooth' });
+                updateDots();
+            };
+            pCarousel.addEventListener('scroll', () => {
+                const current = Math.round(pCarousel.scrollLeft / (cardWidth() + 12));
+                index = Math.min(Math.max(current, 0), total - 1);
+                updateDots();
+            });
+            setInterval(() => goTo(index + 1), 4000);
+        }
+    })();
+
+    function toggleMenuLainnya(btn) {
+        const box = document.getElementById('menu-tersembunyi');
+        if (!box) return;
+        const text = btn.querySelector('.menu-toggle-text');
+        const chev = btn.querySelector('.menu-toggle-chev');
+        if (box.classList.contains('hidden')) {
+            box.classList.remove('hidden');
+            if (text) text.textContent = 'Sembunyikan';
+            if (chev) chev.classList.add('rotate-180');
+        } else {
+            box.classList.add('hidden');
+            if (text) text.textContent = 'Tampilkan Semua';
+            if (chev) chev.classList.remove('rotate-180');
+        }
+    }
+
     function tampilToast(tipe, pesan) {
         const warna = {
             info: 'from-slate-800 to-slate-900',
@@ -306,3 +375,7 @@
     }
 </script>
 @endsection
+
+
+
+

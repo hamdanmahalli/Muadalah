@@ -8,9 +8,11 @@
             <h2 class="text-xl font-bold text-gray-700">Setup User & Hak Akses (Multi-Role)</h2>
             <p class="text-xs text-gray-500 mt-0.5">Kelola akun pengguna dan tentukan hak akses jabatan (Admin, TU, Guru, dll).</p>
         </div>
-        <button onclick="bukaModalTambah()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition flex items-center shadow-sm cursor-pointer">
-            <i class="fas fa-plus mr-2"></i> Tambah User
-        </button>
+        <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="bukaModalTambah()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition flex items-center shadow-sm cursor-pointer">
+                <i class="fas fa-plus mr-2"></i> Tambah User
+            </button>
+        </div>
     </div>
 
     @if ($errors->any())
@@ -68,9 +70,12 @@
                             <i class="fas fa-edit"></i>
                         </button>
                         
-                        <button onclick="bukaModalReset({{ $user->id }}, '{{ $user->name }}')" title="Reset Password ke 123456" class="w-8 h-8 inline-flex rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition items-center justify-center cursor-pointer">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
+                        <form method="POST" action="/setup-user/{{ $user->id }}/reset-password" class="inline" onsubmit="return confirm('Reset sandi untuk {{ $user->name }} menjadi sandi acak baru? Hasilnya akan ditampilkan di layar.');">
+                            @csrf @method('PUT')
+                            <button type="submit" title="Reset Sandi (Sandi Acak Baru)" class="w-8 h-8 inline-flex rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition items-center justify-center cursor-pointer">
+                                <i class="fas fa-key"></i>
+                            </button>
+                        </form>
 
                         <button onclick="bukaModalHapus({{ $user->id }}, '{{ $user->name }}')" title="Hapus User" class="w-8 h-8 inline-flex rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition items-center justify-center cursor-pointer">
                             <i class="fas fa-trash-alt"></i>
@@ -153,21 +158,36 @@
         </div>
     </div>
 
-    <div id="modal-reset" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
+    <div id="modal-hasil-reset" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="relative mx-auto p-6 border w-full max-w-sm shadow-2xl rounded-xl bg-white text-center">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-5">
-                <i class="fas fa-exclamation-triangle text-2xl text-yellow-600"></i>
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 mb-5">
+                <i class="fas fa-key text-2xl text-emerald-600"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">Konfirmasi Reset</h3>
-            <p class="text-sm text-gray-500 mb-6">Yakin ingin mereset password untuk <br><strong id="reset-nama-user" class="text-gray-800 text-base"></strong><br>menjadi <strong class="text-emerald-600 text-base">123456</strong>?</p>
-            
-            <form id="form-reset" method="POST" action="">
-                @csrf @method('PUT')
-                <div class="flex justify-center space-x-3">
-                    <button type="button" onclick="tutupModalReset()" class="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition w-full">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition shadow-sm w-full">Ya, Reset</button>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Sandi Baru Berhasil Dibuat</h3>
+            <p class="text-xs text-gray-400 mb-5">Salin lalu sebarkan ke guru. Sandi ini hanya tampil sekali dan akan hilang saat halaman ditutup/refresh.</p>
+
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-5 text-left">
+                <div class="flex items-center justify-between mb-3">
+                    <span id="hasil-nama" class="text-sm font-semibold text-gray-700">{{ session('hasil_reset')['nama'] ?? '' }}</span>
+                    <button type="button" id="btn-salin-hasil" onclick="salinSandi({{ json_encode(session('hasil_reset')['username'] ?? '') }}, {{ json_encode(session('hasil_reset')['sandi'] ?? '') }}, this)" class="shrink-0 w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition flex items-center justify-center cursor-pointer" title="Salin Username & Sandi">
+                        <i class="fas fa-copy text-sm"></i>
+                    </button>
                 </div>
-            </form>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <div class="text-xs text-gray-400 font-semibold">USERNAME</div>
+                        <div id="hasil-username" class="font-bold text-gray-800">{{ session('hasil_reset')['username'] ?? '-' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400 font-semibold">SANDI BARU</div>
+                        <div id="hasil-sandi" class="font-bold text-emerald-600">{{ session('hasil_reset')['sandi'] ?? '-' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="button" onclick="tutupModalHasilReset()" class="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition w-full">Tutup</button>
+            </div>
         </div>
     </div>
 
@@ -188,17 +208,13 @@
             </form>
         </div>
     </div>
-    
-    <script>
-        function bukaModalReset(id, nama) {
-            document.getElementById('modal-reset').classList.remove('hidden');
-            document.getElementById('reset-nama-user').innerText = nama;
-            document.getElementById('form-reset').action = "/setup-user/" + id + "/reset-password";
-        }
 
-        function tutupModalReset() {
-            document.getElementById('modal-reset').classList.add('hidden');
-        }
+    <script>
+        @if(session()->has('hasil_reset'))
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('modal-hasil-reset').classList.remove('hidden');
+        });
+        @endif
 
         function bukaModalHapus(id, nama) {
             document.getElementById('modal-hapus').classList.remove('hidden');
@@ -241,6 +257,40 @@
 
         function tutupModal() {
             document.getElementById('modal-user').classList.add('hidden');
+        }
+
+        function tutupModalHasilReset() {
+            document.getElementById('modal-hasil-reset').classList.add('hidden');
+        }
+
+        function salinSandi(username, sandi, btn) {
+            var nama = document.getElementById('hasil-nama').innerText || '';
+            var teks = 'Nama: ' + nama + '\nUsername: ' + username + '\nSandi: ' + sandi;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(teks).then(function() {
+                    tandaiTersalin(btn);
+                });
+            } else {
+                var area = document.createElement('textarea');
+                area.value = teks;
+                document.body.appendChild(area);
+                area.select();
+                document.execCommand('copy');
+                document.body.removeChild(area);
+                tandaiTersalin(btn);
+            }
+        }
+
+        function tandaiTersalin(btn) {
+            var asli = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-sm"></i>';
+            btn.classList.remove('bg-indigo-50', 'text-indigo-600');
+            btn.classList.add('bg-emerald-500', 'text-white');
+            setTimeout(function() {
+                btn.innerHTML = asli;
+                btn.classList.add('bg-indigo-50', 'text-indigo-600');
+                btn.classList.remove('bg-emerald-500', 'text-white');
+            }, 1500);
         }
     </script>
 @endsection

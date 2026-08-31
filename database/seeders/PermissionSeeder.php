@@ -32,7 +32,8 @@ class PermissionSeeder extends Seeder
             'akses_manajemen_user',
             'akses_manajemen_akses',
             'akses_jadwal_saya',
-            'akses_riwayat_mutasi' 
+            'akses_riwayat_mutasi',
+            'akses_pengumuman' 
         ];
 
         // Buat Kunci di Database
@@ -59,9 +60,10 @@ class PermissionSeeder extends Seeder
         // 4. Sinkronisasi Kunci Sementara
         $roleAdmin->syncPermissions($permissions); // Admin pegang semua kunci
         $rolePimpinan->syncPermissions(['akses_dashboard', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian']);
-        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi']);
+        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi', 'akses_pengumuman']);
         
         // PENTING: Berikan Kunci Dashboard Guru ke Dewan Guru
         $roleDewanGuru->syncPermissions(['akses_dashboard_guru', 'akses_jadwal_saya']);
     }
 }
+

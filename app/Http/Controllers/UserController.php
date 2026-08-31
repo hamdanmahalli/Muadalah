@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
-
 class UserController extends Controller
 {
     public function index()
@@ -77,11 +77,25 @@ class UserController extends Controller
     public function resetPassword($id)
     {
         $user = User::findOrFail($id);
+        $sandi = $this->buatSandiAcak();
         $user->update([
-            'password' => Hash::make('123456')
+            'password' => Hash::make($sandi)
         ]);
 
-        return redirect()->back()->with('sukses', 'Password untuk ' . $user->name . ' telah di-reset menjadi: 123456');
+        // Simpan hasil sandi baru ke session (tampil sekali di layar, lalu hilang)
+        session()->flash('hasil_reset', [
+            'nama'     => $user->name,
+            'username' => $user->username,
+            'sandi'    => $sandi,
+        ]);
+
+        return redirect()->back()->with('sukses', 'Sandi untuk ' . $user->name . ' telah di-reset. Salin sandi baru dari layar dan sebarkan ke guru.');
+    }
+
+    // Menghasilkan sandi acak format "kata + angka" yang mudah diingat
+    private function buatSandiAcak(): string
+    {
+        return ucfirst(Str::random(5)) . rand(10, 99);
     }
 
     public function destroy($id)

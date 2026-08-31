@@ -153,6 +153,7 @@
         let html5QrCode = null;
         let kameraBerjalan = false;
         let jadwalIdsPiketSementara = [];
+        let scanSelesai = false;
 
         const panelScan = document.getElementById('panel-scan');
         const panelQr = document.getElementById('panel-qr');
@@ -196,6 +197,7 @@
             .then(data => {
                 if (data.status === 'success') {
                     // Sukses: matikan kamera + tampilkan panel sukses
+                    scanSelesai = true;
                     hentikanKamera();
                     if (navigator.vibrate) navigator.vibrate(200);
                     tampilSukses('Hadir Tercatat', data.pesan || 'Kehadiran Anda telah tercatat.');
@@ -247,6 +249,7 @@
                 btnLanjut.innerHTML = 'Ya, Saya Inval';
                 btnLanjut.disabled = false;
 
+                scanSelesai = true;
                 hentikanKamera();
                 if (navigator.vibrate) navigator.vibrate(200);
                 tampilSukses('Hadir Tercatat', data.pesan || 'Kehadiran Anda telah tercatat.');
@@ -298,6 +301,7 @@
         // ===== TAB =====
         function pindahTab(nama) {
             if (nama === 'scan') {
+                scanSelesai = false;
                 panelScan.classList.remove('hidden');
                 panelQr.classList.add('hidden');
                 tabScan.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-emerald-700 bg-white shadow-sm";
@@ -317,12 +321,14 @@
         tabScan.addEventListener('click', function() { pindahTab('scan'); });
         tabQr.addEventListener('click', function() { pindahTab('qr'); });
         document.getElementById('btn-scan-lagi').addEventListener('click', function() {
+            scanSelesai = false;
             sembunyiSukses();
             mulaiKamera();
         });
 
         // ===== START AMAN (hanya saat halaman terlihat + retry) =====
         function cobaMulaiKamera() {
+            if (scanSelesai) return;
             if (document.visibilityState === 'visible') {
                 // Mulai hanya jika tab scan aktif
                 if (!panelScan.classList.contains('hidden')) {
