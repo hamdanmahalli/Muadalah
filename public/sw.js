@@ -1,6 +1,5 @@
-const CACHE_NAME = 'smart-pesantren-v9';
+const CACHE_NAME = 'smart-pesantren-v10';
 const PRECACHE_URLS = [
-    '/manifest.json',
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
     '/offline.html',
@@ -13,7 +12,7 @@ const PRECACHE_URLS = [
 
 const isStaticAsset = url => {
     const pathname = url.pathname;
-    return pathname.startsWith('/icons/') || pathname === '/manifest.json';
+    return pathname.startsWith('/icons/');
 };
 
 // 1. Saat Service Worker pertama kali dipasang: simpan halaman inti agar bisa dibuka offline
