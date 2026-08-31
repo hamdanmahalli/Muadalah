@@ -288,19 +288,37 @@
     // ====== INSTALL APLIKASI (PWA) ======
     let deferredInstallPrompt = null;
 
+    function dukungInstallPWA() {
+        // Browser mendukung instal PWA bila memiliki event beforeinstallprompt
+        // (Chrome/Edge/Android). Safari iOS & beberapa browser tidak.
+        return ('onbeforeinstallprompt' in window);
+    }
+
     function tampilkanTombolInstall() {
         let btn = document.getElementById('btn-install-aplikasi');
-        if (btn) {
-            btn.classList.remove('hidden');
-            btn.classList.add('flex');
-        }
+        if (!btn) return;
+        btn.classList.remove('hidden');
+        btn.classList.add('flex');
     }
 
     function sembunyikanTombolInstall() {
         let btn = document.getElementById('btn-install-aplikasi');
-        if (btn) {
-            btn.classList.add('hidden');
-            btn.classList.remove('flex');
+        if (!btn) return;
+        btn.classList.add('hidden');
+        btn.classList.remove('flex');
+    }
+
+    // Saat halaman dimuat: tampilkan tombol bila browser mendukung instal PWA
+    // dan aplikasi belum terinstal (tidak sedang berjalan dalam mode standalone).
+    function cekStatusInstall() {
+        let sudahTerinstal = window.matchMedia('(display-mode: standalone)').matches
+            || window.matchMedia('(display-mode: fullscreen)').matches
+            || window.navigator.standalone === true;
+
+        if (sudahTerinstal) {
+            sembunyikanTombolInstall();
+        } else if (dukungInstallPWA()) {
+            tampilkanTombolInstall();
         }
     }
 
@@ -315,18 +333,31 @@
         sembunyikanTombolInstall();
     });
 
+    // Jalankan cek status (tunggu DOM siap)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', cekStatusInstall);
+    } else {
+        cekStatusInstall();
+    }
+
     function pilihInstallAplikasi() {
-        if (!deferredInstallPrompt) {
-            tampilToast('info', 'Aplikasi belum siap diinstal pada browser ini.');
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.then((hasil) => {
+                if (hasil.outcome === 'accepted') {
+                    tampilToast('success', 'Aplikasi sedang dipasang...');
+                }
+                deferredInstallPrompt = null;
+            });
             return;
         }
-        deferredInstallPrompt.prompt();
-        deferredInstallPrompt.userChoice.then((hasil) => {
-            if (hasil.outcome === 'accepted') {
-                tampilToast('success', 'Aplikasi sedang dipasang...');
-            }
-            deferredInstallPrompt = null;
-        });
+
+        // Belum ada prompt otomatis siap -> beri panduan manual
+        if (/Android/i.test(navigator.userAgent)) {
+            tampilToast('info', 'Buka menu titik tiga di browser, lalu pilih "Tambahkan ke layar utama".');
+        } else {
+            tampilToast('info', 'Buka menu browser (titik tiga), lalu pilih "Instal aplikasi" atau "Tambahkan ke layar utama".');
+        }
     }
 </script>
 @endsection
