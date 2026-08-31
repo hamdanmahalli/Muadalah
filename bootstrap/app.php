@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
+        // Cegah browser menyajikan halaman lama dari HTTP cache (harus fresh).
+        $middleware->prepend(\App\Http\Middleware\NoStoreCache::class);
+
         // Endpoint telemetri dari Service Worker (tanpa CSRF token)
         $middleware->validateCsrfTokens(except: [
             'notifikasi/pulse',

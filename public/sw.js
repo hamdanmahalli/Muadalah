@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-pesantren-v8';
+const CACHE_NAME = 'smart-pesantren-v9';
 const PRECACHE_URLS = [
     '/manifest.json',
     '/icons/icon-192x192.png',
@@ -59,6 +59,30 @@ self.addEventListener('fetch', event => {
 
     const url = new URL(event.request.url);
     if (url.origin !== location.origin) return;
+
+    // Navigasi halaman (HTML): SELALU ambil fresh dari server saat online.
+    // paksa cache:no-store agar browser tidak menyajikan halaman lama dari HTTP cache,
+    // sehingga tidak perlu refresh manual tiap kali membuka halaman.
+    if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+        const freshRequest = new Request(event.request, { cache: 'no-store' });
+        event.respondWith(
+            fetch(freshRequest)
+                .then(response => {
+                    if (response && response.status === 200) {
+                        const clone = response.clone();
+                        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                    }
+                    return response;
+                })
+                .catch(() =>
+                    caches.match(event.request).then(cached => {
+                        if (cached) return cached;
+                        return caches.match('/offline.html');
+                    })
+                )
+        );
+        return;
+    }
 
     if (isStaticAsset(url)) {
         event.respondWith(
