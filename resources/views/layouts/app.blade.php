@@ -270,7 +270,9 @@
         
         /* FUNGSI BUKA/TUTUP ACCORDION (Tetap menggunakan .sb-open) */
         .sb-chev { 
-            margin-left: auto; font-size: 12px; color: #94a3b8; transition: transform 0.25s ease; 
+            margin-left: auto; font-size: 14px; color: #64748b; transition: transform 0.25s ease;
+            visibility: visible !important; opacity: 1 !important; width: auto !important;
+            min-width: auto !important; flex-shrink: 0; display: inline-block;
         }
         .sb-group.sb-open .sb-chev { transform: rotate(180deg); }
         
@@ -367,7 +369,7 @@
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
                                 <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-th-large text-xl text-slate-500"></i></span>
                                 <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Menu Utama</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400"></i>
+                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -449,7 +451,7 @@
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
                                 <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-database text-xl text-slate-500"></i></span>
                                 <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Basis Data Master</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400"></i>
+                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -504,7 +506,7 @@
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
                                 <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-alt text-xl text-slate-500"></i></span>
                                 <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Akademik &amp; Jadwal</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400"></i>
+                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -576,7 +578,7 @@
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
                                 <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-cog text-xl text-slate-500"></i></span>
                                 <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Setup &amp; Lainnya</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400"></i>
+                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">

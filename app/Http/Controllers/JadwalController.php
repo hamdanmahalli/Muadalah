@@ -712,10 +712,6 @@ class JadwalController extends Controller
         $user = auth()->user();
         $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
 
-        if (!$guru) {
-            return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
-        }
-
         return view('guru.menu', compact('guru', 'user'));
     }
 

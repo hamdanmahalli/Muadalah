@@ -129,7 +129,7 @@
             <p class="text-xs font-medium text-white/80 leading-relaxed">Belum ada pengumuman untuk saat ini.</p>
         </div>
         @endif
-        <div class="flex items-center justify-between mt-7 mb-4">
+        <div class="flex items-center justify-between mt-7 mb-4 mx-4">
             <h3 class="text-[15px] font-black text-slate-900 tracking-tight">Layanan</h3>
             <span class="text-[10px] font-bold text-slate-400">Ketuk untuk akses cepat</span>
         </div>
@@ -196,13 +196,13 @@
             <i class="fas fa-chevron-down menu-toggle-chev text-[8px] mt-0.5"></i>
         </button>
         <!-- ===== JADWAL HARI INI (list alá riwayat transaksi) ===== -->
-        <div class="flex items-center justify-between mt-7 mb-3">
+        <div class="flex items-center justify-between mt-7 mb-3 mx-4">
             <h3 class="text-[15px] font-black text-slate-900 tracking-tight">Jadwal Hari Ini</h3>
             <span class="text-[11px] font-bold text-slate-400">{{ $hariIniLokalStats }}</span>
         </div>
 
         @forelse($jadwalHariIni as $blok)
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_4px_16px_-10px_rgba(2,6,23,0.08)] px-4 py-3.5 flex items-center gap-4 mb-2.5">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_4px_16px_-10px_rgba(2,6,23,0.08)] px-4 py-3.5 flex items-center gap-4 mb-2.5 mx-4">
             <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-black text-base border border-emerald-100 shrink-0">
                 {{ $blok['jam_tampil'] ?? ('Jam ' . ($blok['jam_mulai'] ?? '')) }}
             </div>
@@ -213,7 +213,7 @@
             <i class="fas fa-chevron-right text-slate-300 text-xs shrink-0"></i>
         </div>
         @empty
-        <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-5 text-center">
+        <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-5 text-center mx-4">
             <div class="w-12 h-12 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl"><i class="fas fa-mug-hot"></i></div>
             <p class="text-sm font-black text-slate-700">Tidak Ada Jadwal Hari Ini</p>
             <p class="text-[11px] font-semibold text-slate-400 mt-1">Nikmati hari libur mengajar Anda.</p>
@@ -221,7 +221,7 @@
         @endforelse
 
         <!-- ===== JADWAL MINGGU INI (horizontal carousel) ===== -->
-        <div class="flex items-center justify-between mt-7 mb-3">
+        <div class="flex items-center justify-between mt-7 mb-3 mx-4">
             <h3 class="text-[15px] font-black text-slate-900 tracking-tight">Jadwal Minggu Ini</h3>
             <span class="text-[11px] font-bold text-slate-400 flex items-center gap-1">Geser <i class="fas fa-arrow-right text-[9px]"></i></span>
         </div>
@@ -232,15 +232,12 @@
             $hariIniLokal = $mapHari[$hariIniStr] ?? 'Senin';
         @endphp
 
-        <div id="jadwal-carousel" class="flex overflow-x-auto snap-x snap-mandatory gap-3 scrollbar-none -mx-5 px-5 pb-1">
+        <div id="jadwal-carousel" class="flex overflow-x-auto snap-x snap-mandatory gap-3 scrollbar-none px-4 pb-1">
             @forelse($jadwals as $hari => $listJadwal)
             @php $isToday = (strtolower($hari) == strtolower($hariIniLokal)); @endphp
             <div class="snap-center shrink-0 w-[86%] max-w-[330px] bg-white rounded-3xl p-5 border transition-all duration-300 {{ $isToday ? 'border-emerald-300 shadow-[0_14px_34px_-16px_rgba(16,185,129,0.45)]' : 'border-slate-100 shadow-[0_6px_20px_-12px_rgba(2,6,23,0.12)]' }}">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-2">
-                        @if($isToday)
-                        <span class="px-2 py-1 rounded-lg bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider">Hari Ini</span>
-                        @endif
                         <p class="text-sm font-black text-slate-700 uppercase tracking-widest">Hari {{ $hari }}</p>
                     </div>
                     <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">{{ count($listJadwal) }} Pertemuan</span>

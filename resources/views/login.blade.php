@@ -268,6 +268,17 @@
                     }
                 </script>
             </form>
+
+            <!-- Bantuan login: hubungi TU jika tidak bisa masuk -->
+            <div class="mt-6 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 flex items-start text-emerald-800">
+                <i class="fas fa-headset text-emerald-600 text-sm mt-0.5 mr-3"></i>
+                <div class="min-w-0">
+                    <p class="text-xs font-extrabold uppercase tracking-wide text-emerald-700">Mengalami kendala masuk?</p>
+                    <p class="text-xs text-emerald-700/80 font-medium mt-1 leading-snug line-clamp-2">
+                        Hubungi <strong class="font-bold">Tata Usaha (TU)</strong> 
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
