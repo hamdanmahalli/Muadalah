@@ -135,6 +135,14 @@
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2.5">Lainnya</p>
                 <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] overflow-hidden divide-y divide-slate-100">
+                    <button id="btn-install-aplikasi" onclick="pilihInstallAplikasi()" class="hidden items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-arrow-down-to-bracket text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Install Aplikasi</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Pasang di layar utama perangkat</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </button>
                     <button onclick="bukaModal('modal-tentang', 'bg-tentang', 'box-tentang')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
                         <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-circle-info text-base"></i></span>
                         <span class="flex-1 min-w-0">
@@ -275,6 +283,50 @@
             });
         }
         setTimeout(() => { location.reload(); }, 1200);
+    }
+
+    // ====== INSTALL APLIKASI (PWA) ======
+    let deferredInstallPrompt = null;
+
+    function tampilkanTombolInstall() {
+        let btn = document.getElementById('btn-install-aplikasi');
+        if (btn) {
+            btn.classList.remove('hidden');
+            btn.classList.add('flex');
+        }
+    }
+
+    function sembunyikanTombolInstall() {
+        let btn = document.getElementById('btn-install-aplikasi');
+        if (btn) {
+            btn.classList.add('hidden');
+            btn.classList.remove('flex');
+        }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        tampilkanTombolInstall();
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        sembunyikanTombolInstall();
+    });
+
+    function pilihInstallAplikasi() {
+        if (!deferredInstallPrompt) {
+            tampilToast('info', 'Aplikasi belum siap diinstal pada browser ini.');
+            return;
+        }
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((hasil) => {
+            if (hasil.outcome === 'accepted') {
+                tampilToast('success', 'Aplikasi sedang dipasang...');
+            }
+            deferredInstallPrompt = null;
+        });
     }
 </script>
 @endsection
