@@ -12,4 +12,10 @@ class KehadiranGuru extends Model
 
     // Membuka gembok keamanan agar semua kolom bisa diisi otomatis via AJAX
     protected $guarded = [];
+
+    // Relasi ke jadwal yang menjadi sumber sijadwal kehadiran ini
+    public function jadwal()
+    {
+        return $this->belongsTo(JadwalHarian::class, 'jadwal_id');
+    }
 }

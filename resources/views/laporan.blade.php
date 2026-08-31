@@ -60,15 +60,15 @@
         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs relative overflow-hidden">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Realita Hadir</p>
-                    <h3 class="text-2xl font-black text-emerald-700 mt-1">{{ number_format($totalSeluruhRealita) }} <span class="text-xs text-emerald-600 font-normal">Jam</span></h3>
+                    <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Kelas Terisi</p>
+                    <h3 class="text-2xl font-black text-emerald-700 mt-1">{{ number_format($totalSeluruhKelasTerisi) }} <span class="text-xs text-emerald-600 font-normal">Jam</span></h3>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
             <div class="mt-3 flex items-center text-[11px] text-emerald-600 font-semibold">
-                <span class="bg-emerald-100 px-2 py-0.5 rounded-full mr-1.5 font-bold">{{ $persenTotalRealita }}%</span> Efektivitas Terpenuhi
+                <span class="bg-emerald-100 px-2 py-0.5 rounded-full mr-1.5 font-bold">{{ $persenTotalKelasTerisi }}%</span> Efektivitas Terpenuhi
             </div>
         </div>
 
@@ -91,14 +91,14 @@
             <div class="flex items-center justify-between relative z-10">
                 <div>
                     <p class="text-xs font-semibold text-emerald-100 uppercase tracking-wider">Tingkat Kehadiran</p>
-                    <h3 class="text-3xl font-black mt-1">{{ $persenTotalRealita }}%</h3>
+                    <h3 class="text-3xl font-black mt-1">{{ $persenTotalKelasTerisi }}%</h3>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white text-xl">
                     <i class="fas fa-award"></i>
                 </div>
             </div>
             <div class="mt-3 text-[11px] text-emerald-100 font-medium relative z-10">
-                @if($persenTotalRealita >= 80)
+                @if($persenTotalKelasTerisi >= 80)
                     🌟 Status Instansi: <span class="font-bold underline">Sangat Baik</span>
                 @else
                     ⚠️ Status Instansi: <span class="font-bold underline">Perlu Evaluasi</span>
@@ -127,7 +127,7 @@
                         <li class="flex items-start">
                             <i class="fas fa-dot-circle text-[8px] text-rose-400 mt-1.5 mr-3"></i>
                             <div>
-                                <strong class="text-gray-800 text-sm">{{ $libur->nama_libur }}</strong>
+                                <strong class="text-gray-800 text-sm">{{ $libur->nama_agenda }}</strong>
                                 <span class="text-gray-500 ml-2">
                                     ({{ \Carbon\Carbon::parse($libur->tanggal_mulai)->translatedFormat('d M Y') }}
                                     @if($libur->tanggal_mulai != $libur->tanggal_selesai)

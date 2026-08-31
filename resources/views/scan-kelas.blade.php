@@ -43,12 +43,12 @@
     <!-- HEADER: kembali + judul + TAB -->
     <div class="shrink-0 bg-white px-4 pt-4 pb-3 z-30">
         <div class="flex items-center">
-            <a href="javascript:history.back()" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-slate-100 hover:text-emerald-600 active:scale-95 transition-all">
-                <i class="fas fa-arrow-left"></i>
+            <a href="javascript:history.back()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 hover:text-emerald-600 active:scale-95 transition-all shrink-0">
+                <i class="fas fa-arrow-left text-sm"></i>
             </a>
-            <div class="flex-1 px-4">
-                <h2 class="text-base font-black text-slate-800 tracking-tight">Scan Barcode Kelas</h2>
-                <p class="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Kehadiran & QR Pribadi</p>
+            <div class="flex-1 px-3">
+                <h2 class="text-base font-black text-slate-900 tracking-tight">Scan Barcode Kelas</h2>
+                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Kehadiran & QR Pribadi</p>
             </div>
         </div>
 
@@ -100,19 +100,19 @@
     </div>
 
     <!-- ============ PANEL 2: QR CODE PRIBADI GURU ============ -->
-    <div id="panel-qr" class="hidden flex-1 z-0 bg-gray-50 overflow-y-auto scrollbar-none p-5 flex flex-col items-center justify-center">
-        <div class="w-full bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center">
-            <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 mb-4">
+    <div id="panel-qr" class="hidden flex-1 z-0 bg-slate-50 overflow-y-auto scrollbar-none p-5 flex flex-col items-center justify-center">
+        <div class="w-full bg-white p-6 rounded-3xl border border-slate-100 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] flex flex-col items-center">
+            <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 mb-5">
                 <i class="fas fa-user-tag text-[10px] mr-1.5"></i> QR Pribadi Guru
             </span>
 
             @if($guru && $qrPribadi)
-            <div class="w-[210px] h-[210px] bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-center p-2 shadow-inner">
+            <div class="w-[210px] h-[210px] bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center p-2">
                 <img src="data:image/svg+xml,{{ $qrPribadi }}" alt="QR Pribadi {{ $guru->nama_guru }}" class="w-full h-full object-contain rounded-lg">
             </div>
-            <div class="text-center mt-4">
-                <p class="text-base font-black text-slate-800">{{ $guru->nama_guru }}</p>
-                <p class="text-xs font-bold text-emerald-600">NIG: {{ $guru->nig }}</p>
+            <div class="text-center mt-5">
+                <p class="text-base font-black text-slate-900">{{ $guru->nama_guru }}</p>
+                <p class="text-xs font-bold text-emerald-600 mt-0.5">NIG: {{ $guru->nig }}</p>
             </div>
             <p class="text-[11px] font-medium text-slate-400 text-center mt-4 leading-relaxed">
                 Tunjukkan QR ini kepada TU saat absen kegiatan.<br>

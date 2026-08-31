@@ -1,23 +1,33 @@
-<div class="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.06)] px-4 py-2 flex justify-between items-end pb-safe pt-2">
-    <a href="/dashboard-guru" class="flex flex-col items-center justify-center w-12 transition pb-1 group {{ ($active ?? '') === 'beranda' ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-500' }}">
-        <i class="fas fa-home text-xl mb-1 group-active:scale-90 transition-transform"></i>
-        <span class="text-[9px] {{ ($active ?? '') === 'beranda' ? 'font-black' : 'font-bold' }}">Beranda</span>
-    </a>
-    <a href="/kaldik" class="flex flex-col items-center justify-center w-12 transition pb-1 group {{ ($active ?? '') === 'kaldik' ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-500' }}">
-        <i class="fas fa-calendar-alt text-xl mb-1 group-active:scale-90 transition-transform"></i>
-        <span class="text-[9px] {{ ($active ?? '') === 'kaldik' ? 'font-black' : 'font-bold' }}">Kaldik</span>
-    </a>
-    <div class="relative -top-6 flex justify-center items-center">
-        <a href="/scan-kelas" class="w-16 h-16 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 text-white flex items-center justify-center text-3xl shadow-[0_8px_20px_rgba(16,185,129,0.4)] border-4 border-slate-50 transform hover:scale-105 active:scale-95 transition-all group">
-            <i class="fas fa-qrcode group-active:scale-90 transition-transform"></i>
-        </a>
+<div class="fixed bottom-4 left-0 right-0 z-50 max-w-md mx-auto w-full px-4 pb-safe pointer-events-none">
+    <div class="pointer-events-auto mx-auto max-w-[320px] bg-white/90 backdrop-blur-2xl border border-white/70 rounded-full px-4 py-2 shadow-[0_18px_45px_-15px_rgba(2,6,23,0.28)]">
+
+        <div class="flex items-center justify-between relative">
+
+            <!-- BERANDA -->
+            <a href="/dashboard-guru" title="Beranda" aria-label="Beranda" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'beranda' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+                <i class="fas fa-house text-base"></i>
+            </a>
+
+            <!-- KALDIK -->
+            <a href="/kaldik" title="Kaldik" aria-label="Kaldik" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'kaldik' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+                <i class="fas fa-calendar-days text-base"></i>
+            </a>
+
+            <!-- SCAN QR (Tombol Utama) -->
+            <a href="/scan-kelas" title="Scan QR" aria-label="Scan QR" class="relative -top-5 flex items-center justify-center w-[52px] h-[52px] rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-white text-xl shadow-[0_12px_26px_-6px_rgba(16,185,129,0.7)] ring-4 ring-slate-100 transform transition-all group hover:scale-105 active:scale-95">
+                <i class="fas fa-qrcode"></i>
+            </a>
+
+            <!-- REKAP -->
+            <a href="/rekap-presensi" title="Rekap" aria-label="Rekap" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'rekap' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+                <i class="fas fa-file-lines text-base"></i>
+            </a>
+
+            <!-- MENU -->
+            <a href="/menu" title="Menu" aria-label="Menu" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'menu' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+                <i class="fas fa-bars text-base"></i>
+            </a>
+
+        </div>
     </div>
-    <a href="/rekap-presensi" class="flex flex-col items-center justify-center w-12 transition pb-1 group {{ ($active ?? '') === 'rekap' ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-500' }}">
-        <i class="fas fa-file-invoice text-xl mb-1 group-active:scale-90 transition-transform"></i>
-        <span class="text-[9px] {{ ($active ?? '') === 'rekap' ? 'font-black' : 'font-bold' }}">Rekap</span>
-    </a>
-    <a href="/menu" class="flex flex-col items-center justify-center w-12 transition pb-1 group {{ ($active ?? '') === 'menu' ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-500' }}">
-        <i class="fas fa-bars text-xl mb-1 group-active:scale-90 transition-transform"></i>
-        <span class="text-[9px] {{ ($active ?? '') === 'menu' ? 'font-black' : 'font-bold' }}">Menu</span>
-    </a>
 </div>

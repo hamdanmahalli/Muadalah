@@ -20,6 +20,7 @@ use App\Http\Controllers\BatasPelajaranController;
 use App\Http\Controllers\AgendaKegiatanController;
 use App\Http\Controllers\DatabaseManagerController;
 use App\Http\Controllers\NotifikasiController;
+use App\Http\Controllers\MonitoringKehadiranController;
 
 
 // ==========================================================
@@ -59,6 +60,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/meja-kontrol', [JadwalController::class, 'mejaKontrol']);
         Route::post('/simpan-kehadiran', [JadwalController::class, 'simpanKehadiran']);
         Route::get('/cek-kehadiran-terbaru', [JadwalController::class, 'cekKehadiranTerbaru']);
+    });
+
+    // Monitoring / Valdasi Kehadiran Guru (Admin & TU)
+    Route::middleware(['can:akses_meja_kontrol'])->group(function () {
+        Route::get('/monitoring-kehadiran', [MonitoringKehadiranController::class, 'index']);
+        Route::get('/monitoring-kehadiran/detail-guru', [MonitoringKehadiranController::class, 'detailGuru']);
+        Route::post('/monitoring-kehadiran/simpan', [MonitoringKehadiranController::class, 'update']);
     });
 
     // Rute Kelola Agenda & QR Code
@@ -124,6 +132,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/master-jadwal-harian/drag-drop', [JadwalHarianController::class, 'prosesDragDrop']);
         Route::get('/plot-jadwal/{id}/mutasi', [PlotJadwalController::class, 'formMutasi']);
         Route::post('/plot-jadwal/{id}/mutasi', [PlotJadwalController::class, 'mutasiGuru']);
+        Route::get('/master-jadwal-harian/{id}/mutasi', [JadwalHarianController::class, 'formMutasi']);
+        Route::post('/master-jadwal-harian/{id}/mutasi', [JadwalHarianController::class, 'mutasiGuru']);
     });
 
     Route::middleware(['can:akses_hari_operasional'])->group(function () {
@@ -151,6 +161,18 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['can:akses_manajemen_akses'])->group(function () {
         Route::get('/manajemen-akses', [RolePermissionController::class, 'index']);
         Route::put('/manajemen-akses', [RolePermissionController::class, 'update']);
+    });
+
+    // Halaman Panduan & Penjelasan Aplikasi (khusus Administrator)
+    Route::middleware(['role:Administrator'])->group(function () {
+        Route::get('/panduan-aplikasi', [\App\Http\Controllers\PanduanController::class, 'index']);
+    });
+
+    // Halaman Riwayat Mutasi & Kelola Tanggal Masa Berlaku Jadwal
+    Route::middleware(['can:akses_riwayat_mutasi'])->group(function () {
+        Route::get('/riwayat-mutasi', [\App\Http\Controllers\RiwayatMutasiController::class, 'index']);
+        Route::get('/riwayat-mutasi/kelola-tanggal', [\App\Http\Controllers\RiwayatMutasiController::class, 'kelolaTanggal']);
+        Route::post('/riwayat-mutasi/kelola-tanggal', [\App\Http\Controllers\RiwayatMutasiController::class, 'simpanTanggal']);
     });
 
     Route::get('/backup-restore', [DatabaseManagerController::class, 'index']);

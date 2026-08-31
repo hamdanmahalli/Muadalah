@@ -6,15 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::table('agenda_kaldiks', function (Blueprint $table) {
-            $table->enum('tipe_agenda', ['Penuh', 'Parsial'])->default('Penuh')->after('target_libur');
+            $table->string('tipe_agenda')->default('Penuh')->nullable()->after('target_libur');
             $table->json('jam_diliburkan')->nullable()->after('tipe_agenda');
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::table('agenda_kaldiks', function (Blueprint $table) {
             $table->dropColumn(['tipe_agenda', 'jam_diliburkan']);

@@ -131,9 +131,9 @@
                 <p class="metric-desc">Target pengajaran seluruh guru</p>
             </td>
             <td class="metric-card c-hadir">
-                <p class="metric-title">&#10004; REALITA HADIR</p>
-                <p class="metric-value">{{ number_format($totalSeluruhRealita) }} <span style="font-size:9pt; font-weight:normal;">Jam</span></p>
-                <p class="metric-desc">{{ $persenTotalRealita }}% Efektivitas Terpenuhi</p>
+                <p class="metric-title">&#10004; KELAS TERISI</p>
+                <p class="metric-value">{{ number_format($totalSeluruhKelasTerisi) }} <span style="font-size:9pt; font-weight:normal;">Jam</span></p>
+                <p class="metric-desc">{{ $persenTotalKelasTerisi }}% Efektivitas Terpenuhi</p>
             </td>
             <td class="metric-card c-kosong">
                 <p class="metric-title">&#10006; JAM KOSONG / ALPA</p>
@@ -142,8 +142,8 @@
             </td>
             <td class="metric-card c-tingkat">
                 <p class="metric-title">&#9733; TINGKAT KEHADIRAN</p>
-                <p class="metric-value" style="font-size: 20pt;">{{ $persenTotalRealita }}%</p>
-                <p class="metric-desc">Status Instansi: {{ $persenTotalRealita >= 80 ? 'Sangat Baik' : 'Perlu Evaluasi' }}</p>
+                <p class="metric-value" style="font-size: 20pt;">{{ $persenTotalKelasTerisi }}%</p>
+                <p class="metric-desc">Status Instansi: {{ $persenTotalKelasTerisi >= 80 ? 'Sangat Baik' : 'Perlu Evaluasi' }}</p>
             </td>
         </tr>
     </table>
@@ -163,7 +163,7 @@
                     $jamTeks = (is_array($jamArr) && count($jamArr) > 0) ? (count($jamArr) > 1 ? min($jamArr) . '-' . max($jamArr) : implode(', ', $jamArr)) : '-';
                 @endphp
                 <li>
-                    <strong>{{ $libur->nama_libur }}</strong> 
+                    <strong>{{ $libur->nama_agenda }}</strong> 
                     ({{ \Carbon\Carbon::parse($libur->tanggal_mulai)->translatedFormat('d M Y') }}
                     @if($libur->tanggal_mulai != $libur->tanggal_selesai)
                         - {{ \Carbon\Carbon::parse($libur->tanggal_selesai)->translatedFormat('d M Y') }}

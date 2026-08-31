@@ -35,6 +35,7 @@ class JadwalController extends Controller
         $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
 
+        // ===== KARTU STATISTIK ATAS =====
         $totalJadwal = JadwalHarian::where('hari', 'ilike', $hariIni)
                                     ->where('tahun_ajaran', $tahunAjaran)
                                     ->count();
@@ -42,8 +43,107 @@ class JadwalController extends Controller
         $kehadiranHariIni = KehadiranGuru::where('tanggal', $tanggalHariIni)->get();
         $guruHadir = $kehadiranHariIni->where('status', 'Hadir')->count();
         $guruIzinKosong = $kehadiranHariIni->whereIn('status', ['Izin', 'Kosong', 'Alpha'])->count();
+        $totalGuru = Guru::count();
 
-        return view('dashboard', compact('totalJadwal', 'guruHadir', 'guruIzinKosong', 'waktuSekarang'));
+        // ===== GRAFIK KEHADIRAN 7 HARI (Area Chart) =====
+        $labelsGrafik = [];
+        $dataHadirGrafik = [];
+        $dataIzinGrafik = [];
+        $dataKosongGrafik = [];
+        $sparkJadwal = [];
+        $namaHariSingkat = ['Monday' => 'Sen', 'Tuesday' => 'Sel', 'Wednesday' => 'Rab', 'Thursday' => 'Kam', 'Friday' => 'Jum', 'Saturday' => 'Sab', 'Sunday' => 'Min'];
+
+        $startMinggu = $waktuSekarang->copy()->startOfWeek();
+        for ($i = 0; $i < 7; $i++) {
+            $tanggal = $startMinggu->copy()->addDays($i);
+            $tanggalStr = $tanggal->format('Y-m-d');
+            $labelHari = $namaHariSingkat[$tanggal->format('l')] ?? $tanggal->format('D');
+            $labelsGrafik[] = $labelHari;
+
+            $kh = KehadiranGuru::where('tanggal', $tanggalStr)->get();
+            $dataHadirGrafik[] = $kh->where('status', 'Hadir')->count();
+            $dataIzinGrafik[] = $kh->whereIn('status', ['Izin', 'Kosong'])->count();
+            $dataKosongGrafik[] = $kh->where('status', 'Alpha')->count();
+
+            $hr = map_hari($tanggal->format('l'));
+            $sparkJadwal[] = JadwalHarian::where('hari', 'ilike', $hr)
+                                          ->where('tahun_ajaran', $tahunAjaran)
+                                          ->count();
+        }
+
+        // ===== STRIP KALENDER MINGGU INI =====
+        $stripMinggu = [];
+        for ($i = 0; $i < 7; $i++) {
+            $tanggal = $startMinggu->copy()->addDays($i);
+            $stripMinggu[] = [
+                'nama'   => $namaHariSingkat[$tanggal->format('l')] ?? $tanggal->format('D'),
+                'tanggal'=> (int) $tanggal->format('d'),
+                'bulan'  => $tanggal->format('M'),
+                'penuh'  => $tanggal->format('Y-m-d'),
+                'aktif'  => ($tanggal->format('Y-m-d') === $tanggalHariIni),
+            ];
+        }
+
+        // ===== LIST MONITORING (analog "daftar pasien") =====
+        $monitorGuru = [];
+        $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
+                                     ->whereIn('status', ['Izin', 'Kosong', 'Alpha'])
+                                     ->orderBy('id')
+                                     ->get();
+        foreach ($queryMonitor as $kh) {
+            $jadwal = $kh->jadwal_id ? JadwalHarian::with(['guru', 'kelas'])->find($kh->jadwal_id) : null;
+            $guruInfo = $jadwal ? $jadwal->guru : null;
+            $kelasNama = $jadwal && $jadwal->kelas ? $jadwal->kelas->nama_kelas : '-';
+            $jamKe = ($jadwal && $jadwal->jam_ke) ? 'Jam Ke-'.$jadwal->jam_ke : '';
+
+            $monitorGuru[] = [
+                'nama'   => $guruInfo ? $guruInfo->nama_guru : ($kh->nig_pengganti ?? '-'),
+                'kelas'  => $kelasNama,
+                'jam'    => $jamKe,
+                'status' => $kh->status,
+                'nig'    => $guruInfo ? $guruInfo->nig : null,
+            ];
+            if (count($monitorGuru) >= 6) break;
+        }
+        $belumCatatCount = max(0, $totalJadwal - $kehadiranHariIni->count());
+
+        // ===== KARTU TUGAS 2x2 =====
+        $kartuTugas = [
+            [
+                'judul'   => 'Periode Aktif',
+                'sub'     => $periodeAktif ? 'TA. '.$periodeAktif->tahun_ajaran.' ('.$periodeAktif->semester.')' : 'Belum diatur',
+                'ikon'    => 'fa-calendar-check',
+                'warna'   => 'sky',
+                'link'    => '/master-periode',
+            ],
+            [
+                'judul'   => 'Hari Operasional',
+                'sub'     => \App\Models\HariOperasional::where('is_active', true)->count().' hari aktif',
+                'ikon'    => 'fa-calendar-week',
+                'warna'   => 'emerald',
+                'link'    => '/master-hari-operasional',
+            ],
+            [
+                'judul'   => 'Agenda Kegiatan',
+                'sub'     => \App\Models\AgendaKegiatan::whereDate('tanggal', '>=', $tanggalHariIni)->count().' agenda mendatang',
+                'ikon'    => 'fa-calendar-alt',
+                'warna'   => 'indigo',
+                'link'    => '/agenda-kegiatan',
+            ],
+            [
+                'judul'   => 'Target Mengajar',
+                'sub'     => \App\Models\PlotJadwal::count().' plot jadwal',
+                'ikon'    => 'fa-sitemap',
+                'warna'   => 'rose',
+                'link'    => '/master-plot-jadwal',
+            ],
+        ];
+
+        return view('dashboard', compact(
+            'totalJadwal', 'guruHadir', 'guruIzinKosong', 'totalGuru', 'waktuSekarang',
+            'labelsGrafik', 'dataHadirGrafik', 'dataIzinGrafik', 'dataKosongGrafik', 'sparkJadwal',
+            'stripMinggu', 'monitorGuru', 'belumCatatCount', 'kartuTugas'
+        ));
     }
 
     // ========================================================
@@ -189,17 +289,17 @@ class JadwalController extends Controller
 
         $rekapData = $result['rekapData'];
         $totalSeluruhWajib = $result['totalWajib'];
-        $totalSeluruhRealita = $result['totalRealita'];
+        $totalSeluruhKelasTerisi = $result['totalKelasTerisi'];
         $totalSeluruhKosong = $result['totalKosong'];
         $daftarLibur = $result['daftarLibur'];
 
-        $persenTotalRealita = $totalSeluruhWajib > 0 ? round(($totalSeluruhRealita / $totalSeluruhWajib) * 100, 1) : 0;
+        $persenTotalKelasTerisi = $totalSeluruhWajib > 0 ? round(($totalSeluruhKelasTerisi / $totalSeluruhWajib) * 100, 1) : 0;
         $persenTotalKosong = $totalSeluruhWajib > 0 ? round(($totalSeluruhKosong / $totalSeluruhWajib) * 100, 1) : 0;
 
         return view('laporan', compact(
             'rekapData', 'tglMulai', 'tglSelesai', 'periodeTeks',
-            'totalSeluruhWajib', 'totalSeluruhRealita', 'totalSeluruhKosong',
-            'persenTotalRealita', 'persenTotalKosong', 'daftarLibur'
+            'totalSeluruhWajib', 'totalSeluruhKelasTerisi', 'totalSeluruhKosong',
+            'persenTotalKelasTerisi', 'persenTotalKosong', 'daftarLibur'
         ));
     }
 
@@ -216,21 +316,26 @@ class JadwalController extends Controller
 
         $rekapData = $result['rekapData'];
         $totalSeluruhWajib = $result['totalWajib'];
-        $totalSeluruhRealita = $result['totalRealita'];
+        $totalSeluruhKelasTerisi = $result['totalKelasTerisi'];
         $totalSeluruhKosong = $result['totalKosong'];
         $daftarLibur = $result['daftarLibur'];
 
-        $persenTotalRealita = $totalSeluruhWajib > 0 ? round(($totalSeluruhRealita / $totalSeluruhWajib) * 100, 1) : 0;
+        $persenTotalKelasTerisi = $totalSeluruhWajib > 0 ? round(($totalSeluruhKelasTerisi / $totalSeluruhWajib) * 100, 1) : 0;
         $persenTotalKosong = $totalSeluruhWajib > 0 ? round(($totalSeluruhKosong / $totalSeluruhWajib) * 100, 1) : 0;
 
         $pdf = Pdf::loadView('laporan-pdf', compact(
             'rekapData', 'tglMulai', 'tglSelesai', 'periodeTeks',
-            'totalSeluruhWajib', 'totalSeluruhRealita', 'totalSeluruhKosong',
-            'persenTotalRealita', 'persenTotalKosong', 'daftarLibur'
+            'totalSeluruhWajib', 'totalSeluruhKelasTerisi', 'totalSeluruhKosong',
+            'persenTotalKelasTerisi', 'persenTotalKosong', 'daftarLibur'
         ));
 
         return $pdf->download('Rekap_Kehadiran_'.$tglMulai.'_hingga_'.$tglSelesai.'.pdf');
     }
+
+    // Hitungan rekap di-cache per rentang tanggal, dipakai ulang oleh web & PDF agar tidak diulang.
+    // Hanya data murni (array/scalar) yang di-cache — hindari serialisasi objek (stdClass/Eloquent)
+    // yang bisa memicu "incomplete object" saat unserialize akibat opcache.preload.
+
 
     // FITUR BARU: Menyuplai data terbaru untuk Radar Layar TU
     public function cekKehadiranTerbaru()

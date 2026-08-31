@@ -126,6 +126,12 @@ class PlotJadwalController extends Controller
             JadwalHarian::whereIn('id', $jadwalDihapus)->delete();
         }
 
+        // 3b. Catat guru lama sebelum diubah (untuk riwayat mutasi)
+        $plotLama = PlotJadwal::where('kelas_id', $kelas_id)
+                              ->where('pelajaran_id', $pelajaran_id)
+                              ->first();
+        $guruLamaId = $plotLama?->guru_id;
+
         // 4. SIMPAN TARGET MENGAJAR (PLOT)
         PlotJadwal::updateOrCreate(
             ['kelas_id' => $kelas_id, 'pelajaran_id' => $pelajaran_id],
@@ -148,6 +154,19 @@ class PlotJadwalController extends Controller
                                       ->where('pelajaran_id', $pelajaran_id)
                                       ->where('tahun_ajaran', $tahunAjaran)
                                       ->count();
+
+        // 6b. REKAM RIWAYAT perubahan guru di plot (Mutasi)
+        if ($guruLamaId != $guru_id) {
+            \App\Services\MutasiLogService::catat([
+                'kelas_id'        => $kelas_id,
+                'pelajaran_id'    => $pelajaran_id,
+                'guru_lama_id'    => $guruLamaId,
+                'guru_baru_id'    => $guru_id,
+                'tipe'            => 'plot_sync',
+                'tanggal_efektif' => now()->format('Y-m-d'),
+                'keterangan'      => 'Guru diubah di halaman Plotting Target Mengajar',
+            ]);
+        }
 
         return response()->json([
             'status' => 'success',
@@ -201,6 +220,17 @@ class PlotJadwalController extends Controller
 
             // 2. Ganti nama guru di Master Plotting
             $plot->update(['guru_id' => $guruBaruId]);
+
+            // 3. Rekam riwayat mutasi massal
+            \App\Services\MutasiLogService::catat([
+                'kelas_id'        => $plot->kelas_id,
+                'pelajaran_id'    => $plot->pelajaran_id,
+                'guru_lama_id'    => $guruLamaId,
+                'guru_baru_id'    => $guruBaruId,
+                'tipe'            => 'ganti_guru',
+                'tanggal_efektif' => now()->format('Y-m-d'),
+                'keterangan'      => 'Mutasi massal dari Plot Target Mengajar',
+            ]);
         });
 
         // Arahkan kembali ke halaman Master Plotting beserta parameter kelas_id-nya

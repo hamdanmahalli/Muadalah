@@ -322,6 +322,17 @@ class JadwalHarianController extends Controller
                 ->whereIn('jam_ke', $pasanganJam)
                 ->where('tahun_ajaran', $jadwal->tahun_ajaran)
                 ->delete();
+
+            \App\Services\MutasiLogService::catat([
+                'kelas_id'     => $jadwal->kelas_id,
+                'pelajaran_id' => $jadwal->pelajaran_id,
+                'hari'         => $jadwal->hari,
+                'jam_ke'       => $jadwal->jam_ke,
+                'guru_lama_id' => $jadwal->guru_id,
+                'guru_baru_id' => null,
+                'tipe'         => 'hapus_slot',
+                'keterangan'   => 'Slot jadwal dikosongkan (blok jam ke-' . min($pasanganJam) . '/' . max($pasanganJam) . ')',
+            ]);
         }
         return redirect()->back()->with('sukses', 'Jadwal Blok berhasil dikosongkan!');
     }
@@ -495,6 +506,23 @@ class JadwalHarianController extends Controller
                 }
             });
 
+            // Rekam riwayat tukar / pindah blok
+            $isSwap = !empty($request->target_id);
+            $tipeLog = $isSwap ? 'tukar_jam' : 'pindah_blok';
+            $keterangan = $isSwap
+                ? 'Tukar posisi blok jadwal ke Hari ' . $request->target_hari . ' Jam ke-' . $request->target_jam
+                : 'Memindahkan blok jadwal ke Hari ' . $request->target_hari . ' Jam ke-' . $request->target_jam;
+            \App\Services\MutasiLogService::catat([
+                'kelas_id'     => $sourceRecord->kelas_id,
+                'pelajaran_id' => $sourceRecord->pelajaran_id,
+                'hari'         => $request->target_hari,
+                'jam_ke'       => is_numeric($request->target_jam) ? (int)$request->target_jam : null,
+                'guru_lama_id' => $sourceRecord->guru_id,
+                'guru_baru_id' => $sourceRecord->guru_id,
+                'tipe'         => $tipeLog,
+                'keterangan'   => $keterangan,
+            ]);
+
             return response()->json([
                 'status' => 'success', 
                 'pesan' => 'Blok jadwal berhasil ' . (!empty($request->target_id) ? 'ditukar seutuhnya!' : 'dipindahkan seutuhnya!')
@@ -549,9 +577,22 @@ class JadwalHarianController extends Controller
             $jadwalBaru->berlaku_mulai = $tanggalEfektif;
             $jadwalBaru->berlaku_sampai = null; // Aktif sampai akhir semester/tidak terhingga
             $jadwalBaru->save();
+
+            // 3. Rekam riwayat mutasi efektif-dated
+            \App\Services\MutasiLogService::catat([
+                'kelas_id'         => $jadwalLama->kelas_id,
+                'pelajaran_id'     => $jadwalLama->pelajaran_id,
+                'hari'             => $jadwalLama->hari,
+                'jam_ke'           => $jadwalLama->jam_ke,
+                'guru_lama_id'     => $jadwalLama->guru_id,
+                'guru_baru_id'     => $request->guru_baru_id,
+                'tipe'             => 'ganti_guru',
+                'tanggal_efektif'  => $tanggalEfektif,
+                'keterangan'       => 'Mutasi per-slot dengan tanggal efektif',
+            ]);
         });
 
         // Redirect kembali ke halaman daftar jadwal
-        return redirect('/jadwal-harian')->with('sukses', 'Mutasi guru berhasil diproses! Riwayat absen guru lama tetap aman.');
+        return redirect('/master-jadwal-harian?kelas_id=' . $jadwalLama->kelas_id)->with('sukses', 'Mutasi guru berhasil diproses! Riwayat absen guru lama tetap aman.');
     }
 }

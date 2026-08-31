@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-6 flex items-center">
-        <a href="/jadwal-harian" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-colors mr-4 shadow-sm">
+        <a href="/master-jadwal-harian?kelas_id={{ $jadwal->kelas_id }}" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-colors mr-4 shadow-sm">
             <i class="fas fa-arrow-left"></i>
         </a>
         <div>
@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <form action="/jadwal/{{ $jadwal->id }}/mutasi" method="POST" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+    <form action="/master-jadwal-harian/{{ $jadwal->id }}/mutasi" method="POST" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
         @csrf
         
         <!-- Info Pelajaran -->

@@ -11,149 +11,179 @@
 </style>
 
 <div data-turbo="true" class="max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
-    
-    <!-- BANNER ATAS (Konsisten 100% dengan Kaldik & Rekap) -->
-    <div class="shrink-0 bg-gradient-to-br from-emerald-600 to-teal-700 px-6 pt-8 pb-6 rounded-b-[2.5rem] shadow-md flex justify-between items-center relative z-20">
-        <div class="flex-1 min-w-0 relative z-10">
-            <h2 class="text-2xl font-black text-white tracking-tight drop-shadow-md truncate">Menu Sistem</h2>
-            <p class="text-emerald-100 text-xs font-medium mt-1">Pengaturan & Keamanan Akun</p>
-        </div>
-        <div class="shrink-0 bg-white/20 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-2xl flex flex-col items-center shadow-lg ml-3 relative z-10">
-            <span class="text-[9px] uppercase tracking-wider text-emerald-100 font-bold mb-0.5">AKSES</span>
-            <span class="text-xs font-black text-white">GURU</span>
+
+    <!-- HEADER MODERN -->
+    <div class="shrink-0 bg-white px-5 pt-7 pb-5 border-b border-slate-100 relative z-20">
+        <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Menu</h2>
+                <p class="text-xs font-semibold text-slate-400 mt-1">Pengaturan &amp; Fitur Akun</p>
+            </div>
+            <div class="shrink-0 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                <span class="text-[10px] font-black text-emerald-600 uppercase tracking-wider">AKSES GURU</span>
+            </div>
         </div>
     </div>
 
     <!-- AREA KONTEN -->
-    <div class="flex-1 overflow-y-auto bg-slate-50 relative z-10 pt-6 pb-28 scrollbar-none px-5">
-        
-        <div class="space-y-3">
-            
+    <div class="flex-1 overflow-y-auto bg-slate-50 relative z-10 pt-6 pb-32 scrollbar-none px-5">
+
+        <div class="space-y-6">
+
             @can('akses_dashboard')
-            <!-- MENU 0: Dashboard Utama (khusus pengguna yang punya akses dashboard utama) -->
-            <a href="/dashboard-utama" class="w-full flex items-center justify-between bg-emerald-600 p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(16,185,129,0.25)] group">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+            <a href="/dashboard-utama" class="w-full flex items-center justify-between bg-gradient-to-br from-emerald-600 to-teal-600 p-4 rounded-3xl active:scale-[0.98] transition-all shadow-[0_12px_28px_-10px_rgba(16,185,129,0.5)] group">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                         <i class="fas fa-desktop text-lg"></i>
                     </div>
-                    <span class="text-sm font-bold text-white">Dashboard Utama</span>
+                    <div class="min-w-0">
+                        <span class="block text-sm font-black text-white">Dashboard Utama</span>
+                        <span class="block text-[10px] font-bold text-emerald-100 mt-0.5">Panel Admin &amp; TU</span>
+                    </div>
                 </div>
                 <i class="fas fa-chevron-right text-white/70 text-xs"></i>
             </a>
             @endcan
 
-            <!-- MENU 1: Profil Saya -->
-            <a href="{{ route('guru.profil.lengkap') }}" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                        <i class="fas fa-user text-lg"></i>
-                    </div>
-                    <span class="text-sm font-bold text-slate-700">Profil Saya</span>
+            <!-- ===== GRUP: FITUR UTAMA ===== -->
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2.5">Fitur Utama</p>
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] overflow-hidden divide-y divide-slate-100">
+                    <a href="/jadwal-saya" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-calendar-days text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Jadwal Saya</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Jadwal mengajar mingguan &amp; rekap</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </a>
+                    <a href="/agenda-kegiatan" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-calendar-day text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Agenda Kegiatan</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Kegiatan &amp; kehadiran agenda</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </a>
+                    <a href="/kaldik" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-book-open text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Kalender Pendidikan</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Target kurikulum &amp; peta mengajar</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </a>
+                    <button onclick="tampilToast('info', 'Menu Pengumuman segera hadir.')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-bullhorn text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Pengumuman</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Informasi &amp; berita terbaru</span>
+                        </span>
+                        <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
+                    </button>
+                    <button onclick="tampilToast('info', 'Menu Cuti / Izin segera hadir.')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-file-signature text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Cuti / Izin</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Permohonan izin &amp; cuti mengajar</span>
+                        </span>
+                        <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
+                    </button>
+                    <button onclick="tampilToast('info', 'Menu Ganti Jam segera hadir.')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-arrow-right-arrow-left text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Ganti Jam</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Penukaran jam mengajar</span>
+                        </span>
+                        <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
+                    </button>
                 </div>
-                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-            </a>
+            </div>
 
-            <!-- MENU 2: Tentang Aplikasi -->
-            <button onclick="bukaModal('modal-tentang', 'bg-tentang', 'box-tentang')" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                        <i class="fas fa-info-circle text-lg"></i>
-                    </div>
-                    <span class="text-sm font-bold text-slate-700">Tentang Aplikasi</span>
+            <!-- ===== GRUP: AKUN ===== -->
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2.5">Akun</p>
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] overflow-hidden divide-y divide-slate-100">
+                    <a href="{{ route('guru.profil.lengkap') }}" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
+                        <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-user text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Profil Saya</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Biodata &amp; kelengkapan data</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </a>
+                    <a href="/notifikasi/pengaturan" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
+                        <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-bell text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Pengaturan Notifikasi</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Pengingat jadwal mengajar</span>
+                        </span>
+                        <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
+                    </a>
+                    <button onclick="bukaModalGantiPassword()" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
+                        <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-lock text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Ganti Password</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Perbarui kata sandi akun</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </button>
                 </div>
-                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-            </button>
+            </div>
 
-            <!-- MENU 3: Ganti Password (Memanggil Fungsi Global dari app.blade.php) -->
-            <button onclick="bukaModalGantiPassword()" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                        <i class="fas fa-lock text-lg"></i>
-                    </div>
-                    <span class="text-sm font-bold text-slate-700">Ganti Password</span>
+            <!-- ===== GRUP: LAINNYA ===== -->
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2.5">Lainnya</p>
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] overflow-hidden divide-y divide-slate-100">
+                    <button onclick="bukaModal('modal-tentang', 'bg-tentang', 'box-tentang')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
+                        <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-circle-info text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Tentang Aplikasi</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Informasi versi &amp; pengembang</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </button>
+                    <button onclick="hapusCacheReload(this)" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
+                        <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-broom text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Hapus Cache &amp; Muat Ulang</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Bersihkan data tersimpan aplikasi</span>
+                        </span>
+                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                    </button>
                 </div>
-                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-            </button>
+            </div>
 
-            <!-- MENU 4: Pengaturan Notifikasi -->
-            <a href="/notifikasi/pengaturan" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-emerald-200 group">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                        <i class="fas fa-bell text-lg"></i>
-                    </div>
-                    <span class="text-sm font-bold text-slate-700">Pengaturan Notifikasi</span>
-                </div>
-                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-            </a>
-
-            <!-- MENU: Hapus Cache & Muat Ulang -->
-            <button onclick="hapusCacheReload(this)" class="w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-sky-200 group">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-colors">
-                        <i class="fas fa-broom text-lg"></i>
-                    </div>
-                    <span class="text-sm font-bold text-slate-700">Hapus Cache & Muat Ulang</span>
-                </div>
-                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-            </button>
-
-            <!-- MENU 5: Logout (Proteksi CSRF + Loading Animasi Premium) -->
-            <form method="POST" action="/logout" class="w-full mt-8" onsubmit="loadingElegan(event, this)">
+            <!-- LOGOUT -->
+            <form method="POST" action="/logout" class="mt-2" onsubmit="loadingElegan(event, this)">
                 @csrf
-                <!-- Ditambahkan min-h-[72px] untuk memastikan tinggi kotak terkunci mutlak -->
-                <button id="btn-logout" type="submit" class="relative w-full flex items-center justify-between bg-white p-4 rounded-2xl active:scale-[0.98] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 hover:border-rose-100 hover:shadow-[0_8px_20px_rgba(225,29,72,0.08)] group cursor-pointer text-left overflow-hidden min-h-[72px]">
-                    
-                    <!-- Aksen Garis Merah Dinamis -->
-                    <div class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-rose-500 rounded-r-md transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-
-                    <div class="flex items-center space-x-4 pl-1 group-hover:pl-2 transition-all duration-300">
-                        <div id="box-ikon-logout" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-rose-50 group-hover:text-rose-600 transition-colors duration-300">
-                            <i id="ikon-logout" class="fas fa-power-off text-lg transition-transform"></i>
-                        </div>
-                        <span id="teks-logout" class="text-sm font-bold text-slate-700 group-hover:text-rose-600 transition-colors duration-300">Keluar Sistem</span>
-                    </div>
-                    
-                    <div id="ikon-panah-logout" class="w-8 h-8 rounded-full flex items-center justify-center bg-transparent group-hover:bg-rose-50 transition-colors duration-300">
-                        <i class="fas fa-sign-out-alt text-slate-300 text-xs group-hover:text-rose-500 transform group-hover:translate-x-0.5 transition-all duration-300"></i>
-                    </div>
+                <button id="btn-logout" type="submit" class="relative w-full flex items-center justify-center gap-3 bg-white p-4 rounded-3xl active:scale-[0.98] transition-all duration-300 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] border border-slate-100 group cursor-pointer text-left overflow-hidden min-h-[64px]">
+                    <span id="box-ikon-logout" class="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                        <i id="ikon-logout" class="fas fa-power-off text-base transition-transform"></i>
+                    </span>
+                    <span id="teks-logout" class="text-sm font-bold text-slate-700 group-hover:text-rose-600 transition-colors">Keluar Sistem</span>
                 </button>
             </form>
 
             <!-- Script Khusus Bypass Loading Global -->
             <script>
                 function loadingElegan(event, form) {
-                    // 1. Hentikan propagasi agar TIDAK DITANGKAP oleh script loading global yang merusak desain
                     event.preventDefault();
                     event.stopPropagation();
 
-                    // 2. Ambil elemen-elemen di dalam tombol
                     let btn = document.getElementById('btn-logout');
                     let boxIkon = document.getElementById('box-ikon-logout');
                     let ikon = document.getElementById('ikon-logout');
                     let teks = document.getElementById('teks-logout');
-                    let panah = document.getElementById('ikon-panah-logout');
 
-                    // 3. Terapkan efek loading khas UI Premium (Elegan, struktur kotak tetap utuh)
                     btn.classList.add('opacity-80', 'cursor-wait', 'pointer-events-none');
-                    btn.classList.remove('hover:border-rose-100', 'hover:shadow-[0_8px_20px_rgba(225,29,72,0.08)]');
-                    
-                    // Ubah box ikon menjadi merah lembut dan putar ikonnya
-                    boxIkon.classList.replace('bg-slate-50', 'bg-rose-100');
-                    boxIkon.classList.replace('text-slate-400', 'text-rose-500');
-                    ikon.className = 'fas fa-circle-notch fa-spin text-lg';
-                    
-                    // Ubah teksnya dengan mulus
+                    boxIkon.classList.replace('bg-rose-50', 'bg-rose-500');
+                    boxIkon.classList.replace('text-rose-500', 'text-white');
+                    ikon.className = 'fas fa-circle-notch fa-spin text-base';
                     teks.innerText = 'Mengamankan sesi...';
-                    teks.classList.remove('text-slate-700');
-                    teks.classList.add('text-rose-600');
+                    teks.classList.replace('text-slate-700', 'text-rose-600');
 
-                    // Sembunyikan panah ujung dengan transisi pudar (fade-out)
-                    panah.style.opacity = '0';
-
-                    // 4. Lanjutkan proses logout secara asli setelah efek visual terlihat
-                    setTimeout(() => {
-                        form.submit();
-                    }, 400);
+                    setTimeout(() => { form.submit(); }, 400);
                 }
             </script>
 
@@ -164,61 +194,36 @@
     @include('partials.bottom-nav', ['active' => 'menu'])
 
     <!-- ========================================== -->
-    <!-- MODAL LOKAL (PROFIL, LOGOUT, TENTANG) -->
+    <!-- MODAL TENTANG APLIKASI -->
     <!-- ========================================== -->
-
-    
-    <!-- MODAL 2: LOGOUT -->
-    <div id="modal-logout" class="fixed inset-0 z-[100] hidden">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="bg-logout" onclick="tutupModal('modal-logout', 'bg-logout', 'box-logout')"></div>
-        <div class="flex items-center justify-center min-h-screen px-4 pb-10">
-            <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center" id="box-logout">
-                <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-rose-500 mb-4 text-3xl">
-                    <i class="fas fa-power-off"></i>
-                </div>
-                <h3 class="text-xl font-black text-slate-800 mb-2">Keluar Aplikasi?</h3>
-                <p class="text-sm font-medium text-slate-500 mb-6 px-4">Sesi Anda akan diakhiri dan Anda harus login kembali untuk masuk.</p>
-                
-                <div class="flex w-full space-x-3">
-                    <button onclick="tutupModal('modal-logout', 'bg-logout', 'box-logout')" class="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold rounded-xl transition">Batal</button>
-                    <form action="{{ route('logout') }}" method="POST" class="flex-1">
-                        @csrf
-                        <button type="submit" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl shadow-md shadow-rose-500/30 transition">Ya, Logout</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: TENTANG APLIKASI -->
     <div id="modal-tentang" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="bg-tentang" onclick="tutupModal('modal-tentang', 'bg-tentang', 'box-tentang')"></div>
         <div class="flex items-center justify-center min-h-screen px-4 pb-10">
             <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center" id="box-tentang">
-                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg flex items-center justify-center text-white text-4xl mb-4 border-4 border-emerald-50">
+                <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg flex items-center justify-center text-white text-4xl mb-4 ring-4 ring-emerald-50">
                     <i class="fas fa-graduation-cap"></i>
                 </div>
                 <h3 class="text-xl font-black text-slate-800">SmartPesantren</h3>
                 <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1 mb-4">Versi 2.0.0</p>
-                
-                <div class="bg-slate-50 rounded-xl p-4 text-xs text-slate-500 font-medium mb-6 w-full text-left leading-relaxed border border-slate-100">
+
+                <div class="bg-slate-50 rounded-2xl p-4 text-xs text-slate-500 font-medium mb-6 w-full text-left leading-relaxed border border-slate-100">
                     <p class="mb-2">Sistem Informasi Akademik dan Manajemen Pesantren terpadu.</p>
                     <p class="mt-3 text-center text-[10px] font-bold text-slate-400">&copy; {{ date('Y') }} Sancod Builder.</p>
                 </div>
-                <button onclick="tutupModal('modal-tentang', 'bg-tentang', 'box-tentang')" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl transition shadow-md">Tutup Panel</button>
+                <button onclick="tutupModal('modal-tentang', 'bg-tentang', 'box-tentang')" class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl transition shadow-md">Tutup Panel</button>
             </div>
         </div>
     </div>
 
 </div>
 
-<!-- SCRIPT PENGENDALI MODAL LOKAL -->
+<!-- SCRIPT PENGENDALI MODAL & TOAST LOKAL -->
 <script>
     function bukaModal(modalId, bgId, boxId) {
         let modal = document.getElementById(modalId);
         let bg = document.getElementById(bgId);
         let box = document.getElementById(boxId);
-        
+
         modal.classList.remove('hidden');
         setTimeout(() => {
             bg.classList.remove('opacity-0');
@@ -229,7 +234,7 @@
     function tutupModal(modalId, bgId, boxId) {
         let bg = document.getElementById(bgId);
         let box = document.getElementById(boxId);
-        
+
         bg.classList.add('opacity-0');
         box.classList.add('opacity-0', 'scale-95');
         setTimeout(() => {
@@ -246,8 +251,8 @@
             document.body.appendChild(el);
         }
         el.className = el.className
-            .replace(/bg-emerald-500|bg-red-500|bg-sky-500/g, '') 
-            + (tipe === 'success' ? ' bg-emerald-500 text-white' : tipe === 'error' ? ' bg-red-500 text-white' : ' bg-sky-500 text-white');
+            .replace(/bg-emerald-500|bg-red-500|bg-sky-500/g, '')
+            + (tipe === 'success' ? ' bg-emerald-500 text-white' : tipe === 'error' ? ' bg-red-500 text-white' : ' bg-slate-800 text-white');
         el.textContent = pesan;
         el.style.opacity = '1';
         el.style.transform = 'translateY(0)';
@@ -257,9 +262,7 @@
 
     // HAPUS CACHE & MUAT ULANG
     function hapusCacheReload(btn) {
-        const asli = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-lg"></i> Membersihkan...';
         tampilToast('info', 'Menghapus cache dan memuat ulang...');
         if ('caches' in window) {
             caches.keys().then(namaCache => {

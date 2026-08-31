@@ -179,14 +179,14 @@ class JadwalService
      *
      * @param  string  $tglMulai
      * @param  string  $tglSelesai
-     * @return array{rekapData: array, totalWajib: int, totalRealita: int, totalKosong: int, daftarLibur: \Illuminate\Database\Eloquent\Collection}
+     * @return array{rekapData: array, totalWajib: int, totalKelasTerisi: int, totalKosong: int, daftarLibur: \Illuminate\Database\Eloquent\Collection}
      */
     public function getRekapDataLaporan(string $tglMulai, string $tglSelesai): array
     {
         $gurus = Guru::orderBy('nama_guru', 'asc')->get();
         $rekapData = [];
         $totalSeluruhWajib = 0;
-        $totalSeluruhRealita = 0;
+        $totalSeluruhKelasTerisi = 0;
         $totalSeluruhKosong = 0;
 
         $periodeAktif = get_periode_aktif();
@@ -258,6 +258,7 @@ class JadwalService
                 ->where('nig_pengganti', $guru->nig)
                 ->count();
 
+            $kelasTerisi = $hadir + $piket;
             $persentase = round(($hadir / $jamWajib) * 100, 1);
 
             if ($persentase >= 85) {
@@ -281,24 +282,26 @@ class JadwalService
                 'a'          => $alpha,
                 'i'          => $izin,
                 's'          => $sakit,
-                'piket'      => $piket,
-                'realita'    => $hadir,
-                'persen'     => $persentase,
+                'piket'        => $piket,
+                'realita'      => $hadir,
+                'persen'       => $persentase,
                 'ket'        => $ket,
                 'badge_bg'   => $badgeBg,
             ];
 
-            $totalSeluruhWajib    += $jamWajib;
-            $totalSeluruhRealita  += $hadir;
-            $totalSeluruhKosong   += $alpha;
+            $totalSeluruhWajib        += $jamWajib;
+            $totalSeluruhKelasTerisi  += $kelasTerisi;
         }
 
+        // Total Kosong = kelas yang TIDAK ada gurunya = Total Wajib - Total Kelas Terisi
+        $totalSeluruhKosong = max(0, $totalSeluruhWajib - $totalSeluruhKelasTerisi);
+
         return [
-            'rekapData'    => $rekapData,
-            'totalWajib'   => $totalSeluruhWajib,
-            'totalRealita' => $totalSeluruhRealita,
-            'totalKosong'  => $totalSeluruhKosong,
-            'daftarLibur'  => $daftarLibur,
+            'rekapData'       => $rekapData,
+            'totalWajib'      => $totalSeluruhWajib,
+            'totalKelasTerisi'=> $totalSeluruhKelasTerisi,
+            'totalKosong'     => $totalSeluruhKosong,
+            'daftarLibur'     => $daftarLibur,
         ];
     }
 
