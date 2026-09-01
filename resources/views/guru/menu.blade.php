@@ -121,6 +121,16 @@
                         </span>
                         <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
                     </a>
+                    <button onclick="toggleIngatIdentitas(this)" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left cursor-pointer">
+                        <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-user-check text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Ingat Identitas Saya</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Isi otomatis username &amp; tampilkan jadwal di halaman login</span>
+                        </span>
+                        <span id="box-switch-ingat" class="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer" style="background-color: #cbd5e1;">
+                            <span id="knob-switch-ingat" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300" style="transform: translateX(0);"></span>
+                        </span>
+                    </button>
                     <button onclick="bukaModalGantiPassword()" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
                         <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-lock text-base"></i></span>
                         <span class="flex-1 min-w-0">
@@ -285,6 +295,41 @@
         }
         setTimeout(() => { location.reload(); }, 1200);
     }
+
+    // ====== INGAT IDENTITAS SAYA (Pengaturan di Menu) ======
+    var INGAT_KEY = 'sn_ingat';
+    var USERNAME_KEY = 'sn_username';
+    var usernameGuru = '{{ auth()->user()->username }}';
+    var ingatAktif = localStorage.getItem(INGAT_KEY) !== '0';
+
+    function renderSwitchIngat() {
+        var box = document.getElementById('box-switch-ingat');
+        var knob = document.getElementById('knob-switch-ingat');
+        if (!box || !knob) return;
+
+        if (ingatAktif) {
+            box.style.backgroundColor = '#10b981';
+            knob.style.transform = 'translateX(20px)';
+        } else {
+            box.style.backgroundColor = '#cbd5e1';
+            knob.style.transform = 'translateX(0px)';
+        }
+    }
+
+    function toggleIngatIdentitas(btn) {
+        ingatAktif = !ingatAktif;
+        localStorage.setItem(INGAT_KEY, ingatAktif ? '1' : '0');
+        if (ingatAktif) {
+            if (usernameGuru) localStorage.setItem(USERNAME_KEY, usernameGuru);
+            tampilToast('success', 'Identitas Anda akan diingat di perangkat ini.');
+        } else {
+            localStorage.removeItem(USERNAME_KEY);
+            tampilToast('info', 'Ingat identitas dinonaktifkan.');
+        }
+        renderSwitchIngat();
+    }
+
+    renderSwitchIngat();
 
     // ====== INSTALL APLIKASI (PWA) ======
     let deferredInstallPrompt = null;

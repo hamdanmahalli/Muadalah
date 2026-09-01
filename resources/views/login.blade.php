@@ -269,6 +269,51 @@
                 </script>
             </form>
 
+            <!-- ===== PANEL INTIP JADWAL HARI INI (Tanpa Login) ===== -->
+            <div id="panel-intip" class="hidden mt-6">
+                <div class="rounded-2xl border border-emerald-100 bg-gradient-to-b from-emerald-50 to-white overflow-hidden shadow-sm">
+                    <div class="flex items-center gap-3 px-4 py-3.5 bg-emerald-600 border-b border-emerald-700">
+                        <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">
+                            <i class="fas fa-calendar-day text-sm"></i>
+                        </div>
+                        <div class="min-w-0 flex-1 text-left">
+                            <div class="text-sm font-extrabold text-white tracking-wide">Jadwal Mengajar Hari Ini</div>
+                            <div class="text-[10px] font-bold text-emerald-100 mt-0.5 uppercase tracking-widest" id="intip-hari">-</div>
+                        </div>
+                        <i class="fas fa-sun text-white/70 text-lg"></i>
+                    </div>
+
+                    <div class="p-4">
+                        <div id="intip-loading" class="flex items-center gap-3 py-2">
+                            <i class="fas fa-circle-notch fa-spin text-emerald-600 text-lg"></i>
+                            <span class="text-xs font-bold text-emerald-700">Mengecek jadwal Anda...</span>
+                        </div>
+
+                        <div id="intip-sapa" class="hidden mb-3">
+                            <p class="text-xs font-extrabold text-slate-800">
+                                Selamat datang kembali, <span id="intip-nama" class="text-emerald-700">-</span>
+                            </p>
+                            <p class="text-[10px] font-semibold text-slate-400 mt-0.5" id="intip-tanggal">-</p>
+                        </div>
+
+                        <div id="intip-daftar" class="hidden space-y-2"></div>
+
+                        <div id="intip-kosong" class="hidden rounded-xl border border-dashed border-emerald-200 p-4 text-center">
+                            <i class="fas fa-mug-hot text-2xl text-emerald-300 mb-2"></i>
+                            <p class="text-xs font-bold text-slate-600">Anda tidak mengajar hari ini.</p>
+                            <p class="text-[10px] font-semibold text-slate-400 mt-0.5">Nikmati waktu Anda dan tetap semangat! 😊</p>
+                        </div>
+
+                        <div id="intip-pesan" class="hidden rounded-xl border border-emerald-100 bg-white p-4 text-center">
+                            <p id="intip-pesan-teks" class="text-xs font-bold text-slate-600">-</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-[10px] font-semibold text-emerald-300 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i> Jadwal tampil otomatis saat username diketik. Aktifkan "Ingat Identitas Saya" di Menu agar username terisi otomatis.
+                </p>
+            </div>
+
             <!-- Bantuan login: hubungi TU jika tidak bisa masuk -->
             <div class="mt-6 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 flex items-start text-emerald-800">
                 <i class="fas fa-headset text-emerald-600 text-sm mt-0.5 mr-3"></i>
@@ -303,6 +348,13 @@
             });
         }
         document.getElementById('form-login').addEventListener('submit', function() {
+            // Simpan username saat login bila pengaturan "Ingat Identitas" aktif
+            var loginId = this.querySelector('input[name="login_id"]').value;
+            var ingat = localStorage.getItem('sn_ingat') !== '0';
+            if (ingat && loginId) {
+                localStorage.setItem('sn_username', loginId);
+            }
+
             // 1. Munculkan animasi layar penuh
             document.getElementById('loading-overlay').style.display = 'flex';
             
@@ -313,6 +365,110 @@
                 btnSubmit.innerHTML = 'Memproses...';
             }
         });
+
+        // ==========================================================
+        // INTIP JADWAL HARI INI (Tanpa Login)
+        // ==========================================================
+        var debounceIntip = null;
+        var panel = document.getElementById('panel-intip');
+        var inputLogin = document.querySelector('input[name="login_id"]');
+
+        function tampilkanPesanIntip(teks) {
+            document.getElementById('intip-loading').classList.add('hidden');
+            document.getElementById('intip-sapa').classList.add('hidden');
+            document.getElementById('intip-daftar').classList.add('hidden');
+            document.getElementById('intip-daftar').innerHTML = '';
+            document.getElementById('intip-kosong').classList.add('hidden');
+            var pesan = document.getElementById('intip-pesan');
+            pesan.classList.remove('hidden');
+            document.getElementById('intip-pesan-teks').textContent = teks;
+            panel.classList.remove('hidden');
+        }
+
+        function ambilJadwal(loginId) {
+            if (!loginId) {
+                panel.classList.add('hidden');
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            var loading = document.getElementById('intip-loading');
+            var sapa = document.getElementById('intip-sapa');
+            var daftar = document.getElementById('intip-daftar');
+            var kosong = document.getElementById('intip-kosong');
+            var pesan = document.getElementById('intip-pesan');
+
+            loading.classList.remove('hidden');
+            sapa.classList.add('hidden');
+            daftar.classList.add('hidden');
+            kosong.classList.add('hidden');
+            pesan.classList.add('hidden');
+
+            fetch('/login/intip-jadwal?login_id=' + encodeURIComponent(loginId))
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    loading.classList.add('hidden');
+
+                    if (!data.ok) {
+                        tampilkanPesanIntip(data.pesan || 'Identitas tidak ditemukan.');
+                        return;
+                    }
+
+                    document.getElementById('intip-hari').textContent = data.hari;
+                    document.getElementById('intip-nama').textContent = data.nama_guru;
+                    document.getElementById('intip-tanggal').textContent = data.tanggal;
+                    sapa.classList.remove('hidden');
+
+                    if (!data.jadwal || data.jadwal.length === 0) {
+                        kosong.classList.remove('hidden');
+                        return;
+                    }
+
+                    var html = '';
+                    data.jadwal.forEach(function(j) {
+                        html += '' +
+                            '<div class="flex items-center gap-3 bg-white rounded-xl border border-emerald-100 p-3">' +
+                                '<div class="shrink-0 w-14 text-center">' +
+                                    '<div class="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Jam</div>' +
+                                    '<div class="text-sm font-black text-slate-800">' + j.jam + '</div>' +
+                                    '<div class="text-[9px] font-bold text-slate-400">' + (j.waktu || '-') + '</div>' +
+                                '</div>' +
+                                '<div class="flex-1 min-w-0 text-left">' +
+                                    '<div class="text-sm font-extrabold text-slate-800 truncate">' + j.pelajaran + '</div>' +
+                                    '<div class="text-[10px] font-bold text-emerald-600 mt-0.5 truncate">' + (j.kitab || '-') + '</div>' +
+                                    '<div class="text-[10px] font-semibold text-slate-400 mt-0.5 truncate"><i class="fas fa-school mr-1"></i>' + j.kelas + '</div>' +
+                                '</div>' +
+                                '<i class="fas fa-chevron-right text-slate-200 text-xs"></i>' +
+                            '</div>';
+                    });
+                    daftar.innerHTML = html;
+                    daftar.classList.remove('hidden');
+                })
+                .catch(function() {
+                    loading.classList.add('hidden');
+                    tampilkanPesanIntip('Gagal memuat jadwal. Coba lagi nanti.');
+                });
+        }
+
+        if (inputLogin) {
+            inputLogin.addEventListener('input', function() {
+                clearTimeout(debounceIntip);
+                var nilai = this.value.trim();
+                debounceIntip = setTimeout(function() {
+                    ambilJadwal(nilai);
+                }, 700);
+            });
+        }
+
+        // Saat halaman dimuat: isi otomatis bila pengaturan "Ingat Identitas" aktif
+        (function() {
+            var teringat = localStorage.getItem('sn_username');
+            var ingat = localStorage.getItem('sn_ingat') !== '0';
+            if (ingat && teringat && inputLogin) {
+                inputLogin.value = teringat;
+                ambilJadwal(teringat);
+            }
+        })();
     </script>
 
 </body>

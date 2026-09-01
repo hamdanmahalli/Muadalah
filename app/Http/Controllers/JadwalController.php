@@ -40,9 +40,10 @@ class JadwalController extends Controller
                                     ->where('tahun_ajaran', $tahunAjaran)
                                     ->count();
 
-        $kehadiranHariIni = KehadiranGuru::where('tanggal', $tanggalHariIni)->get();
+$kehadiranHariIni = KehadiranGuru::where('tanggal', $tanggalHariIni)->get();
         $guruHadir = $kehadiranHariIni->where('status', 'Hadir')->count();
-        $guruIzinKosong = $kehadiranHariIni->whereIn('status', ['Izin', 'Kosong', 'Alpha'])->count();
+        // Sakit dimasukkan ke kategori "perlu perhatian" agar konsisten dengan monitoring
+        $guruIzinKosong = $kehadiranHariIni->whereIn('status', ['Izin', 'Kosong', 'Alpha', 'Sakit'])->count();
         $totalGuru = Guru::count();
 
         // ===== GRAFIK KEHADIRAN 7 HARI (Area Chart) =====
@@ -62,7 +63,7 @@ class JadwalController extends Controller
 
             $kh = KehadiranGuru::where('tanggal', $tanggalStr)->get();
             $dataHadirGrafik[] = $kh->where('status', 'Hadir')->count();
-            $dataIzinGrafik[] = $kh->whereIn('status', ['Izin', 'Kosong'])->count();
+            $dataIzinGrafik[] = $kh->whereIn('status', ['Izin', 'Kosong', 'Sakit'])->count();
             $dataKosongGrafik[] = $kh->where('status', 'Alpha')->count();
 
             $hr = map_hari($tanggal->format('l'));
@@ -70,6 +71,19 @@ class JadwalController extends Controller
                                           ->where('tahun_ajaran', $tahunAjaran)
                                           ->count();
         }
+
+        // ===== DATA PENDUKUNG KARTU STATISTIK ATAS (delta & spark per kartu) =====
+        $rataRataHadir7 = count($dataHadirGrafik) > 0 ? (array_sum($dataHadirGrafik) / count($dataHadirGrafik)) : 0;
+        $rataRataIzinKosong7 = (count($dataIzinGrafik) + count($dataKosongGrafik)) > 0 ? ((array_sum($dataIzinGrafik) + array_sum($dataKosongGrafik)) / 7) : 0;
+        $rataRataJadwal7 = count($sparkJadwal) > 0 ? (array_sum($sparkJadwal) / count($sparkJadwal)) : 0;
+
+        $deltaTotalJadwal = $rataRataJadwal7 > 0 ? round((($totalJadwal - $rataRataJadwal7) / $rataRataJadwal7) * 100, 1) : 0;
+        $deltaGuruHadir = $rataRataHadir7 > 0 ? round((($guruHadir - $rataRataHadir7) / $rataRataHadir7) * 100, 1) : 0;
+        $deltaIzinKosong = $rataRataIzinKosong7 > 0 ? round((($guruIzinKosong - $rataRataIzinKosong7) / $rataRataIzinKosong7) * 100, 1) : 0;
+        $deltaTotalGuru = 0; // belum ada data pembanding historis total guru
+
+        $sparkHadir = $dataHadirGrafik;
+        $sparkIzin = array_map(function ($izin, $alpa) { return $izin + $alpa; }, $dataIzinGrafik, $dataKosongGrafik);
 
         // ===== STRIP KALENDER MINGGU INI =====
         $stripMinggu = [];
@@ -86,8 +100,8 @@ class JadwalController extends Controller
 
         // ===== LIST MONITORING (analog "daftar pasien") =====
         $monitorGuru = [];
-        $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
-                                     ->whereIn('status', ['Izin', 'Kosong', 'Alpha'])
+$queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
+                                     ->whereIn('status', ['Izin', 'Kosong', 'Alpha', 'Sakit'])
                                      ->orderBy('id')
                                      ->get();
         foreach ($queryMonitor as $kh) {
@@ -107,7 +121,13 @@ class JadwalController extends Controller
         }
         $belumCatatCount = max(0, $totalJadwal - $kehadiranHariIni->count());
 
-        // ===== KARTU TUGAS 2x2 =====
+// ===== KARTU TUGAS 2x2 (persentase data riil) =====
+        $jmlHariOperasionalAktif = \App\Models\HariOperasional::where('is_active', true)->count();
+        $jmlAgendaTotal = \App\Models\AgendaKegiatan::count();
+        $jmlAgendaMendatang = \App\Models\AgendaKegiatan::whereDate('tanggal', '>=', $tanggalHariIni)->count();
+        $jmlPlotTotal = \App\Models\PlotJadwal::count();
+        $jmlPlotBerGuru = \App\Models\PlotJadwal::whereNotNull('guru_id')->count();
+
         $kartuTugas = [
             [
                 'judul'   => 'Periode Aktif',
@@ -115,34 +135,39 @@ class JadwalController extends Controller
                 'ikon'    => 'fa-calendar-check',
                 'warna'   => 'sky',
                 'link'    => '/master-periode',
+                'pct'     => $periodeAktif ? 100 : 0,
             ],
             [
                 'judul'   => 'Hari Operasional',
-                'sub'     => \App\Models\HariOperasional::where('is_active', true)->count().' hari aktif',
+                'sub'     => $jmlHariOperasionalAktif.' dari 7 hari aktif',
                 'ikon'    => 'fa-calendar-week',
                 'warna'   => 'emerald',
                 'link'    => '/master-hari-operasional',
+                'pct'     => $jmlHariOperasionalAktif > 0 ? (int) round(($jmlHariOperasionalAktif / 7) * 100) : 0,
             ],
             [
                 'judul'   => 'Agenda Kegiatan',
-                'sub'     => \App\Models\AgendaKegiatan::whereDate('tanggal', '>=', $tanggalHariIni)->count().' agenda mendatang',
+                'sub'     => $jmlAgendaMendatang.' agenda mendatang',
                 'ikon'    => 'fa-calendar-alt',
                 'warna'   => 'indigo',
                 'link'    => '/agenda-kegiatan',
+                'pct'     => $jmlAgendaTotal > 0 ? (int) round(($jmlAgendaMendatang / $jmlAgendaTotal) * 100) : 0,
             ],
             [
                 'judul'   => 'Target Mengajar',
-                'sub'     => \App\Models\PlotJadwal::count().' plot jadwal',
+                'sub'     => $jmlPlotBerGuru.' dari '.$jmlPlotTotal.' plot ber-guru',
                 'ikon'    => 'fa-sitemap',
                 'warna'   => 'rose',
                 'link'    => '/master-plot-jadwal',
+                'pct'     => $jmlPlotTotal > 0 ? (int) round(($jmlPlotBerGuru / $jmlPlotTotal) * 100) : 0,
             ],
         ];
 
         return view('dashboard', compact(
             'totalJadwal', 'guruHadir', 'guruIzinKosong', 'totalGuru', 'waktuSekarang',
             'labelsGrafik', 'dataHadirGrafik', 'dataIzinGrafik', 'dataKosongGrafik', 'sparkJadwal',
-            'stripMinggu', 'monitorGuru', 'belumCatatCount', 'kartuTugas'
+            'sparkHadir', 'sparkIzin', 'stripMinggu', 'monitorGuru', 'belumCatatCount', 'kartuTugas',
+            'deltaTotalJadwal', 'deltaGuruHadir', 'deltaIzinKosong', 'deltaTotalGuru'
         ));
     }
 

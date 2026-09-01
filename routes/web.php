@@ -30,6 +30,9 @@ use App\Http\Controllers\PengumumanController;
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'prosesLogin']);
 
+// Intip Jadwal Hari Ini (khusus guru, tanpa login)
+Route::get('/login/intip-jadwal', [AuthController::class, 'intipJadwal']);
+
 // ==========================================================
 // 2. BENTENG UTAMA (Seluruh rute di dalam ini WAJIB LOGIN)
 // ==========================================================

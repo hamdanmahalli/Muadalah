@@ -89,6 +89,24 @@ class JadwalService
     }
 
     /**
+     * Normalisasi tanggal efekif jadwal menjadi 'Y-m-d'.
+     * Nilai defaultSelesai memakai tanggal aman tergantung jenis batas.
+     */
+    private function normalizeTanggalEfektif($nilai, bool $isBatasSelesai): string
+    {
+        if ($nilai instanceof Carbon || $nilai instanceof \DateTimeInterface) {
+            return $nilai->format('Y-m-d');
+        }
+
+        $str = trim((string) $nilai);
+        if ($str !== '') {
+            return substr($str, 0, 10);
+        }
+
+        return $isBatasSelesai ? '2099-12-31' : '2000-01-01';
+    }
+
+    /**
      * Hitung rekap kehadiran guru (jam wajib, hadir, izin, sakit, alpha, persentase).
      *
      * @param  int  $guruId
@@ -134,8 +152,9 @@ class JadwalService
                     $isHariSama = strtolower($j->hari) === strtolower($hariIndo)
                         || (strtolower($hariIndo) === 'ahad' && strtolower($j->hari) === 'ahad');
 
-                    $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
-                    $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                    // B4: Rentang aktif pakai kolom efektif (lebih akurat dari created_at)
+                    $mulaiAktif = $this->normalizeTanggalEfektif($j->berlaku_mulai ?? $j->tgl_efektif_mulai ?? ($j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01'), false);
+                    $selesaiAktif = $this->normalizeTanggalEfektif($j->berlaku_sampai ?? $j->tgl_efektif_selesai ?? ($j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31'), true);
                     $isDalamRentang = $tglStr >= $mulaiAktif && $tglStr <= $selesaiAktif;
 
                     return $isHariSama && $isDalamRentang;
@@ -203,10 +222,33 @@ class JadwalService
             ->where('tanggal_selesai', '>=', $tglMulai)
             ->get();
 
+        // ===== B5: SATU QUERY utk semua kehadiran blok  (hindari N+1) =====
+        $kehadiranSemua = DB::table('kehadiran_gurus')
+            ->join('jadwal_harians', 'kehadiran_gurus.jadwal_id', '=', 'jadwal_harians.id')
+            ->whereBetween('kehadiran_gurus.tanggal', [$tglMulai, $tglSelesai])
+            ->where('kehadiran_gurus.periode_id', $periodeId)
+            ->select(
+                'jadwal_harians.guru_id',
+                'kehadiran_gurus.tanggal',
+                'kehadiran_gurus.status',
+                'kehadiran_gurus.nig_pengganti'
+            )
+            ->get();
+
+        // Piket: satu query global per NIG pengganti
+        $piketSemua = DB::table('kehadiran_gurus')
+            ->whereBetween('tanggal', [$tglMulai, $tglSelesai])
+            ->where('periode_id', $periodeId)
+            ->whereNotNull('nig_pengganti')
+            ->select('tanggal', 'nig_pengganti')
+            ->get();
+
         foreach ($gurus as $guru) {
             $jamWajib = 0;
             $period = CarbonPeriod::create($tglMulai, $tglSelesai);
 
+            // ---- Hitung jam wajib per hari (dengan rentang kolom efektif) ----
+            $hariDenganJadwal = [];
             foreach ($period as $date) {
                 $tglStr = $date->format('Y-m-d');
                 $hariIndo = map_hari($date->format('l'));
@@ -216,8 +258,10 @@ class JadwalService
                         $isHariSama = strtolower($j->hari) === strtolower($hariIndo)
                             || (strtolower($hariIndo) === 'ahad' && strtolower($j->hari) === 'ahad');
 
-                        $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
-                        $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                        // B4: Rentang aktif pakai kolom efektif (lebih akurat dari created_at)
+                        $mulaiAktif = $this->normalizeTanggalEfektif($j->berlaku_mulai ?? $j->tgl_efektif_mulai ?? ($j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01'), false);
+                        $selesaiAktif = $this->normalizeTanggalEfektif($j->berlaku_sampai ?? $j->tgl_efektif_selesai ?? ($j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31'), true);
+
                         $isDalamRentang = $tglStr >= $mulaiAktif && $tglStr <= $selesaiAktif;
 
                         return $isHariSama && $isDalamRentang;
@@ -227,6 +271,7 @@ class JadwalService
                     $libur = $this->isLibur($j, $daftarLibur, $tglStr, true);
                     if (!$libur['is_libur']) {
                         $jamWajib++;
+                        $hariDenganJadwal[$tglStr] = true;
                     }
                 }
             }
@@ -235,31 +280,47 @@ class JadwalService
                 continue;
             }
 
-            $kehadiran = DB::table('kehadiran_gurus')
-                ->join('jadwal_harians', 'kehadiran_gurus.jadwal_id', '=', 'jadwal_harians.id')
-                ->where('jadwal_harians.guru_id', $guru->id)
-                ->whereBetween('kehadiran_gurus.tanggal', [$tglMulai, $tglSelesai])
-                ->where('kehadiran_gurus.periode_id', $periodeId)
-                ->select('kehadiran_gurus.status')
-                ->get();
+            // ===== B5: Ambil kehadiran guru ini dari hasil query tunggal =====
+            $kehadiranGuru = $kehadiranSemua->where('guru_id', $guru->id);
 
-            $hadir = $kehadiran->where('status', 'Hadir')->count();
-            $izin  = $kehadiran->where('status', 'Izin')->count();
-            $sakit = $kehadiran->where('status', 'Sakit')->count();
+            $hadir = 0;
+            $izin = 0;
+            $sakit = 0;
+
+            foreach ($kehadiranGuru as $kh) {
+                // Simpan status awal untuk kebutuhan perhitungan
+                $statusKh = $kh->status;
+
+                // B3: Lewati tanggal yang merupakan hari libur (jangan menambah beban saat libur)
+                if (!empty($hariDenganJadwal[$kh->tanggal])) {
+                    // Tanggal ini kena jadwal wajib guru; tetap dipertimbangkan
+                } else {
+                    // Bila tanggal kehadiran bukan hari jadwal wajib guru (mis. pengganti di kelas lain),
+                    // jangan dihitung sebagai hadir/izin/sakit guru ini.
+                    continue;
+                }
+
+                // B2: Hadir hanya status 'Hadir' TANPA nig_pengganti
+                // (kehadiran dengan nig_pengganti adalah status piket/pengganti kelas lain)
+                if ($statusKh === 'Hadir' && empty($kh->nig_pengganti)) {
+                    $hadir++;
+                } elseif ($statusKh === 'Izin') {
+                    $izin++;
+                } elseif ($statusKh === 'Sakit') {
+                    $sakit++;
+                }
+            }
 
             $alpha = $jamWajib - ($hadir + $izin + $sakit);
             if ($alpha < 0) {
                 $alpha = 0;
             }
 
-            $piket = DB::table('kehadiran_gurus')
-                ->whereBetween('tanggal', [$tglMulai, $tglSelesai])
-                ->where('periode_id', $periodeId)
-                ->where('nig_pengganti', $guru->nig)
-                ->count();
+            // Piket = kehadiran guru ini saat jadi pengganti kelas lain
+            $piket = $piketSemua->where('nig_pengganti', $guru->nig)->count();
 
             $kelasTerisi = $hadir + $piket;
-            $persentase = round(($hadir / $jamWajib) * 100, 1);
+            $persentase = $jamWajib > 0 ? round(($hadir / $jamWajib) * 100, 1) : 0;
 
             if ($persentase >= 85) {
                 $ket = 'Sangat Baik';

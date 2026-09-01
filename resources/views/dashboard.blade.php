@@ -33,12 +33,15 @@
             <p class="text-[11px] font-bold uppercase tracking-wider text-cyan-50/90 relative z-10 mb-1">Total Jadwal</p>
             <div class="flex items-end justify-between relative z-10">
                 <h2 class="text-4xl font-black relative z-10">{{ $totalJadwal ?? 0 }}</h2>
-                <span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg mb-1"><i class="fas fa-arrow-up mr-1"></i>+2.4%</span>
+                <span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg mb-1"><i class="fas {{ $deltaTotalJadwal >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }} mr-1"></i>{{ $deltaTotalJadwal >= 0 ? '+' : '' }}{{ $deltaTotalJadwal }}%</span>
             </div>
             <canvas data-spark="spark-c1" class="absolute left-0 right-0 bottom-0 opacity-40 pointer-events-none z-0" height="46"></canvas>
             <a href="/meja-kontrol" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/20 text-xs font-bold hover:text-white mt-2">
                 Buka Meja Kontrol <i class="fas fa-arrow-right"></i>
             </a>
+            @if(isset($belumCatatCount) && $belumCatatCount > 0)
+            <p class="relative z-10 text-[10px] font-bold text-cyan-100/90 mt-2"><i class="fas fa-hourglass-half mr-1"></i>{{ $belumCatatCount }} jadwal belum tercatat</p>
+            @endif
         </div>
 
         <!-- Emerald: Guru Hadir -->
@@ -50,7 +53,7 @@
             <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-50/90 relative z-10 mb-1">Guru Hadir</p>
             <div class="flex items-end justify-between relative z-10">
                 <h2 class="text-4xl font-black relative z-10">{{ $guruHadir ?? 0 }}</h2>
-                <span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg mb-1"><i class="fas fa-arrow-up mr-1"></i>+5.1%</span>
+                <span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg mb-1"><i class="fas {{ $deltaGuruHadir >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }} mr-1"></i>{{ $deltaGuruHadir >= 0 ? '+' : '' }}{{ $deltaGuruHadir }}%</span>
             </div>
             <canvas data-spark="spark-c2" class="absolute left-0 right-0 bottom-0 opacity-40 pointer-events-none z-0" height="46"></canvas>
             <a href="/laporan" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/20 text-xs font-bold hover:text-white mt-2">
@@ -67,7 +70,7 @@
             <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-50/90 relative z-10 mb-1">Izin / Kelas Kosong</p>
             <div class="flex items-end justify-between relative z-10">
                 <h2 class="text-4xl font-black relative z-10">{{ $guruIzinKosong ?? 0 }}</h2>
-                <span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg mb-1"><i class="fas fa-minus mr-1"></i>-0.8%</span>
+                <span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg mb-1"><i class="fas {{ $deltaIzinKosong >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }} mr-1"></i>{{ $deltaIzinKosong >= 0 ? '+' : '' }}{{ $deltaIzinKosong }}%</span>
             </div>
             <canvas data-spark="spark-c3" class="absolute left-0 right-0 bottom-0 opacity-40 pointer-events-none z-0" height="46"></canvas>
             <a href="/meja-kontrol" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/20 text-xs font-bold hover:text-white mt-2">
@@ -84,7 +87,7 @@
             <p class="text-[11px] font-bold uppercase tracking-wider text-slate-300 relative z-10 mb-1">Total Guru Terdaftar</p>
             <div class="flex items-end justify-between relative z-10">
                 <h2 class="text-4xl font-black relative z-10">{{ $totalGuru ?? 0 }}</h2>
-                <span class="text-xs font-bold bg-white/10 px-2 py-1 rounded-lg mb-1"><i class="fas fa-arrow-up mr-1"></i>+1.2%</span>
+                <span class="text-xs font-bold bg-white/10 px-2 py-1 rounded-lg mb-1"><i class="fas fa-equals mr-1"></i>+0%</span>
             </div>
             <canvas data-spark="spark-c4" class="absolute left-0 right-0 bottom-0 opacity-40 pointer-events-none z-0" height="46"></canvas>
             <a href="/master-guru" class="relative z-10 flex justify-between items-center pt-4 border-t border-white/10 text-xs font-bold hover:text-slate-300 mt-2">
@@ -114,6 +117,7 @@
                             'rose' => ['bg-rose-100','text-rose-600'],
                         ];
                         [$bgIkon, $warnaIkon] = $peta[$warna] ?? $peta['sky'];
+                        $pct = $kartu['pct'] ?? 0;
                     @endphp
                     <a href="{{ $kartu['link'] }}" class="group bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                         <div class="flex items-start justify-between mb-4">
@@ -122,7 +126,6 @@
                             </div>
                             <!-- Circular progress -->
                             <div class="relative w-12 h-12">
-                                @php $pct = min(100, 55 + $loop->index * 12); @endphp
                                 <svg class="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
                                     <circle cx="24" cy="24" r="20" fill="none" stroke="#e2e8f0" stroke-width="5"></circle>
                                     <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="{{ 125.6 * (1 - $pct/100) }}" class="text-{{ $warna }}-500"></circle>
@@ -231,7 +234,6 @@
     var hadir  = @json($dataHadirGrafik);
     var izin   = @json($dataIzinGrafik);
     var alpa   = @json($dataKosongGrafik);
-    var spark  = @json($sparkJadwal);
 
     // Area chart utama
     var ctx = document.getElementById('areaChart');
@@ -300,11 +302,16 @@
         };
     }
 
-    // Sparkline di tiap kartu
-    var colors = { 'spark-c1':'#ffffff', 'spark-c2':'#ffffff', 'spark-c3':'#ffffff', 'spark-c4':'#ffffff' };
+    // Sparkline di tiap kartu (dataset per kartu)
+    var sparkMap = {
+        'spark-c1': @json($sparkJadwal),
+        'spark-c2': @json($sparkHadir),
+        'spark-c3': @json($sparkIzin),
+        'spark-c4': [@php echo count($sparkJadwal) ? implode(',', array_fill(0, count($sparkJadwal), (int)$totalGuru)) : '1,2,1,3,2'; @endphp]
+    };
     document.querySelectorAll('canvas[data-spark]').forEach(function(cv){
         var id = cv.getAttribute('data-spark');
-        var data = spark.length ? spark : [1,2,1,3,2];
+        var data = (sparkMap[id] && sparkMap[id].length) ? sparkMap[id] : [1,2,1,3,2];
         new Chart(cv.getContext('2d'), {
             type: 'line',
             data: {
