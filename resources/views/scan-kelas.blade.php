@@ -8,6 +8,7 @@
 @endpush
 <style>
     header, aside { display: none !important; }
+    #btn-buka-sidebar { display: none !important; }
     #app main { padding: 0 !important; background-color: #000 !important; overflow: hidden !important; }
     body { overflow: hidden !important; background-color: #000 !important; }
     .scrollbar-none::-webkit-scrollbar { display: none; }

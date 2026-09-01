@@ -3,6 +3,7 @@
 @section('content')
 <style>
     header, aside { display: none !important; }
+    #btn-buka-sidebar { display: none !important; }
     main { padding: 0 !important; background-color: #f8fafc !important; overflow: hidden !important; }
     body { overflow: hidden !important; background-color: #f8fafc !important; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
