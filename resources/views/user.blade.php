@@ -33,8 +33,8 @@
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b w-12">NO</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b">USERNAME</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b">NAMA LENGKAP</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b">EMAIL / HP</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b">HAK AKSES / JABATAN</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b hidden md:table-cell">EMAIL / HP</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-b hidden md:table-cell">HAK AKSES / JABATAN</th>
                     <th class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider border-b">STATUS</th>
                     <th class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider border-b w-32">AKSI</th>
                 </tr>
@@ -45,12 +45,12 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-bold">{{ $index + 1 }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold">{{ $user->username }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">{{ $user->name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
                         <div>{{ $user->email }}</div>
                         <div class="text-xs text-gray-400">{{ $user->hp ?? '-' }}</div>
                     </td>
                     
-                    <td class="px-6 py-4 whitespace-normal text-sm">
+                    <td class="px-6 py-4 whitespace-normal text-sm hidden md:table-cell">
                         @forelse($user->getRoleNames() as $roleName)
                             <span class="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mr-1 mb-1">
                                 <i class="fas fa-user-shield mr-1 text-[10px]"></i> {{ $roleName }}

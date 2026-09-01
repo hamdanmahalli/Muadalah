@@ -12,7 +12,14 @@ class UserController extends Controller
     public function index()
     {
         // Memuat user beserta relasi roles agar cepat & ringan
-        $users = User::with('roles')->orderBy('id', 'asc')->get();
+        // User dengan role Administrator disembunyikan dari semua user kecuali Administrator itu sendiri
+        $query = User::with('roles')->orderBy('id', 'asc');
+        if (!auth()->user()->hasRole('Administrator')) {
+            $query->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'Administrator');
+            });
+        }
+        $users = $query->get();
         $gurus = \App\Models\Guru::orderBy('nama_guru', 'asc')->get();
         $roles = Role::orderBy('name', 'asc')->get(); 
 
@@ -49,6 +56,11 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+
+        // Blokir non-Administrator mengubah user Administrator
+        if ($user->hasRole('Administrator') && !auth()->user()->hasRole('Administrator')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengubah user Administrator.');
+        }
         
         $request->validate([
             'username' => 'required|string|unique:users,username,'.$id,
@@ -77,6 +89,11 @@ class UserController extends Controller
     public function resetPassword($id)
     {
         $user = User::findOrFail($id);
+
+        // Blokir non-Administrator me-reset sandi user Administrator
+        if ($user->hasRole('Administrator') && !auth()->user()->hasRole('Administrator')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin me-reset sandi user Administrator.');
+        }
         $sandi = $this->buatSandiAcak();
         $user->update([
             'password' => Hash::make($sandi)
@@ -101,6 +118,11 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+
+        // Blokir non-Administrator menghapus user Administrator
+        if ($user->hasRole('Administrator') && !auth()->user()->hasRole('Administrator')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin menghapus user Administrator.');
+        }
         $user->syncRoles([]); 
         $user->delete();
         
