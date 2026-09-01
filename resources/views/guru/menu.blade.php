@@ -30,7 +30,7 @@
 
         <div class="space-y-6">
 
-            @can('akses_dashboard')
+            @if(auth()->user()->hasAnyRole(['Administrator', 'Pimpinan', 'Tata Usaha']) || auth()->user()->can('akses_dashboard'))
             <a href="/dashboard-utama" class="w-full flex items-center justify-between bg-gradient-to-br from-emerald-600 to-teal-600 p-4 rounded-3xl active:scale-[0.98] transition-all shadow-[0_12px_28px_-10px_rgba(16,185,129,0.5)] group">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -43,7 +43,7 @@
                 </div>
                 <i class="fas fa-chevron-right text-white/70 text-xs"></i>
             </a>
-            @endcan
+            @endif
 
             <!-- ===== GRUP: FITUR UTAMA ===== -->
             <div>
