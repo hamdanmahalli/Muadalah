@@ -339,8 +339,8 @@
                     <div class="sb-brand-inner flex items-center gap-3 overflow-hidden">
                         
                         <!-- Tambahkan w-10 h-10 flex justify-center items-center agar lebar icon sama dengan icon menu -->
-                        <span class="sb-brand-icon text-[#10b981] text-2xl w-10 h-10 flex justify-center items-center flex-shrink-0">
-                            <i class="fas fa-mosque"></i>
+                        <span class="sb-brand-icon w-10 h-10 flex justify-center items-center flex-shrink-0">
+                            <img src="{{ asset('img/logo-muadalah.png') }}" alt="Logo Mu'adalah" class="w-full h-full object-contain">
                         </span>
                         
                         <div class="sb-brand-txt min-w-0">

@@ -46,61 +46,6 @@
             </a>
             @endif
 
-            <!-- ===== GRUP: FITUR UTAMA ===== -->
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2.5">Fitur Utama</p>
-                <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] overflow-hidden divide-y divide-slate-100">
-                    <a href="/jadwal-saya" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
-                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-calendar-days text-base"></i></span>
-                        <span class="flex-1 min-w-0">
-                            <span class="block text-sm font-bold text-slate-800">Jadwal Saya</span>
-                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Jadwal mengajar mingguan &amp; rekap</span>
-                        </span>
-                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-                    </a>
-                    <a href="/agenda-kegiatan" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
-                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-calendar-day text-base"></i></span>
-                        <span class="flex-1 min-w-0">
-                            <span class="block text-sm font-bold text-slate-800">Agenda Kegiatan</span>
-                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Kegiatan &amp; kehadiran agenda</span>
-                        </span>
-                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-                    </a>
-                    <a href="/kaldik" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group">
-                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-book-open text-base"></i></span>
-                        <span class="flex-1 min-w-0">
-                            <span class="block text-sm font-bold text-slate-800">Kalender Pendidikan</span>
-                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Target kurikulum &amp; peta mengajar</span>
-                        </span>
-                        <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
-                    </a>
-                    <button onclick="tampilToast('info', 'Menu Pengumuman segera hadir.')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
-                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-bullhorn text-base"></i></span>
-                        <span class="flex-1 min-w-0">
-                            <span class="block text-sm font-bold text-slate-800">Pengumuman</span>
-                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Informasi &amp; berita terbaru</span>
-                        </span>
-                        <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
-                    </button>
-                    <button onclick="tampilToast('info', 'Menu Cuti / Izin segera hadir.')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
-                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-file-signature text-base"></i></span>
-                        <span class="flex-1 min-w-0">
-                            <span class="block text-sm font-bold text-slate-800">Cuti / Izin</span>
-                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Permohonan izin &amp; cuti mengajar</span>
-                        </span>
-                        <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
-                    </button>
-                    <button onclick="tampilToast('info', 'Menu Ganti Jam segera hadir.')" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
-                        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform"><i class="fas fa-arrow-right-arrow-left text-base"></i></span>
-                        <span class="flex-1 min-w-0">
-                            <span class="block text-sm font-bold text-slate-800">Ganti Jam</span>
-                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Penukaran jam mengajar</span>
-                        </span>
-                        <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
-                    </button>
-                </div>
-            </div>
-
             <!-- ===== GRUP: AKUN ===== -->
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2.5">Akun</p>
@@ -129,6 +74,16 @@
                         </span>
                         <span id="box-switch-ingat" class="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer" style="background-color: #cbd5e1;">
                             <span id="knob-switch-ingat" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300" style="transform: translateX(0);"></span>
+                        </span>
+                    </button>
+                    <button onclick="toggleLoginSidikJari(this)" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left cursor-pointer">
+                        <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-fingerprint text-base"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-slate-800">Login Sidik Jari</span>
+                            <span class="block text-[11px] font-semibold text-slate-400 mt-0.5">Masuk cepat tanpa kata sandi</span>
+                        </span>
+                        <span id="box-switch-sidik" class="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer" style="background-color: #cbd5e1;">
+                            <span id="knob-switch-sidik" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300" style="transform: translateX(0);"></span>
                         </span>
                     </button>
                     <button onclick="bukaModalGantiPassword()" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left">
@@ -300,7 +255,7 @@
     var INGAT_KEY = 'sn_ingat';
     var USERNAME_KEY = 'sn_username';
     var usernameGuru = '{{ auth()->user()->username }}';
-    var ingatAktif = localStorage.getItem(INGAT_KEY) !== '0';
+    var ingatAktif = localStorage.getItem(INGAT_KEY) === '1';
 
     function renderSwitchIngat() {
         var box = document.getElementById('box-switch-ingat');
@@ -330,6 +285,131 @@
     }
 
     renderSwitchIngat();
+
+    // ====== LOGIN SIDIK JARI (WebAuthn / Passkey) ======
+    var passkeyTerdaftar = {{ $passkeyCount > 0 ? 'true' : 'false' }};
+    var passkeyIds = @json($passkeys);
+
+    function renderSwitchSidik() {
+        var box = document.getElementById('box-switch-sidik');
+        var knob = document.getElementById('knob-switch-sidik');
+        if (!box || !knob) return;
+
+        if (passkeyTerdaftar) {
+            box.style.backgroundColor = '#10b981';
+            knob.style.transform = 'translateX(20px)';
+        } else {
+            box.style.backgroundColor = '#cbd5e1';
+            knob.style.transform = 'translateX(0px)';
+        }
+    }
+
+    function keBuffer(strB64url) {
+        var s = strB64url.replace(/-/g, '+').replace(/_/g, '/');
+        while (s.length % 4) { s += '='; }
+        var bin = atob(s);
+        var out = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) { out[i] = bin.charCodeAt(i); }
+        return out;
+    }
+
+    function dariBuffer(buffer) {
+        var bins = new Uint8Array(buffer);
+        var bin = '';
+        for (var i = 0; i < bins.length; i++) { bin += String.fromCharCode(bins[i]); }
+        return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function konversiOptions(options) {
+        options.challenge = keBuffer(options.challenge);
+        if (options.user && options.user.id) { options.user.id = keBuffer(options.user.id); }
+        ['allowCredentials', 'excludeCredentials'].forEach(function(kunci) {
+            if (Array.isArray(options[kunci])) {
+                options[kunci].forEach(function(item) { if (item.id) { item.id = keBuffer(item.id); } });
+            }
+        });
+        return options;
+    }
+
+    function credentialKeJson(cred) {
+        var json = { id: cred.id, rawId: dariBuffer(cred.rawId), type: cred.type, response: {} };
+        var r = cred.response;
+        json.response.clientDataJSON = dariBuffer(r.clientDataJSON);
+        if (r.attestationObject) { json.response.attestationObject = dariBuffer(r.attestationObject); }
+        if (r.authenticatorData) { json.response.authenticatorData = dariBuffer(r.authenticatorData); }
+        if (r.signature) { json.response.signature = dariBuffer(r.signature); }
+        if (r.userHandle) { json.response.userHandle = dariBuffer(r.userHandle); }
+        if (typeof r.getTransports === 'function') { json.response.transports = r.getTransports(); }
+        return json;
+    }
+
+    function footerCsrf(extra) {
+        var token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+        return Object.assign({ 'X-CSRF-TOKEN': token, 'Accept': 'application/json' }, extra || {});
+    }
+
+    async function daftarSidikJari() {
+        if (!window.PublicKeyCredential) { tampilToast('error', 'Browser tidak mendukung sidik jari.'); return false; }
+        if (!window.isSecureContext) { tampilToast('error', 'Sidik jari hanya berfungsi di HTTPS.'); return false; }
+
+        try {
+            var resp = await fetch('/user/passkeys/options', { headers: footerCsrf(), credentials: 'same-origin' });
+            var data = await resp.json();
+
+            var cred = await navigator.credentials.create({ publicKey: konversiOptions(data.options) });
+
+            var kirim = await fetch('/user/passkeys', {
+                method: 'POST',
+                headers: footerCsrf({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ name: 'Perangkat ' + new Date().toLocaleDateString('id-ID'), credential: credentialKeJson(cred) }),
+                credentials: 'same-origin'
+            });
+
+            if (!kirim.ok) { tampilToast('error', 'Gagal menyimpan sidik jari.'); return false; }
+            passkeyTerdaftar = true;
+            renderSwitchSidik();
+            tampilToast('success', 'Alhamdulillah, sidik jari berhasil didaftarkan.');
+            return true;
+        } catch (err) {
+            if (err && err.name === 'NotAllowedError') {
+                tampilToast('info', 'Pendaftaran sidik jari dibatalkan.');
+            } else {
+                tampilToast('error', 'Gagal mendaftarkan sidik jari. Coba lagi.');
+            }
+            return false;
+        }
+    }
+
+    async function hapusSidikJari() {
+        try {
+            var ids = passkeyIds || [];
+            if (ids.length === 0) { passkeyTerdaftar = false; renderSwitchSidik(); return; }
+
+            for (var i = 0; i < ids.length; i++) {
+                await fetch('/user/passkeys/' + ids[i], {
+                    method: 'DELETE',
+                    headers: footerCsrf(),
+                    credentials: 'same-origin'
+                });
+            }
+            passkeyTerdaftar = false;
+            passkeyIds = [];
+            renderSwitchSidik();
+            tampilToast('info', 'Login sidik jari dinonaktifkan di perangkat ini.');
+        } catch (err) {
+            tampilToast('error', 'Gagal menghapus sidik jari.');
+        }
+    }
+
+    function toggleLoginSidikJari(btn) {
+        if (passkeyTerdaftar) {
+            hapusSidikJari();
+        } else {
+            daftarSidikJari();
+        }
+    }
+
+    renderSwitchSidik();
 
     // ====== INSTALL APLIKASI (PWA) ======
     let deferredInstallPrompt = null;

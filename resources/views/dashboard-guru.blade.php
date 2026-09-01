@@ -22,11 +22,8 @@
         <div class="absolute -right-16 -top-16 w-56 h-56 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
         <div class="absolute -left-12 -bottom-20 w-48 h-48 bg-teal-400/20 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div class="relative z-10 flex items-center justify-between gap-3">
+<div class="relative z-10 flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
-                <div class="w-11 h-11 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white font-black text-base ring-2 ring-white/30 shrink-0">
-                    {{ mb_strtoupper(mb_substr(auth()->user()->name ?? 'G', 0, 1)) }}
-                </div>
                 <div class="min-w-0">
                     <p class="text-[10px] font-black text-emerald-100 uppercase tracking-widest">Assalamu'alaikum,</p>
                     <h2 class="text-lg font-black text-white tracking-tight truncate" title="{{ auth()->user()->name }}">

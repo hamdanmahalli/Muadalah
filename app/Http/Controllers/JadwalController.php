@@ -736,8 +736,10 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
     {
         $user = auth()->user();
         $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $passkeys = $user->passkeys()->pluck('id')->all();
+        $passkeyCount = count($passkeys);
 
-        return view('guru.menu', compact('guru', 'user'));
+        return view('guru.menu', compact('guru', 'user', 'passkeys', 'passkeyCount'));
     }
 
     // ==========================================================

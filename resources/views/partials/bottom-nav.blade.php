@@ -4,12 +4,12 @@
         <div class="flex items-center justify-between relative">
 
             <!-- BERANDA -->
-            <a href="/dashboard-guru" title="Beranda" aria-label="Beranda" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'beranda' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+            <a href="/dashboard-guru" title="Beranda" aria-label="Beranda" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'beranda' ? 'text-emerald-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
                 <i class="fas fa-house text-base"></i>
             </a>
 
             <!-- KALDIK -->
-            <a href="/kaldik" title="Kaldik" aria-label="Kaldik" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'kaldik' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+            <a href="/kaldik" title="Kaldik" aria-label="Kaldik" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'kaldik' ? 'text-emerald-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
                 <i class="fas fa-calendar-days text-base"></i>
             </a>
 
@@ -19,12 +19,12 @@
             </a>
 
             <!-- REKAP -->
-            <a href="/rekap-presensi" title="Rekap" aria-label="Rekap" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'rekap' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+            <a href="/rekap-presensi" title="Rekap" aria-label="Rekap" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'rekap' ? 'text-emerald-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
                 <i class="fas fa-file-lines text-base"></i>
             </a>
 
             <!-- MENU -->
-            <a href="/menu" title="Menu" aria-label="Menu" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'menu' ? 'bg-emerald-500 text-white shadow-[0_8px_18px_-6px_rgba(16,185,129,0.7)]' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
+            <a href="/menu" title="Menu" aria-label="Menu" class="flex items-center justify-center w-11 h-10 rounded-full transition-all {{ ($active ?? '') === 'menu' ? 'text-emerald-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600' }}">
                 <i class="fas fa-bars text-base"></i>
             </a>
 
