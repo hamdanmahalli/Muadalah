@@ -675,8 +675,8 @@
 
         <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#f8fbfa] relative">
             <!-- TOMBOL BUKA SIDEBAR (untuk mobile) -->
-            @if(!request()->routeIs('dashboard-guru'))
-            <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 mb-4 flex items-center justify-center rounded-xl bg-white text-slate-600 shadow-md border border-gray-100 hover:bg-gray-50 transition" title="Buka Menu">
+            @if(!request()->is('dashboard-guru'))
+            <button id="btn-buka-sidebar" onclick="toggleSidebar()" class="md:hidden w-10 h-10 mb-4 flex items-center justify-center rounded-xl bg-white text-slate-600 shadow-md border border-gray-100 hover:bg-gray-50 transition" title="Buka Menu">
                 <i class="fas fa-bars text-lg"></i>
             </button>
             @endif
