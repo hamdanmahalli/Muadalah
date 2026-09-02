@@ -245,7 +245,13 @@
                             <p class="text-sm font-medium text-slate-500">Seluruh status guru telah tercatat.</p>
                         </div>`;
                 }
-                document.getElementById('container-list-belum').innerHTML = htmlBelum;
+                // PERBAIKAN: jika pengguna sedang mengisi form (select/input) di kolom "Belum Absen",
+                // jangan render ulang agar pilihan Izin/Sakit tidak berubah kembali ke Hadir saat polling berjalan.
+                let listBelumEl = document.getElementById('container-list-belum');
+                let sedangMengisi = listBelumEl && listBelumEl.contains(document.activeElement);
+                if (!sedangMengisi) {
+                    document.getElementById('container-list-belum').innerHTML = htmlBelum;
+                }
 
             })
             .catch(err => console.error("Gagal menyinkronkan data real-time:", err));
