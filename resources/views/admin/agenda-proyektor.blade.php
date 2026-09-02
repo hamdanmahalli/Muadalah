@@ -86,7 +86,7 @@
                             <div class="min-w-0 flex-1">
                                 <p id="nama-terbaru" class="text-2xl md:text-3xl font-black text-white tracking-tight truncate">Belum ada yang hadir</p>
                                 <div class="flex flex-wrap items-center gap-3 mt-2">
-                                    <span id="status-terbaru" class="px-3 py-1 rounded-lg border text-xs font-black uppercase tracking-wider hidden"></span>
+                                    <span id="wrapper-status-terbaru"><span id="status-terbaru" class="px-3 py-1 rounded-lg border text-xs font-black uppercase tracking-wider hidden"></span></span>
                                     <span id="waktu-terbaru" class="text-lg font-bold text-slate-300 flex items-center gap-2">
                                         <i class="fas fa-clock text-indigo-400"></i> --
                                     </span>
@@ -169,7 +169,7 @@
             document.getElementById('nama-terbaru').innerText = terbaru.nama_guru;
             document.getElementById('waktu-terbaru').innerHTML = `<i class="fas fa-clock text-indigo-400"></i> ${terbaru.waktu} WIB`;
             document.getElementById('metode-terbaru').innerText = `via ${terbaru.metode}`;
-            document.getElementById('status-terbaru').outerHTML = statusChip(terbaru.status);
+            document.getElementById('wrapper-status-terbaru').innerHTML = statusChip(terbaru.status);
 
             if (guruTerakhirId !== terbaru.guru_id) {
                 const card = document.getElementById('card-terbaru');
