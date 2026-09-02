@@ -27,7 +27,7 @@
 @endif
 
 <!-- Kartu Statistik -->
-<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
     <div class="bg-white border-b-4 border-[#00c0c7] rounded-xl shadow-sm p-4">
         <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Perubahan</span>
         <div class="text-2xl font-black text-gray-800 mt-1">{{ $statistik['total'] }}</div>

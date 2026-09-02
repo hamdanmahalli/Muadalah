@@ -3,7 +3,7 @@
 @section('title', 'Setup User & Hak Akses - SmartPesantren')
 
 @section('content')
-    <div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100 flex justify-between items-center">
+    <div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
             <h2 class="text-xl font-bold text-gray-700">Setup User & Hak Akses (Multi-Role)</h2>
             <p class="text-xs text-gray-500 mt-0.5">Kelola akun pengguna dan tentukan hak akses jabatan (Admin, TU, Guru, dll).</p>
@@ -88,7 +88,7 @@
     </div>
 
     <div id="modal-user" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="relative mx-auto p-6 border w-full max-w-2xl shadow-2xl rounded-xl bg-white">
+        <div class="relative mx-auto p-6 border w-full max-w-lg shadow-2xl rounded-xl bg-white">
             <div class="flex justify-between items-center mb-5 border-b pb-3">
                 <h3 class="text-lg font-bold text-gray-800" id="modal-judul">Tambah User</h3>
                 <button onclick="tutupModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
@@ -98,7 +98,7 @@
                 @csrf
                 <input type="hidden" name="_method" id="form-method" value="POST">
                 
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap Guru / Staf</label>
                         <div class="relative">
@@ -119,7 +119,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Email Log In</label>
                         <input type="email" name="email" id="input-email" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
@@ -132,7 +132,7 @@
 
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Hak Akses / Jabatan (Bisa Centang Lebih Dari 1)</label>
-                    <div class="grid grid-cols-3 gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
                         @foreach($roles as $role)
                             <label class="flex items-center space-x-2 p-2 bg-white rounded-lg border border-gray-200 cursor-pointer hover:bg-emerald-50 transition">
                                 <input type="checkbox" name="roles[]" value="{{ $role->name }}" class="role-checkbox text-emerald-600 rounded focus:ring-emerald-500 w-4 h-4">

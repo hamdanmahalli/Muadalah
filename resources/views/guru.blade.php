@@ -156,7 +156,7 @@
                 @csrf
                 <input type="hidden" name="_method" id="form-method" value="POST">
                 
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">NIG (Otomatis)</label>
                         <input type="text" name="nig" id="input-nig" value="{{ $nigBaru }}" readonly class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 text-gray-500 font-bold outline-none cursor-not-allowed">
@@ -175,7 +175,7 @@
                     <input type="text" name="nama_guru" id="input-nama" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tempat Lahir</label>
                         <input type="text" name="tempat_lahir" id="input-tempat-lahir" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
@@ -186,7 +186,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">No. HP / WhatsApp</label>
                         <input type="text" name="no_hp" id="input-nohp" placeholder="08123xxxx" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">

@@ -2,17 +2,17 @@
 @section('title', 'Pabrik Barcode Kelas')
 
 @section('content')
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-qrcode mr-2 text-indigo-600"></i> Pabrik Barcode Kehadiran</h2>
             <p class="text-sm text-gray-500 mt-1">Sistem Keamanan Anti-Kecurangan (Barcode berganti setiap hari Sabtu)</p>
         </div>
-        <div class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold border border-indigo-100 shadow-sm flex items-center">
+        <div class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold border border-indigo-100 shadow-sm flex items-center sm:shrink-0">
             <i class="far fa-calendar-alt mr-2"></i> Berlaku: {{ $periodeBerlaku }}
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto mb-8">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/80">
                 <tr>

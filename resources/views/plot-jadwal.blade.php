@@ -51,7 +51,7 @@
     </div>
 
     @if($kelas_id)
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white border-b-4 border-indigo-500 rounded-xl shadow-sm p-4 flex flex-col justify-center">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kapasitas Maksimal</span>
                 <div class="flex items-center justify-between">
@@ -195,9 +195,9 @@
             <input type="hidden" id="pending-guru-id">
             <input type="hidden" id="pending-beban-jam">
 
-            <div class="flex justify-center space-x-3">
-                <button type="button" onclick="batalBentrok()" class="px-5 py-3 bg-gray-200 text-gray-800 rounded-xl font-bold hover:bg-gray-300 transition w-full">Batal</button>
-                <button type="button" onclick="eksekusiBentrokForce()" class="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-md transition w-full flex items-center justify-center">
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-center sm:space-x-3 space-y-2 sm:space-y-0">
+                <button type="button" onclick="batalBentrok()" class="px-5 py-3 bg-gray-200 text-gray-800 rounded-xl font-bold hover:bg-gray-300 transition w-full sm:w-auto">Batal</button>
+                <button type="button" onclick="eksekusiBentrokForce()" class="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-md transition w-full sm:w-auto flex items-center justify-center">
                     <i class="fas fa-trash-alt mr-2"></i> Ya, Hapus & Lanjutkan
                 </button>
             </div>

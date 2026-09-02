@@ -80,7 +80,7 @@
                 @csrf
                 <input type="hidden" name="_method" id="form-method" value="POST">
                 
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Pelajaran</label>
                         <input type="text" name="kode_pelajaran" id="input-kode" value="{{ $kodeBaru }}" readonly class="w-full border border-gray-300 rounded-lg p-2.5 bg-gray-100 text-gray-500 font-bold outline-none cursor-not-allowed">

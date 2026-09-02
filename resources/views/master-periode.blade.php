@@ -2,12 +2,12 @@
 @section('title', 'Master Periode Akademik')
 
 @section('content')
-<div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100 flex justify-between items-center">
+<div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
     <div>
         <h2 class="text-xl font-bold text-gray-700">Master Periode Akademik</h2>
         <p class="text-xs text-gray-500 mt-0.5">Kelola Tahun Ajaran, Semester, dan rentang tanggal efektif kalender pendidikan.</p>
     </div>
-    <button onclick="bukaModalTambah()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition flex items-center shadow-sm cursor-pointer">
+    <button onclick="bukaModalTambah()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition flex items-center shadow-sm cursor-pointer self-start sm:self-auto">
         <i class="fas fa-plus mr-2"></i> Tambah Periode
     </button>
 </div>
@@ -101,7 +101,7 @@
             @csrf
             <input type="hidden" name="_method" id="form-method" value="POST">
             
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Tahun Ajaran</label>
                     <input type="text" name="tahun_ajaran" id="input-tahun" placeholder="Contoh: 2026/2027" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500 font-medium">
@@ -117,7 +117,7 @@
 
             <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 mb-6">
                 <p class="text-xs font-bold text-emerald-800 mb-3 uppercase tracking-wider"><i class="far fa-calendar-alt mr-1"></i> Rentang Kalender Pendidikan</p>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Mulai Efektif</label>
                         <input type="date" name="tanggal_mulai" id="input-mulai" required class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:border-emerald-500 text-sm">

@@ -37,7 +37,7 @@
 @endif
 
 <!-- Kartu Statistik Analitik (Tercatat mencakup Hadir, Izin, & Sakit) -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
             <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Total Guru</p>

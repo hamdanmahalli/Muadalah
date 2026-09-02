@@ -48,7 +48,7 @@
 
     <!-- FORM FILTER -->
     <div class="bg-white p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-6">
-        <form method="GET" action="/monitoring-kehadiran" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <form method="GET" action="/monitoring-kehadiran" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <div>
                 <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Dari Tanggal</label>
                 <input type="date" name="tgl_mulai" value="{{ $tglMulai }}" class="w-full border border-slate-200 rounded-xl p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-[#00c0c7]">

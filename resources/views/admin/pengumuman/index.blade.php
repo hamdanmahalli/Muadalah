@@ -156,7 +156,7 @@
                 <p class="text-[10px] text-gray-400 mt-1">Upload gambar bergaya kartu BYOND (JPG/PNG). Jika kosong, warna tema dipakai.</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Warna Tema</label>
                     <select name="warna" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white font-bold cursor-pointer">
@@ -178,7 +178,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Mulai (Opsional)</label>
                     <input type="date" name="tanggal_mulai" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
@@ -225,7 +225,7 @@
                 <p class="text-[10px] text-gray-400 mt-1">Biarkan kosong untuk mempertahankan gambar lama.</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Warna Tema</label>
                     <select name="warna" id="edit_warna" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white font-bold cursor-pointer">
@@ -247,7 +247,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Mulai (Opsional)</label>
                     <input type="date" name="tanggal_mulai" id="edit_tgl_mulai" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">

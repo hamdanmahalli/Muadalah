@@ -154,7 +154,7 @@
                 <input type="text" name="nama_agenda" required placeholder="Contoh: Ujian Tengah Semester / Rapat" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-rose-500 outline-none">
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Jenis Agenda</label>
                     <select name="jenis_agenda" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-rose-500 outline-none bg-white font-bold cursor-pointer">
@@ -175,7 +175,7 @@
 
             <div id="box-pilih-kelas" class="hidden bg-indigo-50/50 p-3 rounded-xl border border-indigo-200">
                 <label class="block text-xs font-bold text-indigo-800 mb-2">Pilih Kelas yang Diliburkan:</label>
-                <div class="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto p-1">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-32 overflow-y-auto p-1">
                     @foreach($kelas as $kls)
                     <label class="flex items-center p-1.5 bg-white border border-indigo-200 rounded-lg text-xs cursor-pointer hover:bg-indigo-100">
                         <input type="checkbox" name="kelas_ids[]" value="{{ $kls->id }}" class="text-indigo-600 rounded mr-1.5 focus:ring-indigo-500">
@@ -185,7 +185,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Mulai</label>
                     <input type="date" name="tanggal_mulai" required value="{{ date('Y-m-d') }}" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-rose-500 outline-none">
@@ -198,7 +198,7 @@
 
             <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1">Tipe Agenda Libur</label>
-                <div class="grid grid-cols-2 gap-3 mt-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
                     <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-gray-50 border-rose-300">
                         <input type="radio" name="tipe_agenda" value="Penuh" checked onchange="toggleTipeLibur(this.value)" class="text-rose-600 focus:ring-rose-500">
                         <span class="ml-2 text-xs font-bold text-gray-700">Libur Full (1 Hari)</span>
@@ -212,7 +212,7 @@
 
             <div id="box-jam-parsial" class="hidden bg-amber-50/50 p-3 rounded-xl border border-amber-200">
                 <label class="block text-xs font-bold text-amber-800 mb-2">Pilih Jam yang Diliburkan:</label>
-                <div class="grid grid-cols-5 gap-2">
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
                     @for($i=1; $i<=10; $i++)
                     <label class="flex items-center justify-center p-1.5 bg-white border border-amber-200 rounded-lg text-xs cursor-pointer hover:bg-amber-100">
                         <input type="checkbox" name="jam_diliburkan[]" value="{{ $i }}" class="text-amber-600 rounded mr-1">

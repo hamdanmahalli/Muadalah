@@ -296,10 +296,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-8 flex justify-end gap-3">
-                    <button type="button" onclick="tutupPopup()" class="px-5 py-3.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors w-full">Batal</button>
+                <div class="mt-8 flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-3 gap-2">
+                    <button type="button" onclick="tutupPopup()" class="px-5 py-3.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors w-full sm:w-auto">Batal</button>
                     
-                    <button id="btn-simpan-modal" type="button" onclick="kirimDataModal()" class="px-5 py-3.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition-all w-full shadow-md shadow-blue-500/20">Simpan Data</button>
+                    <button id="btn-simpan-modal" type="button" onclick="kirimDataModal()" class="px-5 py-3.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition-all w-full sm:w-auto shadow-md shadow-blue-500/20">Simpan Data</button>
                 </div>
             </div>
         </div>
