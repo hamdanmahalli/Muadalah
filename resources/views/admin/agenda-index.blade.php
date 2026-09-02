@@ -115,6 +115,13 @@
                             <a href="/agenda-kegiatan/{{ $agenda->id }}/proyektor" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-200 hover:border-emerald-500 font-bold text-xs rounded-xl transition-all">
                                 <i class="fas fa-expand-arrows-alt mr-2"></i> Layar QR
                             </a>
+                            <!-- Tombol Hapus -->
+                            <form action="/agenda-kegiatan/{{ $agenda->id }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus agenda &quot;{{ $agenda->nama_kegiatan }}&quot; beserta semua data kehadirannya?');">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white border border-rose-200 hover:border-rose-500 font-bold text-xs rounded-xl transition-all" title="Hapus">
+                                    <i class="fas fa-trash-alt mr-2"></i> Hapus
+                                </button>
+                            </form>
                         </div>
                     </div>
                 @empty

@@ -42,6 +42,17 @@ class AgendaKegiatanController extends Controller
         return redirect()->back()->with('sukses', 'Agenda kegiatan berhasil dibuat! Sistem otomatis membuat QR Code unik.');
     }
 
+    public function destroy($id)
+    {
+        $agenda = AgendaKegiatan::findOrFail($id);
+
+        // Hapus data kehadiran terkait terlebih dahulu, lalu agenda (aman walau tanpa cascade)
+        $agenda->kehadiran()->delete();
+        $agenda->delete();
+
+        return redirect()->back()->with('sukses', 'Agenda "' . $agenda->nama_kegiatan . '" berhasil dihapus.');
+    }
+
     // Fungsi khusus untuk menampilkan QR Code penuh di layar proyektor/TV
     public function proyektor($id)
     {
@@ -162,6 +173,7 @@ class AgendaKegiatanController extends Controller
         foreach ($semuaGuru as $guru) {
             if ($kehadiran->has($guru->id)) {
                 $dataHadir[] = [
+                    'guru_id' => $guru->id,
                     'nama_guru' => $guru->nama_guru,
                     'waktu' => \Carbon\Carbon::parse($kehadiran[$guru->id]->waktu_hadir)->format('H:i:s'),
                     'metode' => $kehadiran[$guru->id]->metode,

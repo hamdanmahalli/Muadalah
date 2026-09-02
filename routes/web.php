@@ -81,8 +81,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/agenda-kegiatan/{id}/manual', [AgendaKegiatanController::class, 'hadirManual']);
     Route::get('/agenda-kegiatan/{id}/scan-qr', [AgendaKegiatanController::class, 'scanQR']);
     Route::post('/agenda-kegiatan/{id}/scan-proses-guru', [AgendaKegiatanController::class, 'prosesScanQR']);
-    Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetakPdf']);
+Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetakPdf']);
     Route::get('/api/agenda-kegiatan/{id}/realtime', [AgendaKegiatanController::class, 'getKehadiranRealtime']);
+    Route::delete('/agenda-kegiatan/{id}', [AgendaKegiatanController::class, 'destroy']);
     
     // Pabrik Barcode (Masuk ke dalam benteng Auth agar aman)
     Route::get('/pabrik-barcode', [BarcodeController::class, 'index']);
