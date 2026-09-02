@@ -66,6 +66,13 @@
                         </span>
                         <span class="shrink-0 px-2 py-1 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-600 uppercase tracking-wider">Segera</span>
                     </a>
+                </div>
+            </div>
+
+            <!-- ===== GRUP: KEAMANAN AKUN ===== -->
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2.5">Keamanan Akun</p>
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_18px_-10px_rgba(2,6,23,0.06)] overflow-hidden divide-y divide-slate-100">
                     <button onclick="toggleIngatIdentitas(this)" class="flex items-center gap-3.5 px-4 py-3.5 w-full active:bg-slate-50 transition group text-left cursor-pointer">
                         <span class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 group-active:scale-95 transition-transform ring-1 ring-slate-100"><i class="fas fa-user-check text-base"></i></span>
                         <span class="flex-1 min-w-0">
