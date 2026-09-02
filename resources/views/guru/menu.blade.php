@@ -365,8 +365,17 @@
                 credentials: 'same-origin'
             });
 
-            if (!kirim.ok) { tampilToast('error', 'Gagal menyimpan sidik jari.'); return false; }
+            if (!kirim.ok || kirim.redirected) { tampilToast('error', 'Gagal menyimpan sidik jari.'); return false; }
+
+            var hasil = null;
+            try { hasil = await kirim.json(); } catch (e) {}
+
             passkeyTerdaftar = true;
+            if (hasil && hasil.id) {
+                passkeyIds.push(hasil.id);
+            } else {
+                passkeyIds = [hasil && hasil.id ? hasil.id : 'registered'];
+            }
             renderSwitchSidik();
             tampilToast('success', 'Alhamdulillah, sidik jari berhasil didaftarkan.');
             return true;
@@ -383,19 +392,31 @@
     async function hapusSidikJari() {
         try {
             var ids = passkeyIds || [];
-            if (ids.length === 0) { passkeyTerdaftar = false; renderSwitchSidik(); return; }
+            if (ids.length === 0) {
+                passkeyTerdaftar = false;
+                renderSwitchSidik();
+                tampilToast('info', 'Tidak ada sidik jari terdaftar di perangkat ini.');
+                return;
+            }
 
+            var berhasil = 0;
             for (var i = 0; i < ids.length; i++) {
-                await fetch('/user/passkeys/' + ids[i], {
+                var hapus = await fetch('/user/passkeys/' + ids[i], {
                     method: 'DELETE',
                     headers: footerCsrf(),
                     credentials: 'same-origin'
                 });
+                if (hapus && hapus.ok && !hapus.redirected) { berhasil++; }
             }
-            passkeyTerdaftar = false;
-            passkeyIds = [];
-            renderSwitchSidik();
-            tampilToast('info', 'Login sidik jari dinonaktifkan di perangkat ini.');
+
+            if (berhasil > 0) {
+                passkeyTerdaftar = false;
+                passkeyIds = [];
+                renderSwitchSidik();
+                tampilToast('info', 'Login sidik jari dinonaktifkan di perangkat ini.');
+            } else {
+                tampilToast('error', 'Gagal menghapus sidik jari. Coba lagi.');
+            }
         } catch (err) {
             tampilToast('error', 'Gagal menghapus sidik jari.');
         }
