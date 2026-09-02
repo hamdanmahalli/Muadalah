@@ -175,7 +175,7 @@ class AgendaKegiatanController extends Controller
                 $dataHadir[] = [
                     'guru_id' => $guru->id,
                     'nama_guru' => $guru->nama_guru,
-                    'waktu' => \Carbon\Carbon::parse($kehadiran[$guru->id]->waktu_hadir)->format('H:i:s'),
+                    'waktu' => \Carbon\Carbon::parse($kehadiran[$guru->id]->waktu_hadir)->format('Y-m-d H:i:s'),
                     'metode' => $kehadiran[$guru->id]->metode,
                     'status' => $kehadiran[$guru->id]->status ?? 'Hadir',
                     'keterangan' => $kehadiran[$guru->id]->keterangan

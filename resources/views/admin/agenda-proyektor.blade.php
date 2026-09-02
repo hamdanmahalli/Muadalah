@@ -163,15 +163,11 @@
             document.getElementById('empty-state').classList.remove('flex');
             document.getElementById('card-terbaru').classList.remove('hidden');
 
-            // Data terbaru (waktu hadir paling besar) -> kartu besar
-            const terbaru = [...list].sort((a, b) => {
-                const ta = a.waktu.split(':').map(Number);
-                const tb = b.waktu.split(':').map(Number);
-                return (tb[0]*3600 + tb[1]*60 + tb[2]) - (ta[0]*3600 + ta[1]*60 + ta[2]);
-            })[0];
+            // Data terbaru (waktu hadir paling besar, termasuk tanggal) -> kartu besar
+            const terbaru = [...list].sort((a, b) => b.waktu.localeCompare(a.waktu))[0];
 
             document.getElementById('nama-terbaru').innerText = terbaru.nama_guru;
-            document.getElementById('waktu-terbaru').innerHTML = `<i class="fas fa-clock text-indigo-400"></i> ${terbaru.waktu} WIB`;
+            document.getElementById('waktu-terbaru').innerHTML = `<i class="fas fa-clock text-indigo-400"></i> ${terbaru.waktu.slice(11,16)} WIB`;
             document.getElementById('metode-terbaru').innerText = `via ${terbaru.metode}`;
             document.getElementById('wrapper-status-terbaru').innerHTML = statusChip(terbaru.status);
 
@@ -183,13 +179,11 @@
                 guruTerakhirId = terbaru.guru_id;
             }
 
-            // Beberapa guru terakhir (maksimal 5): urutkan sendiri paling baru di atas,
-            // tidak bergantung pada urutan dari API (biar konsisten di semua kondisi).
-            const daftarTerbaru = [...list].sort((a, b) => {
-                const ta = a.waktu.split(':').map(Number);
-                const tb = b.waktu.split(':').map(Number);
-                return (tb[0]*3600 + tb[1]*60 + tb[2]) - (ta[0]*3600 + ta[1]*60 + ta[2]);
-            }).slice(0, 5);
+            // Beberapa guru terakhir (maksimal 5): urutkan paling baru di atas berdasarkan
+            // tanggal+jam penuh (format Y-m-d H:i:s), tidak bergantung urutan API.
+            const daftarTerbaru = [...list]
+                .sort((a, b) => b.waktu.localeCompare(a.waktu))
+                .slice(0, 5);
             let html = '';
             daftarTerbaru.forEach(item => {
                 html += `
@@ -197,7 +191,7 @@
                         ${avatarHtml(item.guru_id, 'w-11 h-11 text-xl')}
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-black text-slate-100 truncate">${item.nama_guru}</p>
-                            <p class="text-[11px] font-bold text-slate-400"><i class="fas fa-clock mr-1 text-indigo-400"></i>${item.waktu} WIB</p>
+                            <p class="text-[11px] font-bold text-slate-400"><i class="fas fa-clock mr-1 text-indigo-400"></i>${item.waktu.slice(11,16)} WIB</p>
                         </div>
                         ${statusChip(item.status)}
                     </div>`;
