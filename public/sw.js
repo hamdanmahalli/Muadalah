@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-pesantren-v11';
+const CACHE_NAME = 'smart-pesantren-v12';
 const PRECACHE_URLS = [
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
@@ -116,7 +116,7 @@ self.addEventListener('fetch', event => {
 
 // 4. Push Notification
 self.addEventListener('push', function(event) {
-    let data = { title: 'Smart Pesantren', body: 'Ada notifikasi baru', tag: 'default', url: '/dashboard-guru', mode: 'sound' };
+    let data = { title: 'Muadalah Mumaris', body: 'Ada notifikasi baru', tag: 'default', url: '/dashboard-guru', mode: 'sound' };
 
     if (event.data) {
         try {
