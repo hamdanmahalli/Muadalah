@@ -291,7 +291,20 @@
         renderSwitchIngat();
     }
 
-    renderSwitchIngat();
+    function renderSemuaSwitch() {
+        ingatAktif = localStorage.getItem(INGAT_KEY) === '1';
+        renderSwitchIngat();
+        if (typeof renderSwitchSidik === 'function') renderSwitchSidik();
+    }
+
+    renderSemuaSwitch();
+
+    // Turbo Drive mengganti HTML body tanpa menjalankan ulang <script> inline.
+    // Listener di window ini tetap hidup antar navigasi, sehingga toggle
+    // tetap dirender sesuai status sebenarnya setelah pindah halaman lalu kembali.
+    window.addEventListener('pageshow', renderSemuaSwitch);
+    window.addEventListener('turbo:load', renderSemuaSwitch);
+    window.addEventListener('turbo:render', renderSemuaSwitch);
 
     // ====== LOGIN SIDIK JARI (WebAuthn / Passkey) ======
     var passkeyTerdaftar = {{ $passkeyCount > 0 ? 'true' : 'false' }};
