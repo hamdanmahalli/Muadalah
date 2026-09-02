@@ -163,8 +163,12 @@
             document.getElementById('empty-state').classList.remove('flex');
             document.getElementById('card-terbaru').classList.remove('hidden');
 
-            // Data terakhir (paling baru) -> kartu besar
-            const terbaru = list[list.length - 1];
+            // Data terbaru (waktu hadir paling besar) -> kartu besar
+            const terbaru = [...list].sort((a, b) => {
+                const ta = a.waktu.split(':').map(Number);
+                const tb = b.waktu.split(':').map(Number);
+                return (tb[0]*3600 + tb[1]*60 + tb[2]) - (ta[0]*3600 + ta[1]*60 + ta[2]);
+            })[0];
 
             document.getElementById('nama-terbaru').innerText = terbaru.nama_guru;
             document.getElementById('waktu-terbaru').innerHTML = `<i class="fas fa-clock text-indigo-400"></i> ${terbaru.waktu} WIB`;
@@ -179,10 +183,15 @@
                 guruTerakhirId = terbaru.guru_id;
             }
 
-            // Beberapa guru terakhir (maksimal 5, urut paling baru di atas)
-            const terakhir = list.slice(-5).reverse();
+            // Beberapa guru terakhir (maksimal 5): urutkan sendiri paling baru di atas,
+            // tidak bergantung pada urutan dari API (biar konsisten di semua kondisi).
+            const daftarTerbaru = [...list].sort((a, b) => {
+                const ta = a.waktu.split(':').map(Number);
+                const tb = b.waktu.split(':').map(Number);
+                return (tb[0]*3600 + tb[1]*60 + tb[2]) - (ta[0]*3600 + ta[1]*60 + ta[2]);
+            }).slice(0, 5);
             let html = '';
-            terakhir.forEach(item => {
+            daftarTerbaru.forEach(item => {
                 html += `
                     <div class="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 transition-colors">
                         ${avatarHtml(item.guru_id, 'w-11 h-11 text-xl')}
