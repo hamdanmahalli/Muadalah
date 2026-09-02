@@ -297,7 +297,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js?v=10')
+                navigator.serviceWorker.register('/sw.js?v=12')
                     .then(registration => {
                         console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
                         return registration.update();
