@@ -133,31 +133,31 @@
         </div>
 
         
-        <div class="grid grid-cols-4 gap-x-3 gap-y-3 mx-4">
+<div class="grid grid-cols-4 gap-x-3 gap-y-3 mx-4">
             <!-- 4 menu pertama tampil -->
             <a href="/scan-kelas" class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(6,182,212,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-qrcode text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Scan Hadir</span>
             </a>
-<a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-90 transition-all">
+            <a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-list-check text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Rekap</span>
-            </a>
-            <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
-                <i class="fas fa-id-badge text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">QR Pribadi</span>
-            </button>
-
-            <!-- sisanya terlipat -->
-            <div id="menu-tersembunyi" class="col-span-4 grid grid-cols-4 gap-x-3 gap-y-3 mt-4 hidden">
-            <a href="/jadwal-saya" class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(99,102,241,0.7)] active:scale-90 transition-all">
-                <i class="fas fa-calendar-days text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Jadwal</span>
             </a>
             <a href="/kaldik" class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(245,158,11,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-book-open text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Kaldik</span>
             </a>
+            <a href="/jadwal-saya" class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(99,102,241,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-calendar-days text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Jadwal</span>
+            </a>
+
+            <!-- sisanya terlipat -->
+            <div id="menu-tersembunyi" class="col-span-4 grid grid-cols-4 gap-x-3 gap-y-3 mt-4 hidden">
+            <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-id-badge text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">QR Pribadi</span>
+            </button>
             <button onclick="tampilToast('info', 'Ganti Jam segera hadir.'); return false;" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-arrows-rotate text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Ganti Jam</span>
@@ -173,7 +173,7 @@
             <button onclick="tampilToast('info', 'Nilai Ujian segera hadir.'); return false;" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chart-column text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Nilai Ujian</span>
-            </button>
+            </a>
             <a href="/notifikasi/pengaturan" class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(20,184,166,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-bell text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Notifikasi</span>
