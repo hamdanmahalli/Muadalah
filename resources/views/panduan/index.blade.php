@@ -169,14 +169,17 @@
             <h2 class="pg-h2"><i class="fas fa-database"></i> 5. Basis Data Master</h2>
             <p class="pg-p">Data dasar yang menjadi fondasi seluruh modul. Sebaiknya diisi lengkap sebelum menyusun jadwal.</p>
 
-            <h3 class="pg-h3">Master Guru (akses_master_guru)</h3>
-            <p class="pg-p">Data tenaga pengajar: nama, NIG, status (Aktif/non-aktif), profil lengkap, jenis kelamin. Dihubungkan ke akun <strong>Dewan Guru</strong> untuk login guru (username = NIG, password default <span class="pg-code">123456</span>).</p>
+            <h3 class="pg-h3">Master Pengurus/Guru (akses_master_guru)</h3>
+            <p class="pg-p">Data pengurus/guru: nama, NIG (unik, dipakai sebagai username login), NIP (opsional), jabatan (bisa lebih dari satu, mis. Wakil Kurikulum + TU), status (Aktif/non-aktif), profil lengkap, jenis kelamin. Akun login <strong>Dewan Guru</strong> dibuat otomatis hanya jika pengurus memiliki jabatan <strong>Guru</strong> (username = NIG, password default <span class="pg-code">123456</span>). Pengurus non-guru cukup datanya tanpa akun otomatis.</p>
+
+            <h3 class="pg-h3">Master Jabatan (akses_master_guru)</h3>
+            <p class="pg-p">Kelola daftar jabatan (Kepala Sekolah, Wakil Kurikulum, Tata Usaha, Bendahara, Wali Kelas, dll). Satu pengurus bisa punya lebih dari satu jabatan.</p>
 
             <h3 class="pg-h3">Master Pelajaran (akses_master_pelajaran)</h3>
             <p class="pg-p">Data mata pelajaran: kode, nama, nama kitab/referensi, status, tingkat (kitab_tingkat). Menjadi rujukan pemetaan ke kelas.</p>
 
             <h3 class="pg-h3">Master Kelas (akses_master_kelas)</h3>
-            <p class="pg-p">Daftar kelas (contoh 7-A, 7-B, ... 9-B). Setiap kelas punya kapasitas jam yang dibatasi oleh <em>Hari Operasional</em>.</p>
+            <p class="pg-p">Daftar kelas (contoh 7-A, 7-B, ... 9-B), lengkap dengan tingkat dan <strong>wali kelas</strong> (dipilih dari data pengurus/guru). Wali kelas yang ditetapkan di sini akan melihat murid kelasnya pada menu <em>Siswa Saya</em> (modul murid).</p>
 
             <h3 class="pg-h3">Batas Pelajaran / Target Kurikulum (akses_master_pelajaran)</h3>
             <p class="pg-p">Menentukan target kemajuan kurikulum per mapel per periode: <em>mulai_dari</em>, batas UTS/UAS ganjil &amp; genap, per tingkat. Dipakai guru untuk melihat target capaian pada <em>Beranda Guru</em>.</p>
@@ -245,7 +248,7 @@
             <h2 class="pg-h2"><i class="fas fa-cog"></i> 8. Setup &amp; Lainnya</h2>
 
             <h3 class="pg-h3">Setup User (akses_manajemen_user)</h3>
-            <p class="pg-p">Membuat/edit akun login, menentukan peran (role), dan reset password. Akun guru biasanya dibuat otomatis dari data Master Guru (username = NIG).</p>
+            <p class="pg-p">Membuat/edit akun login, menentukan peran (role), dan reset password. Akun guru dibuat otomatis dari data Master Pengurus/Guru (username = NIG) hanya untuk pengurus berjabatan <strong>Guru</strong>.</p>
 
             <h3 class="pg-h3">Hak Akses (akses_manajemen_akses)</h3>
             <p class="pg-p">Matriks peran × kunci akses. Admin dapat menambah/menghapus permission dari tiap peran tanpa ubah kode.</p>

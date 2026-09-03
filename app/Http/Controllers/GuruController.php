@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Guru;
+use App\Models\Jabatan;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\GuruExport;
 use App\Imports\GuruImport;
@@ -17,10 +18,11 @@ class GuruController extends Controller
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
 
-        $gurus = Guru::when($search, function ($query, $search) {
+        $gurus = Guru::with('jabatans')->when($search, function ($query, $search) {
                         return $query->where(function($q) use ($search) {
                             $q->where('nama_guru', 'ilike', "%{$search}%")
-                              ->orWhere('nig', 'ilike', "%{$search}%");
+                              ->orWhere('nig', 'ilike', "%{$search}%")
+                              ->orWhere('nip', 'ilike', "%{$search}%");
                         });
                     })
                     // PERBAIKAN: Diurutkan berdasarkan NIG dari terkecil ke terbesar
@@ -35,7 +37,9 @@ class GuruController extends Controller
             $nigBaru = '1001';
         }
 
-        return view('guru', compact('gurus', 'search', 'nigBaru', 'perPage'));
+        $jabatans = Jabatan::where('status', 'Aktif')->orderBy('nama_jabatan', 'asc')->get();
+
+        return view('guru', compact('gurus', 'search', 'nigBaru', 'perPage', 'jabatans'));
     }
 
     public function store(Request $request)
@@ -43,32 +47,46 @@ class GuruController extends Controller
         $request->validate([
             'nig' => 'required|string|unique:gurus,nig',
             'nama_guru' => 'required|string|max:255',
+            'nip' => 'nullable|string|max:50',
             'no_hp' => 'nullable|string',
             'gender' => 'nullable|string',
             'alamat' => 'nullable|string',
-            'status' => 'required|string'
+            'status' => 'required|string',
+            'jabatan_ids' => 'nullable|array',
+            'jabatan_ids.*' => 'exists:jabatans,id',
         ]);
 
-        // 1. Simpan Data Guru ke tabel gurus
+        // 1. Simpan Data Pengurus ke tabel gurus
         $guru = Guru::create($request->only([
-            'nig', 'nama_guru', 'no_hp', 'gender', 'alamat', 'status'
+            'nig', 'nama_guru', 'nip', 'no_hp', 'gender', 'alamat', 'status'
         ]));
 
-        // 2. Otomatis Buat Akun User Baru (Username = NIG, Password = 123456)
-        $user = User::create([
-            'lembaga'  => 'PONDOK',
-            'username' => $guru->nig, // Username menggunakan KODE NIG
-            'name'     => $guru->nama_guru,
-            'email'    => $guru->nig . '@pesantren.com', // Email sintetis agar unik
-            'hp'       => $guru->no_hp,
-            'status'   => 'Aktif',
-            'password' => Hash::make('123456'), // Password bawaan disamakan
-        ]);
+        // 2. Simpan relasi jabatan (many-to-many)
+        $guru->jabatans()->sync($request->jabatan_ids ?? []);
 
-        // 3. Berikan Role "Dewan Guru" secara otomatis
-        $user->assignRole('Dewan Guru');
+        // 3. Buat akun login HANYA jika pengurus adalah guru (memiliki jabatan "Guru")
+        $isGuru = in_array('Guru', $request->jabatan_ids
+            ? Jabatan::whereIn('id', $request->jabatan_ids)->pluck('nama_jabatan')->toArray()
+            : []);
 
-        return redirect()->back()->with('sukses', 'Data Guru berhasil disimpan! Akun otomatis terbuat (Username: ' . $guru->nig . ' | Password: 123456)');
+        if ($isGuru) {
+            // Cegah duplikasi akun jika sudah ada
+            $user = User::firstOrCreate(
+                ['username' => $guru->nig],
+                [
+                    'lembaga'  => 'PONDOK',
+                    'name'     => $guru->nama_guru,
+                    'email'    => $guru->nig . '@pesantren.com',
+                    'hp'       => $guru->no_hp,
+                    'status'   => 'Aktif',
+                    'password' => Hash::make('123456'),
+                ]
+            );
+            $user->assignRole('Dewan Guru');
+            return redirect()->back()->with('sukses', 'Data pengurus berhasil disimpan! Akun guru otomatis terbuat (Username: ' . $guru->nig . ' | Password: 123456)');
+        }
+
+        return redirect()->back()->with('sukses', 'Data pengurus berhasil disimpan!');
     }
     
     public function update(Request $request, $id)
@@ -77,28 +95,37 @@ class GuruController extends Controller
         
         $request->validate([
             'nama_guru' => 'required|string|max:255',
+            'nip' => 'nullable|string|max:50',
             'no_hp' => 'nullable|string',
             'gender' => 'nullable|string',
             'alamat' => 'nullable|string',
-            'status' => 'required|string'
+            'status' => 'required|string',
+            'jabatan_ids' => 'nullable|array',
+            'jabatan_ids.*' => 'exists:jabatans,id',
         ]);
 
         // Menyimpan pembaruan SEMUA isian form ke database
         $guru->update([
             'nama_guru' => $request->nama_guru,
+            'nip' => $request->nip,
             'no_hp' => $request->no_hp,
             'gender' => $request->gender,
             'alamat' => $request->alamat,
             'status' => $request->status
         ]);
 
-        return redirect()->back()->with('sukses', 'Data Guru berhasil diperbarui!');
+        // Perbarui relasi jabatan (many-to-many)
+        $guru->jabatans()->sync($request->jabatan_ids ?? []);
+
+        return redirect()->back()->with('sukses', 'Data pengurus berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
-        Guru::destroy($id);
-        return redirect()->back()->with('sukses', 'Data Guru berhasil dihapus!');
+        $guru = Guru::findOrFail($id);
+        $guru->jabatans()->detach();
+        $guru->delete();
+        return redirect()->back()->with('sukses', 'Data pengurus berhasil dihapus!');
     }
 
     // FITUR EXPORT EXCEL

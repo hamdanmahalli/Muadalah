@@ -14,6 +14,7 @@ class GuruImport implements ToModel, WithHeadingRow
             ['nig' => $row['nig']],
             [
                 'nama_guru' => $row['nama_guru'] ?? $row['nama'] ?? 'Tanpa Nama',
+                'nip' => $row['nip'] ?? null,
                 'status' => 'Aktif'
             ]
         );

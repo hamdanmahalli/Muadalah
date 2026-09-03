@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\GuruController;
+use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PeriodeController;
@@ -22,6 +23,15 @@ use App\Http\Controllers\DatabaseManagerController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\MonitoringKehadiranController;
 use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\AngkatanSiswaController;
+use App\Http\Controllers\TagihanController;
+use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\NilaiController;
+use App\Http\Controllers\KehadiranSiswaController;
+use App\Http\Controllers\RaportController;
+use App\Http\Controllers\SiswaLaporanController;
+use App\Http\Controllers\SiswaSayaController;
 
 
 // ==========================================================
@@ -100,8 +110,76 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
     // ZONA MASTER DATA DASAR
     // ----------------------------------------------------------
     Route::resource('master-guru', GuruController::class)->middleware('can:akses_master_guru');
+    Route::resource('master-jabatan', JabatanController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('can:akses_master_guru');
     Route::resource('master-pelajaran', PelajaranController::class)->middleware('can:akses_master_pelajaran');
     Route::resource('master-kelas', KelasController::class)->middleware('can:akses_master_kelas');
+
+    // ----------------------------------------------------------
+    // ZONA MODUL SISWA (Data Murid)
+    // ----------------------------------------------------------
+    Route::middleware(['can:akses_master_siswa'])->group(function () {
+        Route::resource('master-siswa', SiswaController::class);
+        Route::get('/master-siswa/{id}/lengkapi', [SiswaController::class, 'lengkapi'])->name('siswa.lengkapi');
+        Route::put('/master-siswa/{id}/lengkapi', [SiswaController::class, 'simpanLengkapi'])->name('siswa.simpanLengkapi');
+    });
+
+    // Penempatan siswa ke kelas per periode (multi tahun ajaran)
+    Route::middleware(['can:akses_penempatan_siswa'])->group(function () {
+        Route::get('/penempatan-siswa', [AngkatanSiswaController::class, 'index'])->name('penempatan-siswa.index');
+        Route::post('/penempatan-siswa', [AngkatanSiswaController::class, 'store'])->name('penempatan-siswa.store');
+        Route::post('/penempatan-siswa/auto', [AngkatanSiswaController::class, 'autoPlace'])->name('penempatan-siswa.auto');
+        Route::delete('/penempatan-siswa/{id}', [AngkatanSiswaController::class, 'destroy'])->name('penempatan-siswa.destroy');
+    });
+
+    // Pembayaran / Tagihan
+    Route::middleware(['can:akses_pembayaran'])->group(function () {
+        Route::get('/tagihan', [TagihanController::class, 'index'])->name('tagihan.index');
+        Route::post('/tagihan/jenis', [TagihanController::class, 'storeJenis'])->name('tagihan.jenis.store');
+        Route::put('/tagihan/jenis/{id}', [TagihanController::class, 'updateJenis'])->name('tagihan.jenis.update');
+        Route::delete('/tagihan/jenis/{id}', [TagihanController::class, 'destroyJenis'])->name('tagihan.jenis.destroy');
+        Route::get('/tagihan/buat', [TagihanController::class, 'buat'])->name('tagihan.buat');
+        Route::post('/tagihan/buat', [TagihanController::class, 'store'])->name('tagihan.store');
+        Route::get('/tagihan/{id}/pembayaran', [TagihanController::class, 'detail'])->name('tagihan.detail');
+        Route::post('/tagihan/{id}/pembayaran', [PembayaranController::class, 'store'])->name('tagihan.bayar');
+        Route::delete('/tagihan/{id}/bayar/{bayar}', [PembayaranController::class, 'destroy'])->name('tagihan.hapusBayar');
+    });
+
+    // Nilai siswa
+    Route::middleware(['can:akses_input_nilai'])->group(function () {
+        Route::get('/input-nilai', [NilaiController::class, 'index'])->name('nilai.index');
+        Route::post('/input-nilai', [NilaiController::class, 'store'])->name('nilai.store');
+        Route::get('/input-nilai/import-template', [NilaiController::class, 'downloadTemplate']);
+        Route::post('/input-nilai/simpan-massal', [NilaiController::class, 'simpanMassal'])->name('nilai.simpanMassal');
+    });
+
+    // Absensi siswa (mingguan)
+    Route::middleware(['can:akses_absen_siswa'])->group(function () {
+        Route::get('/absen-siswa', [KehadiranSiswaController::class, 'index'])->name('absen-siswa.index');
+        Route::post('/absen-siswa', [KehadiranSiswaController::class, 'store'])->name('absen-siswa.store');
+        Route::get('/absen-siswa/cetak', [KehadiranSiswaController::class, 'cetak'])->name('absen-siswa.cetak');
+    });
+
+    // Raport
+    Route::middleware(['can:akses_laporan_siswa'])->group(function () {
+        Route::get('/raport', [RaportController::class, 'index'])->name('raport.index');
+        Route::get('/raport/cetak/{siswa}', [RaportController::class, 'cetak'])->name('raport.cetak');
+    });
+
+    // Laporan siswa (buku induk, rekap pembayaran)
+    Route::middleware(['can:akses_laporan_siswa'])->group(function () {
+        Route::get('/laporan-siswa', [SiswaLaporanController::class, 'index'])->name('laporan-siswa.index');
+        Route::get('/laporan-siswa/buku-induk', [SiswaLaporanController::class, 'bukuInduk'])->name('laporan-siswa.buku-induk');
+        Route::get('/laporan-siswa/buku-induk/{siswa}', [SiswaLaporanController::class, 'bukuIndukSiswa'])->name('laporan-siswa.buku-induk-siswa');
+        Route::get('/laporan-siswa/rekap-pembayaran', [SiswaLaporanController::class, 'rekapPembayaran'])->name('laporan-siswa.rekap-pembayaran');
+    });
+
+    // Menu Wali Kelas: Siswa Saya (hanya melihat siswa kelasnya)
+    Route::middleware(['can:akses_siswa_saya'])->group(function () {
+        Route::get('/siswa-saya', [SiswaSayaController::class, 'index'])->name('siswa-saya.index');
+        Route::get('/siswa-saya/{siswa}', [SiswaSayaController::class, 'detail'])->name('siswa-saya.detail');
+    });
+
+
 
     // Rute Batas Pelajaran / Kurikulum
     Route::get('/batas-pelajaran', [BatasPelajaranController::class, 'index']);

@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Kelas;
+use App\Models\Guru;
 
 class KelasController extends Controller
 {
     public function index()
     {
-        $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
-        return view('kelas', compact('kelas'));
+        $kelas = Kelas::with('waliKelas')->orderBy('nama_kelas', 'asc')->get();
+        $pengurus = Guru::where('status', 'Aktif')->orderBy('nama_guru', 'asc')->get();
+        $galur = ['VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        return view('kelas', compact('kelas', 'pengurus', 'galur'));
     }
 
     public function store(Request $request)
@@ -20,7 +23,9 @@ class KelasController extends Controller
         ]);
 
         Kelas::create([
-            'nama_kelas' => strtoupper($request->nama_kelas)
+            'nama_kelas'   => strtoupper($request->nama_kelas),
+            'tingkat'      => $request->tingkat,
+            'wali_kelas_id'=> $request->wali_kelas_id ?: null,
         ]);
 
         return redirect()->back()->with('sukses', 'Data Kelas berhasil ditambahkan!');
@@ -35,7 +40,9 @@ class KelasController extends Controller
         ]);
 
         $kelas->update([
-            'nama_kelas' => strtoupper($request->nama_kelas)
+            'nama_kelas'   => strtoupper($request->nama_kelas),
+            'tingkat'      => $request->tingkat,
+            'wali_kelas_id'=> $request->wali_kelas_id ?: null,
         ]);
 
         return redirect()->back()->with('sukses', 'Data Kelas berhasil diperbarui!');

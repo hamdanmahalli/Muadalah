@@ -84,7 +84,7 @@
                 <div class="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center text-lg"><i class="fas fa-users"></i></div>
                 <span class="bg-white/10 text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur border border-white/10">Registrasi</span>
             </div>
-            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-300 relative z-10 mb-1">Total Guru Terdaftar</p>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-300 relative z-10 mb-1">Total Pengurus/Guru Terdaftar</p>
             <div class="flex items-end justify-between relative z-10">
                 <h2 class="text-4xl font-black relative z-10">{{ $totalGuru ?? 0 }}</h2>
                 <span class="text-xs font-bold bg-white/10 px-2 py-1 rounded-lg mb-1"><i class="fas fa-equals mr-1"></i>+0%</span>

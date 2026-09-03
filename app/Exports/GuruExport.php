@@ -11,11 +11,11 @@ class GuruExport implements FromCollection, WithHeadings
 {
     public function collection(): Enumerable
     {
-        return Guru::select('nig', 'nama_guru', 'status')->get();
+        return Guru::select('nip', 'nig', 'nama_guru', 'status')->get();
     }
 
     public function headings(): array
     {
-        return ["NIG", "Nama Guru", "Status"];
+        return ["NIP", "NIG", "Nama Guru", "Status"];
     }
 }

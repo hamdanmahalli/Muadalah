@@ -1,16 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Master Data Guru')
+@section('title', 'Master Data Pengurus/Guru')
 
 @section('content')
 
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Master Data Guru</h1>
-            <p class="text-sm text-gray-500 mt-1">Kelola data pengajar dan profil profesional Pondok Pesantren.</p>
+            <h1 class="text-2xl font-bold text-gray-800">Master Data Pengurus/Guru</h1>
+            <p class="text-sm text-gray-500 mt-1">Kelola data pengurus, guru, dan profil profesional Pondok Pesantren.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+            <a href="/master-jabatan" class="bg-violet-50 text-violet-700 border border-violet-200 px-4 py-2 rounded-xl text-sm font-bold hover:bg-violet-600 hover:text-white transition flex items-center shadow-sm">
+                <i class="fas fa-briefcase mr-2"></i> Master Jabatan
+            </a>
             <a href="/master-guru/export" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 hover:text-white transition flex items-center shadow-sm">
                 <i class="fas fa-file-excel mr-2"></i> Export
             </a>
@@ -18,7 +21,7 @@
                 <i class="fas fa-file-upload mr-2"></i> Import
             </button>
             <button onclick="bukaModalTambah()" class="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-green-700 transition flex items-center shadow-md">
-                <i class="fas fa-plus mr-2"></i> Tambah Guru
+                <i class="fas fa-plus mr-2"></i> Tambah Pengurus/Guru
             </button>
         </div>
     </div>
@@ -44,7 +47,7 @@
                 <input type="text" 
                        id="input-search"
                        value="{{ $search ?? '' }}" 
-                       placeholder="Ketik nama atau NIG..." 
+                       placeholder="Ketik nama, NIG atau NIP..." 
                        autocomplete="off"
                        oninput="doLiveSearch()"
                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 outline-none transition bg-white shadow-sm font-medium text-gray-700">
@@ -57,8 +60,10 @@
                     <thead class="bg-white">
                         <tr>
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-12">No</th>
+                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-24">NIP</th>
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest w-24">NIG</th>
-                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Nama Guru</th>
+                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Nama Pengurus/Guru</th>
+                            <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Jabatan</th>
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">TTL / Gender</th>
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Kontak & Alamat</th>
                             <th class="px-5 py-4 text-left text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">Pendidikan</th>
@@ -70,8 +75,20 @@
                         @forelse($gurus as $index => $guru)
                         <tr class="hover:bg-gray-50/50 transition duration-150">
                             <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-400 font-semibold">{{ $gurus->firstItem() + $index }}</td>
+                            <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{{ $guru->nip ?? '-' }}</td>
                             <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{{ $guru->nig }}</td>
                             <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $guru->nama_guru }}</td>
+                            <td class="px-5 py-4 text-sm">
+                                @if($guru->jabatans->isNotEmpty())
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach($guru->jabatans as $jb)
+                                            <span class="px-2 py-0.5 inline-flex text-[10px] font-bold rounded-full bg-violet-100 text-violet-700">{{ $jb->nama_jabatan }}</span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
                             <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-600">
                                 <div>{{ $guru->tempat_lahir ?? '-' }}, {{ $guru->tanggal_lahir ?? '-' }}</div>
                                 <div class="text-xs text-gray-400 font-medium">{{ $guru->gender ?? '-' }}</div>
@@ -91,7 +108,7 @@
                             <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
                                     <!-- Tombol Edit diperbarui dengan membawa data baru -->
-                                    <button onclick="bukaModalEdit('{{ $guru->id }}', '{{ $guru->nig }}', '{{ addslashes($guru->nama_guru) }}', '{{ $guru->no_hp }}', '{{ $guru->gender }}', '{{ addslashes($guru->alamat) }}', '{{ $guru->status }}', '{{ $guru->tempat_lahir }}', '{{ $guru->tanggal_lahir }}', '{{ addslashes($guru->pendidikan_terakhir) }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Edit">
+                                    <button onclick="bukaModalEdit('{{ $guru->id }}', '{{ $guru->nip }}', '{{ $guru->nig }}', '{{ addslashes($guru->nama_guru) }}', '{{ $guru->no_hp }}', '{{ $guru->gender }}', '{{ addslashes($guru->alamat) }}', '{{ $guru->status }}', '{{ $guru->tempat_lahir }}', '{{ $guru->tanggal_lahir }}', '{{ addslashes($guru->pendidikan_terakhir) }}', '{{ $guru->jabatans->pluck('id')->implode(',') }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Edit">
                                         <i class="fas fa-pen text-[10px]"></i>
                                     </button>
                                     
@@ -103,11 +120,11 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-16 text-center">
+                            <td colspan="10" class="px-6 py-16 text-center">
                                 <div class="mx-auto w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                     <i class="fas fa-user-slash text-2xl text-gray-400"></i>
                                 </div>
-                                <p class="text-gray-500 font-medium">Belum ada data guru yang cocok.</p>
+                                <p class="text-gray-500 font-medium">Belum ada data pengurus yang cocok.</p>
                             </td>
                         </tr>
                         @endforelse
@@ -127,7 +144,7 @@
     <div id="modal-import" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="relative mx-auto p-6 border w-full max-w-sm shadow-2xl rounded-xl bg-white">
             <div class="flex justify-between items-center mb-4 border-b pb-3">
-                <h3 class="text-lg font-bold text-gray-800">Import Data Guru</h3>
+                <h3 class="text-lg font-bold text-gray-800">Import Data Pengurus/Guru</h3>
                 <button type="button" onclick="tutupModalImport()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
             </div>
             <form action="/master-guru/import" method="POST" enctype="multipart/form-data">
@@ -148,7 +165,7 @@
     <div id="modal-guru" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="relative mx-auto p-6 border w-full max-w-xl shadow-2xl rounded-xl bg-white">
             <div class="flex justify-between items-center mb-5 border-b pb-3">
-                <h3 class="text-lg font-bold text-gray-800" id="modal-judul">Tambah Guru Baru</h3>
+                <h3 class="text-lg font-bold text-gray-800" id="modal-judul">Tambah Pengurus/Guru Baru</h3>
                 <button type="button" onclick="tutupModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
             </div>
             
@@ -162,7 +179,14 @@
                         <input type="text" name="nig" id="input-nig" value="{{ $nigBaru }}" readonly class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 text-gray-500 font-bold outline-none cursor-not-allowed">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Status Mengajar</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">NIP (Opsional)</label>
+                        <input type="text" name="nip" id="input-nip" placeholder="Nomor Induk Pegawai" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Status Keaktifan</label>
                         <select name="status" id="input-status" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
                             <option value="Aktif">Aktif</option>
                             <option value="Nonaktif">Nonaktif</option>
@@ -171,8 +195,28 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap & Gelar</label>
-                    <input type="text" name="nama_guru" id="input-nama" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jabatan (bisa lebih dari satu)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 border border-gray-200 rounded-lg p-3 bg-gray-50">
+                        @forelse($jabatans as $jb)
+                        <label class="flex items-center text-sm text-gray-700 font-medium space-x-2 cursor-pointer hover:text-green-700">
+                            <input type="checkbox" name="jabatan_ids[]" value="{{ $jb->id }}" class="jabatan-checkbox rounded border-gray-300 text-green-600 focus:ring-green-500">
+                            <span>{{ $jb->nama_jabatan }}</span>
+                        </label>
+                        @empty
+                        <p class="text-sm text-gray-400 col-span-full">Belum ada jabatan. Tambahkan dulu di menu <b>Master Jabatan</b>.</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap & Gelar</label>
+                        <input type="text" name="nama_guru" id="input-nama" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Pendidikan Terakhir</label>
+                        <input type="text" name="pendidikan_terakhir" id="input-pendidikan" placeholder="Contoh: S1 PAI" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -202,11 +246,6 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Pendidikan Terakhir</label>
-                    <input type="text" name="pendidikan_terakhir" id="input-pendidikan" placeholder="Contoh: S1 PAI" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none">
-                </div>
-
-                <div class="mb-6">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Alamat Domisili</label>
                     <textarea name="alamat" id="input-alamat" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"></textarea>
                 </div>
@@ -225,7 +264,7 @@
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4 shadow-inner">
                 <i class="fas fa-trash-alt text-2xl text-red-600"></i>
             </div>
-            <h3 class="text-xl font-extrabold text-gray-800 mb-2">Hapus Data Guru?</h3>
+            <h3 class="text-xl font-extrabold text-gray-800 mb-2">Hapus Data Pengurus/Guru?</h3>
             <p class="text-sm text-gray-600 mb-6">Yakin ingin menghapus <b id="teks-nama-hapus" class="text-gray-900"></b>? Data ini akan dihapus secara permanen dari sistem.</p>
             
             <div class="flex justify-center space-x-3">
@@ -273,7 +312,7 @@
         // 3. SKRIP KENDALI MODAL TAMBAH & EDIT GURU
         function bukaModalTambah() {
             document.getElementById('modal-guru').classList.remove('hidden');
-            document.getElementById('modal-judul').innerText = "Tambah Guru Baru";
+            document.getElementById('modal-judul').innerText = "Tambah Pengurus/Guru Baru";
             document.getElementById('form-guru').action = "/master-guru";
             document.getElementById('form-method').value = "POST";
             
@@ -283,13 +322,14 @@
             document.getElementById('input-status').value = "Aktif";
         }
 
-        function bukaModalEdit(id, nig, nama, hp, gender, alamat, status, tempatLahir, tanggalLahir, pendidikan) {
+        function bukaModalEdit(id, nip, nig, nama, hp, gender, alamat, status, tempatLahir, tanggalLahir, pendidikan, jabatanIds) {
             document.getElementById('modal-guru').classList.remove('hidden');
-            document.getElementById('modal-judul').innerText = "Edit Data Guru";
+            document.getElementById('modal-judul').innerText = "Edit Data Pengurus/Guru";
             document.getElementById('form-guru').action = "/master-guru/" + id;
             document.getElementById('form-method').value = "PUT";
             
             // Isi form dengan data lama (Sinkron dengan Profil Lengkap)
+            document.getElementById('input-nip').value = nip ? nip : '';
             document.getElementById('input-nig').value = nig;
             document.getElementById('input-nama').value = nama;
             document.getElementById('input-nohp').value = hp;
@@ -299,6 +339,12 @@
             document.getElementById('input-tempat-lahir').value = tempatLahir;
             document.getElementById('input-tanggal-lahir').value = tanggalLahir;
             document.getElementById('input-pendidikan').value = pendidikan;
+
+            // Setel checkbox jabatan yang aktif
+            const list = (jabatanIds || '').split(',').filter(v => v);
+            document.querySelectorAll('.jabatan-checkbox').forEach(cb => {
+                cb.checked = list.includes(cb.value);
+            });
         }
 
         function tutupModal() {

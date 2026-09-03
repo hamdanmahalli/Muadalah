@@ -33,7 +33,15 @@ class PermissionSeeder extends Seeder
             'akses_manajemen_akses',
             'akses_jadwal_saya',
             'akses_riwayat_mutasi',
-            'akses_pengumuman' 
+            'akses_pengumuman',
+            // === MODUL SISWA ===
+            'akses_master_siswa',
+            'akses_penempatan_siswa',
+            'akses_pembayaran',
+            'akses_input_nilai',
+            'akses_absen_siswa',
+            'akses_laporan_siswa',
+            'akses_siswa_saya',
         ];
 
         // Buat Kunci di Database
@@ -59,11 +67,14 @@ class PermissionSeeder extends Seeder
 
         // 4. Sinkronisasi Kunci Sementara
         $roleAdmin->syncPermissions($permissions); // Admin pegang semua kunci
-        $rolePimpinan->syncPermissions(['akses_dashboard', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian']);
-        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi', 'akses_pengumuman']);
+        $rolePimpinan->syncPermissions(['akses_dashboard', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian', 'akses_laporan_siswa']);
+        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi', 'akses_pengumuman', 'akses_master_siswa', 'akses_penempatan_siswa', 'akses_pembayaran', 'akses_absen_siswa', 'akses_laporan_siswa', 'akses_input_nilai']);
         
         // PENTING: Berikan Kunci Dashboard Guru ke Dewan Guru
         $roleDewanGuru->syncPermissions(['akses_dashboard_guru', 'akses_jadwal_saya']);
+
+        // Wali Kelas: dapat melihat data siswa kelasnya (menu Siswa Saya)
+        $roleWaliKelas->syncPermissions(['akses_siswa_saya', 'akses_laporan_siswa']);
     }
 }
 
