@@ -139,13 +139,9 @@
                 <i class="fas fa-qrcode text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Scan Hadir</span>
             </a>
-            <a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-90 transition-all">
+<a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-list-check text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Rekap</span>
-            </a>
-            <a href="/agenda-kegiatan" class="bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(244,63,94,0.7)] active:scale-90 transition-all">
-                <i class="fas fa-calendar-day text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center">Agenda</span>
             </a>
             <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-id-badge text-base text-white"></i>
