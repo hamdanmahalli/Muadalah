@@ -29,7 +29,6 @@
                 <th>Nama Siswa</th>
                 <th>L/P</th>
                 <th>Tempat, Tgl Lahir</th>
-                <th>Agama</th>
                 <th>Alamat</th>
                 <th>Nama Ayah</th>
                 <th>Nama Ibu</th>
@@ -40,14 +39,19 @@
         </thead>
         <tbody>
             @foreach($siswas as $i => $s)
+            @php
+                $anggota = $s->angkatan
+                    ->when($kelas, fn($c) => $c->where('kelas_id', $kelas->id))
+                    ->when($periode, fn($p) => $p->where('periode_id', $periode->id))
+                    ->first();
+            @endphp
             <tr>
-                <td class="num">{{ $i+1 }}</td>
+                <td class="num">{{ $anggota?->nomor_absen ?? $i+1 }}</td>
                 <td>{{ $s->nis }}</td>
                 <td>{{ $s->nisn }}</td>
                 <td>{{ $s->nama_siswa }}</td>
                 <td>{{ $s->jenis_kelamin }}</td>
                 <td>{{ $s->tempat_lahir }}, {{ $s->tanggal_lahir?->format('d-m-Y') }}</td>
-                <td>{{ $s->agama }}</td>
                 <td>{{ $s->alamat }}</td>
                 <td>{{ $s->nama_ayah }}</td>
                 <td>{{ $s->nama_ibu }}</td>

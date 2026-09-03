@@ -31,7 +31,6 @@
         <tr><td class="label">NIS / NISN</td><td class="dots">{{ $siswa->nis }} / {{ $siswa->nisn }}</td></tr>
         <tr><td class="label">Jenis Kelamin</td><td class="dots">{{ $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : ($siswa->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</td></tr>
         <tr><td class="label">Tempat, Tanggal Lahir</td><td class="dots">{{ $siswa->tempat_lahir }}, {{ $siswa->tanggal_lahir?->format('d-m-Y') }}</td></tr>
-        <tr><td class="label">Agama</td><td class="dots">{{ $siswa->agama }}</td></tr>
         <tr><td class="label">Alamat</td><td class="dots">{{ $siswa->alamat }}</td></tr>
         <tr><td class="label">Tahun Masuk</td><td class="dots">{{ $siswa->tahun_masuk }}</td></tr>
     </table>

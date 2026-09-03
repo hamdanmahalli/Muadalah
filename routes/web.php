@@ -121,6 +121,7 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
         Route::resource('master-siswa', SiswaController::class);
         Route::get('/master-siswa/{id}/lengkapi', [SiswaController::class, 'lengkapi'])->name('siswa.lengkapi');
         Route::put('/master-siswa/{id}/lengkapi', [SiswaController::class, 'simpanLengkapi'])->name('siswa.simpanLengkapi');
+        Route::post('/master-siswa/import', [SiswaController::class, 'import'])->name('master-siswa.import');
     });
 
     // Penempatan siswa ke kelas per periode (multi tahun ajaran)
@@ -128,6 +129,7 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
         Route::get('/penempatan-siswa', [AngkatanSiswaController::class, 'index'])->name('penempatan-siswa.index');
         Route::post('/penempatan-siswa', [AngkatanSiswaController::class, 'store'])->name('penempatan-siswa.store');
         Route::post('/penempatan-siswa/auto', [AngkatanSiswaController::class, 'autoPlace'])->name('penempatan-siswa.auto');
+        Route::patch('/penempatan-siswa/{id}/nomor-absen', [AngkatanSiswaController::class, 'updateNomorAbsen'])->name('penempatan-siswa.updateNomorAbsen');
         Route::delete('/penempatan-siswa/{id}', [AngkatanSiswaController::class, 'destroy'])->name('penempatan-siswa.destroy');
     });
 

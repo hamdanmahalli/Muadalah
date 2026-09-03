@@ -59,7 +59,7 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-8">No</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-8">No.Absen</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Nama Siswa</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-24">NIS</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
@@ -70,7 +70,7 @@
                 @forelse($siswas as $i => $s)
                 @php $k = $kehadiranMap[$s->id] ?? null; $status = $k?->status ?? 'hadir'; @endphp
                 <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-2 text-gray-500">{{ $i+1 }}</td>
+                    <td class="px-4 py-2 text-gray-500">{{ $s->angkatan->first()?->nomor_absen ?? $i+1 }}</td>
                     <td class="px-4 py-2 font-semibold text-gray-700">{{ $s->nama_siswa }}</td>
                     <td class="px-4 py-2 text-gray-500">{{ $s->nis }}</td>
                     <td class="px-4 py-2">

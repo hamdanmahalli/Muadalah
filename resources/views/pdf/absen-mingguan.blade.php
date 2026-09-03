@@ -59,7 +59,7 @@
                 $alpha = count($kh->where('status','alpha'));
             @endphp
             <tr>
-                <td>{{ $i+1 }}</td>
+                <td>{{ $s->angkatan->first()?->nomor_absen ?? $i+1 }}</td>
                 <td class="nama">{{ $s->nama_siswa }}</td>
                 <td>{{ $s->nis }}</td>
                 @foreach($rentang as $hari)

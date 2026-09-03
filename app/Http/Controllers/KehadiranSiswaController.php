@@ -26,7 +26,10 @@ class KehadiranSiswaController extends Controller
             $siswaIds = AngkatanSiswa::where('kelas_id', $kelasId)
                 ->when($periodeId, fn($q) => $q->where('periode_id', $periodeId))
                 ->pluck('siswa_id');
-            $siswas = Siswa::whereIn('id', $siswaIds)->orderBy('nama_siswa', 'asc')->get();
+            $siswas = Siswa::whereIn('id', $siswaIds)
+                ->with(['angkatan' => fn($q) => $q->where('kelas_id', $kelasId)])
+                ->get()
+                ->sortBy(fn($s) => $s->angkatan->first()?->nomor_absen ?? PHP_INT_MAX);
         }
 
         $kehadiranMap = KehadiranSiswa::where('tanggal', $tanggal)
@@ -71,8 +74,10 @@ class KehadiranSiswaController extends Controller
 
         $kelas = Kelas::findOrFail($kelasId);
         $siswas = Siswa::whereHas('angkatan', fn($q) => $q->where('kelas_id', $kelasId))
+            ->with(['angkatan' => fn($q) => $q->where('kelas_id', $kelasId)])
             ->where('status', 'Aktif')
-            ->orderBy('nama_siswa', 'asc')->get();
+            ->orderBy('nama_siswa', 'asc')->get()
+            ->sortBy(fn($s) => $s->angkatan->first()?->nomor_absen ?? PHP_INT_MAX);
 
         $kehadiran = KehadiranSiswa::where('kelas_id', $kelasId)
             ->whereBetween('tanggal', [$tanggalAwal, $tanggalAkhir])

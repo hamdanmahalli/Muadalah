@@ -30,7 +30,6 @@
         <dl class="space-y-2 text-sm">
             <div class="flex justify-between"><dt class="text-gray-400">TTL</dt><dd class="font-semibold text-gray-700">{{ $siswa->tempat_lahir }}, {{ $siswa->tanggal_lahir?->format('d-m-Y') }}</dd></div>
             <div class="flex justify-between"><dt class="text-gray-400">JK</dt><dd class="font-semibold text-gray-700">{{ $siswa->jenis_kelamin }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-400">Agama</dt><dd class="font-semibold text-gray-700">{{ $siswa->agama }}</dd></div>
             <div class="flex justify-between"><dt class="text-gray-400">Ayah</dt><dd class="font-semibold text-gray-700">{{ $siswa->nama_ayah }}</dd></div>
             <div class="flex justify-between"><dt class="text-gray-400">Ibu</dt><dd class="font-semibold text-gray-700">{{ $siswa->nama_ibu }}</dd></div>
             <div class="flex justify-between"><dt class="text-gray-400">HP Ortu</dt><dd class="font-semibold text-gray-700">{{ $siswa->no_hp_ortu }}</dd></div>

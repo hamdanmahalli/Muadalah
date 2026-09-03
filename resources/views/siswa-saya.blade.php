@@ -41,7 +41,7 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-8">No</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-8">No.Absen</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">NIS</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Nama</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">JK</th>
@@ -50,12 +50,12 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-                @forelse($siswas as $i => $s)
+                @forelse($siswas->sortBy('angkatan.nomor_absen') as $s)
                 @php
                     $belum = $s->tagihans->filter(fn($t) => $t->sisa() > 0);
                 @endphp
                 <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 text-gray-500">{{ $i+1 }}</td>
+                    <td class="px-4 py-3 text-gray-500">{{ $s->angkatan->where('kelas_id', $kelasId)->sortByDesc('periode.is_active')->first()?->nomor_absen ?? $loop->iteration }}</td>
                     <td class="px-4 py-3 font-bold text-gray-700">{{ $s->nis }}</td>
                     <td class="px-4 py-3 font-semibold text-gray-800">{{ $s->nama_siswa }}</td>
                     <td class="px-4 py-3 text-gray-500">{{ $s->jenis_kelamin }}</td>

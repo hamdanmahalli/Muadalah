@@ -33,7 +33,13 @@ class SiswaSayaController extends Controller
             $ids = AngkatanSiswa::where('kelas_id', $kelasId)
                 ->when($periodeId, fn($q) => $q->where('periode_id', $periodeId))
                 ->pluck('siswa_id');
-            $siswas = Siswa::with('tagihans.jenisTagihan')->whereIn('id', $ids)->orderBy('nama_siswa', 'asc')->get();
+            $siswas = Siswa::with(['tagihans.jenisTagihan', 'angkatan.periode'])
+                ->whereIn('id', $ids)
+                ->get()
+                ->sortBy(fn($s) => $s->angkatan
+                    ->where('kelas_id', $kelasId)
+                    ->sortByDesc('periode.is_active')
+                    ->first()?->nomor_absen ?? PHP_INT_MAX);
         }
 
         return view('siswa-saya', compact('kelasWali', 'kelasId', 'siswas', 'periode', 'periodeId'));

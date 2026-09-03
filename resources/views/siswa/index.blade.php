@@ -6,6 +6,9 @@
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
     <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-user-graduate mr-2 text-indigo-600"></i> Master Siswa</h2>
     <div class="flex gap-2">
+        <button onclick="bukaModalImport()" class="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 hover:text-white transition flex items-center">
+            <i class="fas fa-file-excel mr-1"></i> Import Excel
+        </button>
         <a href="{{ route('master-siswa.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow hover:bg-indigo-700 transition">
             <i class="fas fa-plus mr-1"></i> Tambah Siswa
         </a>
@@ -76,11 +79,11 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Periode</label>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Tahun Ajaran</label>
                 <select name="periode_id" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     <option value="">- Pilih -</option>
-                    @foreach(\App\Models\Periode::orderBy('tahun_ajaran','desc')->get() as $p)
-                        <option value="{{ $p->id }}">{{ $p->tahun_ajaran }} ({{ $p->semester }})</option>
+                    @foreach($tahunAjaran as $ta)
+                        <option value="{{ $ta->periode_id }}">{{ $ta->tahun_ajaran }} {{ $ta->is_active ? '(Aktif)' : '' }}</option>
                     @endforeach
                 </select>
             </div>
@@ -159,6 +162,69 @@
     {{ $siswas->links() }}
 </div>
 
+<!-- Modal Import Excel -->
+<div id="modal-import" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm">
+    <div class="relative mx-auto p-6 border w-full max-w-xl shadow-2xl rounded-xl bg-white">
+        <div class="flex justify-between items-center mb-5 border-b pb-3">
+            <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-file-excel text-blue-600 mr-2"></i>Import Data Siswa dari Excel</h3>
+            <button type="button" onclick="tutupModalImport()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+        </div>
+
+        <form action="{{ route('master-siswa.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Tahun Ajaran (untuk penempatan kelas)</label>
+                <select name="periode_id" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="">-- Tanpa penempatan (hanya data siswa) --</option>
+                    @foreach($tahunAjaran as $ta)
+                        <option value="{{ $ta->periode_id }}">{{ $ta->tahun_ajaran }} {{ $ta->is_active ? '(Aktif)' : '' }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Pilih File Excel (.xlsx / .xls / .csv)</label>
+                <input type="file" name="file" required accept=".xlsx,.xls,.csv" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-gray-50">
+            </div>
+
+            <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 mb-5 text-xs text-sky-900">
+                <p class="font-bold mb-2"><i class="fas fa-info-circle mr-1"></i> Format Kolom Excel (baris pertama = judul kolom):</p>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-[11px]">
+                        <thead>
+                            <tr class="bg-sky-100">
+                                <th class="px-2 py-1 text-left font-bold">nis *</th>
+                                <th class="px-2 py-1 text-left font-bold">nama_siswa *</th>
+                                <th class="px-2 py-1 text-left font-bold">nisn</th>
+                                <th class="px-2 py-1 text-left font-bold">jenis_kelamin</th>
+                                <th class="px-2 py-1 text-left font-bold">tempat_lahir</th>
+                                <th class="px-2 py-1 text-left font-bold">tanggal_lahir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-white">
+                                <td class="px-2 py-1">1001</td>
+                                <td class="px-2 py-1">Ahmad Fauzi</td>
+                                <td class="px-2 py-1">3156789012</td>
+                                <td class="px-2 py-1">L</td>
+                                <td class="px-2 py-1">Jakarta</td>
+                                <td class="px-2 py-1">2012-05-14</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2 leading-relaxed">Baris pertama harus berisi <b>nama kolom</b> (huruf kecil, tanpa spasi) persis seperti di atas. Kolom lain opsional: <b>alamat, nama_ayah, nama_ibu, pekerjaan_ortu, no_hp_ortu, tahun_masuk, status, kelas</b>.</p>
+                <p class="mt-1 leading-relaxed">Khusus <b>kelas</b> diisi <b>nama kelas persis</b> (mis. <b>VII A</b>) — siswa akan otomatis ditempatkan ke kelas tersebut pada periode yang dipilih. Jika <b>NIS sudah ada</b>, data akan <b>diperbarui</b>, bukan dibuat duplikat.</p>
+            </div>
+
+            <div class="flex justify-end space-x-2 border-t pt-4">
+                <button type="button" onclick="tutupModalImport()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold text-sm">Batal</button>
+                <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700"><i class="fas fa-upload mr-1"></i> Import Sekarang</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal Hapus -->
 <div id="modal-hapus" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center backdrop-blur-sm z-50">
     <div class="relative mx-auto p-6 border w-full max-w-sm shadow-2xl rounded-xl bg-white text-center">
@@ -177,6 +243,12 @@
 </div>
 
 <script>
+    function bukaModalImport() {
+        document.getElementById('modal-import').classList.remove('hidden');
+    }
+    function tutupModalImport() {
+        document.getElementById('modal-import').classList.add('hidden');
+    }
     function bukaHapus(id, nama) {
         document.getElementById('modal-hapus').classList.remove('hidden');
         document.getElementById('hapus-nama').innerText = nama;

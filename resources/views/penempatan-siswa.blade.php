@@ -11,10 +11,10 @@
 <form method="GET" action="{{ route('penempatan-siswa.index') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Periode</label>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Tahun Ajaran</label>
             <select name="periode_id" onchange="this.form.submit()" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                @foreach($periodes as $p)
-                    <option value="{{ $p->id }}" {{ $periodeId == $p->id ? 'selected' : '' }}>{{ $p->tahun_ajaran }} ({{ $p->semester }}) {{ $p->is_active ? '✓ AKTIF' : '' }}</option>
+                @foreach($tahunAjaran as $ta)
+                    <option value="{{ $ta->periode_id }}" {{ $periodeId == $ta->periode_id ? 'selected' : '' }}>{{ $ta->tahun_ajaran }} {{ $ta->is_active ? '✓ AKTIF' : '' }}</option>
                 @endforeach
             </select>
         </div>
@@ -87,18 +87,29 @@
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-12">No.Absen</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Siswa</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Kelas</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Periode</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tahun Ajaran</th>
                         <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse($penempatan as $p)
                     <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <form action="{{ route('penempatan-siswa.updateNomorAbsen', $p->id) }}" method="POST" class="flex items-center gap-1">
+                                @csrf
+                                @method('PATCH')
+                                <input type="number" min="1" name="nomor_absen" value="{{ $p->nomor_absen ?? '' }}" placeholder="-" class="w-16 border border-gray-300 rounded-lg p-1 text-center text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <button type="submit" class="w-7 h-7 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition inline-flex items-center justify-center" title="Simpan nomor absen">
+                                    <i class="fas fa-check text-xs"></i>
+                                </button>
+                            </form>
+                        </td>
                         <td class="px-4 py-3 font-semibold text-gray-700">{{ $p->siswa?->nama_siswa }}<div class="text-xs text-gray-400">{{ $p->siswa?->nis }}</div></td>
                         <td class="px-4 py-3"><span class="px-2 py-1 text-xs font-bold rounded-full bg-indigo-100 text-indigo-700">{{ $p->kelas?->nama_kelas }}</span></td>
-                        <td class="px-4 py-3 text-gray-500">{{ $p->periode?->tahun_ajaran }} {{ $p->periode?->semester }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $p->periode?->tahun_ajaran }}</td>
                         <td class="px-4 py-3 text-center">
                             <button onclick="hapusPenempatan({{ $p->id }}, '{{ $p->siswa?->nama_siswa }}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition inline-flex items-center justify-center">
                                 <i class="fas fa-trash-alt"></i>
@@ -106,7 +117,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Belum ada penempatan.</td></tr>
+                    <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Belum ada penempatan.</td></tr>
                     @endforelse
                 </tbody>
             </table>

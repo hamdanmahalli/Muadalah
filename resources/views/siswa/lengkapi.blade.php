@@ -43,10 +43,6 @@
                 <input type="date" name="tanggal_lahir" value="{{ $siswa->tanggal_lahir?->format('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Agama</label>
-                <input type="text" name="agama" value="{{ $siswa->agama }}" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
-            </div>
-            <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-1">Tahun Masuk</label>
                 <input type="text" name="tahun_masuk" value="{{ $siswa->tahun_masuk }}" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
             </div>
@@ -104,11 +100,11 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Periode</label>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Tahun Ajaran</label>
                 <select name="periode_id" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
                     <option value="">- Pilih -</option>
-                    @foreach($periodes as $p)
-                        <option value="{{ $p->id }}" {{ $siswa->angkatan()->latest()->first()?->periode_id == $p->id ? 'selected' : '' }}>{{ $p->tahun_ajaran }} ({{ $p->semester }})</option>
+                    @foreach($tahunAjaran as $ta)
+                        <option value="{{ $ta->periode_id }}" {{ $siswa->angkatan()->latest()->first()?->periode_id == $ta->periode_id ? 'selected' : '' }}>{{ $ta->tahun_ajaran }} {{ $ta->is_active ? '(Aktif)' : '' }}</option>
                     @endforeach
                 </select>
             </div>

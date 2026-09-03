@@ -32,7 +32,6 @@
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
             <div><p class="text-xs font-bold text-gray-400 uppercase">Jenis Kelamin</p><p class="font-semibold text-gray-700">{{ $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : ($siswa->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</p></div>
             <div><p class="text-xs font-bold text-gray-400 uppercase">Tempat, Tgl Lahir</p><p class="font-semibold text-gray-700">{{ $siswa->tempat_lahir ? $siswa->tempat_lahir . ',' : '' }} {{ $siswa->tanggal_lahir ? $siswa->tanggal_lahir->format('d-m-Y') : '-' }}</p></div>
-            <div><p class="text-xs font-bold text-gray-400 uppercase">Agama</p><p class="font-semibold text-gray-700">{{ $siswa->agama ?? '-' }}</p></div>
             <div><p class="text-xs font-bold text-gray-400 uppercase">Tahun Masuk</p><p class="font-semibold text-gray-700">{{ $siswa->tahun_masuk ?? '-' }}</p></div>
             <div class="col-span-2"><p class="text-xs font-bold text-gray-400 uppercase">Alamat</p><p class="font-semibold text-gray-700">{{ $siswa->alamat ?? '-' }}</p></div>
         </div>
@@ -55,7 +54,7 @@
             <div class="flex items-center justify-between border border-gray-100 rounded-lg p-3 mb-2">
                 <div>
                     <p class="font-bold text-gray-700 text-sm">{{ $a->kelas?->nama_kelas }}</p>
-                    <p class="text-xs text-gray-400">{{ $a->periode?->tahun_ajaran }} {{ $a->periode?->semester }}</p>
+                    <p class="text-xs text-gray-400">{{ $a->periode?->tahun_ajaran }}</p>
                 </div>
                 <span class="text-xs font-bold {{ $a->status === 'Aktif' ? 'text-emerald-600' : 'text-rose-500' }}">{{ $a->status }}</span>
             </div>
