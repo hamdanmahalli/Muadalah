@@ -156,7 +156,7 @@
             <div id="menu-tersembunyi" class="col-span-4 grid grid-cols-4 gap-x-3 gap-y-3 mt-4 hidden">
             <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-id-badge text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">QR</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">QR Pribadi</span>
             </button>
             <button onclick="tampilToast('info', 'Ganti Jam segera hadir.'); return false;" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-arrows-rotate text-base text-white"></i>
@@ -173,10 +173,6 @@
             <button onclick="tampilToast('info', 'Nilai Ujian segera hadir.'); return false;" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chart-column text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Nilai</span>
-            </a>
-            <a href="/notifikasi/pengaturan" class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(20,184,166,0.7)] active:scale-90 transition-all">
-                <i class="fas fa-bell text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Notifikasi</span>
             </a>
             <button onclick="tampilToast('info', 'Wali Kelas segera hadir.'); return false;" class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(51,65,85,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chalkboard-user text-base text-white"></i>
