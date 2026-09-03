@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Absensi - {{ $agenda->nama_kegiatan }}</title>
-    <!-- Kita menggunakan CDN Tailwind khusus halaman ini agar layout utamanya tidak bocor -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #0f172a; overflow: hidden; } /* Dark Mode untuk proyektor agar tidak silau */

@@ -209,9 +209,9 @@ di subfolder seperti `https://domain.com/smarttu`. Jika memakai subfolder, `/sw.
 mengarah ke `https://domain.com/sw.js` (salah). Gunakan **subdomain** (mis. `app.domain.com`)
 yang document root-nya menunjuk langsung ke `public/`, atau sesuaikan path PWA.
 
-Frontend memakai Tailwind via **CDN** (`cdn.tailwindcss.com`), jadi **tidak perlu**
-`npm run build`/Vite untuk produksi. Namun pastikan `VITE_APP_NAME` tetap diisi untuk
-keperluan lain.
+Frontend memakai Tailwind CSS yang di-compile via **Vite**. Pastikan `public/build/`
+ter-upload ke server (hasil dari `npm run build`). Folder `public/build/` sudah di-include
+di `.gitignore`, jadi perlu di-build di server atau upload manual setelah `git pull`.
 
 ---
 
@@ -220,6 +220,7 @@ keperluan lain.
 ```bash
 cd ~/public_html/smarttu
 git pull origin main
+npm install && npm run build
 composer install --no-dev --optimize-autoloader
 php artisan key:generate
 php artisan migrate:fresh --seed --force
