@@ -135,52 +135,52 @@
         
 <div class="grid grid-cols-4 gap-x-3 gap-y-3 mx-4">
             <!-- 4 menu pertama tampil -->
-            <a href="/scan-kelas" class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(6,182,212,0.7)] active:scale-90 transition-all">
+            <a href="/scan-kelas" class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(6,182,212,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-qrcode text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Scan Hadir</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Scan Hadir</span>
             </a>
-            <a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-90 transition-all">
+            <a href="/rekap-presensi" class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(139,92,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-list-check text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Rekap</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Rekap</span>
             </a>
-            <a href="/kaldik" class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(245,158,11,0.7)] active:scale-90 transition-all">
+            <a href="/kaldik" class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(245,158,11,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-book-open text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Kaldik</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Kaldik</span>
             </a>
-            <a href="/jadwal-saya" class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(99,102,241,0.7)] active:scale-90 transition-all">
+            <a href="/jadwal-saya" class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(99,102,241,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-calendar-days text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Jadwal</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Jadwal</span>
             </a>
 
             <!-- sisanya terlipat -->
             <div id="menu-tersembunyi" class="col-span-4 grid grid-cols-4 gap-x-3 gap-y-3 mt-4 hidden">
-            <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
+            <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-id-badge text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">QR Pribadi</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">QR</span>
             </button>
-            <button onclick="tampilToast('info', 'Ganti Jam segera hadir.'); return false;" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-90 transition-all">
+            <button onclick="tampilToast('info', 'Ganti Jam segera hadir.'); return false;" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-arrows-rotate text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Ganti Jam</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Ganti</span>
             </button>
-            <button onclick="tampilToast('info', 'Cuti / Izin segera hadir.'); return false;" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(236,72,153,0.7)] active:scale-90 transition-all">
+            <button onclick="tampilToast('info', 'Cuti / Izin segera hadir.'); return false;" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(236,72,153,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-paper-plane text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Cuti/Izin</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Cuti</span>
             </button>
-            <a href="{{ route('guru.profil.lengkap') }}" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(16,185,129,0.7)] active:scale-90 transition-all">
+            <a href="{{ route('guru.profil.lengkap') }}" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(16,185,129,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-user text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Profil</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Profil</span>
             </a>
-            <button onclick="tampilToast('info', 'Nilai Ujian segera hadir.'); return false;" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
+            <button onclick="tampilToast('info', 'Nilai Ujian segera hadir.'); return false;" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chart-column text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Nilai</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Nilai</span>
             </a>
-            <a href="/notifikasi/pengaturan" class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(20,184,166,0.7)] active:scale-90 transition-all">
+            <a href="/notifikasi/pengaturan" class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(20,184,166,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-bell text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Notifikasi</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Notifikasi</span>
             </a>
-            <button onclick="tampilToast('info', 'Wali Kelas segera hadir.'); return false;" class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl aspect-square overflow-hidden flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(51,65,85,0.7)] active:scale-90 transition-all">
+            <button onclick="tampilToast('info', 'Wali Kelas segera hadir.'); return false;" class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(51,65,85,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chalkboard-user text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-1 truncate w-full block">Wali Kelas</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Wali</span>
             </button>
             </div>
         </div>
