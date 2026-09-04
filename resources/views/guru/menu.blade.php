@@ -184,12 +184,12 @@
                 <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg flex items-center justify-center text-white text-4xl mb-4 ring-4 ring-emerald-50">
                     <i class="fas fa-graduation-cap"></i>
                 </div>
-                <h3 class="text-xl font-black text-slate-800">SmartPesantren</h3>
+                <h3 class="text-xl font-black text-slate-800">MUMARIS</h3>
                 <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1 mb-4">Versi 2.0.0</p>
 
                 <div class="bg-slate-50 rounded-2xl p-4 text-xs text-slate-500 font-medium mb-6 w-full text-left leading-relaxed border border-slate-100">
-                    <p class="mb-2">Sistem Informasi Akademik dan Manajemen Pesantren terpadu.</p>
-                    <p class="mt-3 text-center text-[10px] font-bold text-slate-400">&copy; {{ date('Y') }} Sancod Builder.</p>
+                    <p class="mb-2">Mu'adalah Maqna'ul Ulum Rekap Informasi Sitem.</p>
+                    <p class="mt-3 text-center text-[10px] font-bold text-slate-400">&copy; {{ date('Y') }} Santriknologi.</p>
                 </div>
                 <button onclick="tutupModal('modal-tentang', 'bg-tentang', 'box-tentang')" class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl transition shadow-md">Tutup Panel</button>
             </div>
