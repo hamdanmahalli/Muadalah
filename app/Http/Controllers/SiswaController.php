@@ -6,12 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\Periode;
-use App\Models\AngkatanSiswa;
+use App\Services\SiswaService;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\SiswaImport;
 
 class SiswaController extends Controller
 {
+    public function __construct(
+        protected SiswaService $siswaService
+    ) {}
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -28,10 +32,7 @@ class SiswaController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $lastSiswa = Siswa::orderBy('nis', 'desc')->first();
-        $nisBaru = ($lastSiswa && is_numeric($lastSiswa->nis))
-            ? (string)((int)$lastSiswa->nis + 1)
-            : '1001';
+        $nisBaru = $this->siswaService->generasikanNIS();
 
         $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
 
@@ -65,18 +66,10 @@ class SiswaController extends Controller
 
         // Jika dipilih saat tambah, langsung masukkan ke penempatan
         if ($request->kelas_id && $request->periode_id) {
-            $angkatan = new AngkatanSiswa([
-                'siswa_id' => $siswa->id,
-                'periode_id' => $request->periode_id,
-                'kelas_id' => $request->kelas_id,
+            $this->siswaService->tempatkan($siswa->id, $request->kelas_id, $request->periode_id, [
                 'status' => 'Aktif',
                 'tanggal_masuk' => now(),
             ]);
-            $max = AngkatanSiswa::where('kelas_id', $request->kelas_id)
-                ->where('periode_id', $request->periode_id)
-                ->max('nomor_absen');
-            $angkatan->nomor_absen = $max ? (int)$max + 1 : 1;
-            $angkatan->save();
         }
 
         return redirect()->back()->with('sukses', 'Data siswa ' . $siswa->nama_siswa . ' berhasil disimpan! (NIS: ' . $siswa->nis . ')');
@@ -101,6 +94,25 @@ class SiswaController extends Controller
     public function simpanLengkapi(Request $request, $id)
     {
         $siswa = Siswa::findOrFail($id);
+
+        $request->validate([
+            'nisn'          => 'nullable|string|max:20',
+            'nama_siswa'    => 'required|string|max:255',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'tempat_lahir'  => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'alamat'        => 'nullable|string|max:255',
+            'nama_ayah'     => 'nullable|string|max:255',
+            'nama_ibu'      => 'nullable|string|max:255',
+            'pekerjaan_ortu'=> 'nullable|string|max:255',
+            'no_hp_ortu'    => 'nullable|string|max:30',
+            'tahun_masuk'   => 'nullable|string|max:10',
+            'status'        => 'nullable|in:Aktif,Nonaktif,Lulus,Keluar',
+            'foto'          => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
+            'kelas_id'      => 'nullable|integer|exists:kelas,id',
+            'periode_id'    => 'nullable|integer|exists:periodes,id',
+        ]);
+
         $siswa->update($request->only([
             'nisn', 'nama_siswa', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
             'alamat', 'nama_ayah', 'nama_ibu', 'pekerjaan_ortu', 'no_hp_ortu',
@@ -108,31 +120,17 @@ class SiswaController extends Controller
         ]));
 
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $nama = 'siswa-' . $siswa->id . '-' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/siswa'), $nama);
-            $siswa->update(['foto' => 'uploads/siswa/' . $nama]);
+            // Simpan lewat Storage disk "public" (bukan move + ekstensi client) utk cegah RCE
+            $path = $request->file('foto')->store('uploads/siswa', 'public');
+            $siswa->update(['foto' => 'storage/' . $path]);
         }
 
         // Penempatan
         if ($request->kelas_id) {
-            $angkatan = AngkatanSiswa::firstOrNew([
-                'siswa_id' => $siswa->id,
-                'periode_id' => $request->periode_id,
+            $this->siswaService->tempatkan($siswa->id, $request->kelas_id, $request->periode_id, [
+                'status' => $request->status,
+                'tanggal_masuk' => $request->tanggal_masuk,
             ]);
-
-            // Nomor absen TETAP selama satu tahun ajaran: hanya diisi jika belum ada
-            if (!$angkatan->exists || $angkatan->nomor_absen === null) {
-                $max = AngkatanSiswa::where('kelas_id', $request->kelas_id)
-                    ->where('periode_id', $request->periode_id)
-                    ->max('nomor_absen');
-                $angkatan->nomor_absen = $max ? (int)$max + 1 : 1;
-            }
-
-            $angkatan->kelas_id      = $request->kelas_id;
-            $angkatan->status        = $request->status ?? $angkatan->status ?? 'Aktif';
-            $angkatan->tanggal_masuk = $request->tanggal_masuk ?? $angkatan->tanggal_masuk;
-            $angkatan->save();
         }
 
         return redirect()->back()->with('sukses', 'Data siswa lengkap berhasil disimpan!');
@@ -172,7 +170,8 @@ class SiswaController extends Controller
             Excel::import(new SiswaImport($request->periode_id), $request->file('file'));
             return redirect()->back()->with('sukses', 'Data siswa berhasil di-import dari Excel!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal import: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Import siswa gagal: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal import data siswa. Pastikan format file & kolom benar.');
         }
     }
 }

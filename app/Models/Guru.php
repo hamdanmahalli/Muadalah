@@ -10,7 +10,19 @@ class Guru extends Model
     use HasFactory;
 
     // Membuka gembok agar data bisa masuk sekaligus
-    protected $guarded = [];
+    protected $fillable = [
+        'nig',
+        'nip',
+        'nama_guru',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'jenis_kelamin',
+        'gender',
+        'no_hp',
+        'alamat',
+        'pendidikan_terakhir',
+        'status',
+    ];
 
     // Kelas yang diampu sebagai wali kelas
     public function kelasWali()

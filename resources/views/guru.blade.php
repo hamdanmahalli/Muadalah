@@ -108,11 +108,11 @@
                             <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
                                     <!-- Tombol Edit diperbarui dengan membawa data baru -->
-                                    <button onclick="bukaModalEdit('{{ $guru->id }}', '{{ $guru->nip }}', '{{ $guru->nig }}', '{{ addslashes($guru->nama_guru) }}', '{{ $guru->no_hp }}', '{{ $guru->gender }}', '{{ addslashes($guru->alamat) }}', '{{ $guru->status }}', '{{ $guru->tempat_lahir }}', '{{ $guru->tanggal_lahir }}', '{{ addslashes($guru->pendidikan_terakhir) }}', '{{ $guru->jabatans->pluck('id')->implode(',') }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Edit">
+                                    <button onclick="bukaModalEdit('{{ $guru->id }}', '{{ js_q($guru->nip) }}', '{{ js_q($guru->nig) }}', '{{ js_q($guru->nama_guru) }}', '{{ js_q($guru->no_hp) }}', '{{ js_q($guru->gender) }}', '{{ js_q($guru->alamat) }}', '{{ js_q($guru->status) }}', '{{ js_q($guru->tempat_lahir) }}', '{{ js_q($guru->tanggal_lahir) }}', '{{ js_q($guru->pendidikan_terakhir) }}', '{{ $guru->jabatans->pluck('id')->implode(',') }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Edit">
                                         <i class="fas fa-pen text-[10px]"></i>
                                     </button>
                                     
-                                    <button type="button" onclick="konfirmasiHapus('{{ $guru->id }}', '{{ addslashes($guru->nama_guru) }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Hapus">
+                                    <button type="button" onclick="konfirmasiHapus('{{ $guru->id }}', '{{ js_q($guru->nama_guru) }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Hapus">
                                         <i class="fas fa-trash text-[10px]"></i>
                                     </button>
                                 </div>

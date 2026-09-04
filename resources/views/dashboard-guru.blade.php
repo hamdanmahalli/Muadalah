@@ -170,14 +170,23 @@
                 <i class="fas fa-user text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Profil</span>
             </a>
-            <button onclick="tampilToast('info', 'Nilai Ujian segera hadir.'); return false;" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
+            <a href="{{ route('nilai.index') }}" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chart-column text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Nilai Ujian</span>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Nilai</span>
             </a>
             <a href="/siswa-saya" class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(51,65,85,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chalkboard-user text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Wali Kelas</span>
             </a>
+            <button onclick="bukaModal('modal-tentang')" class="bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(71,85,105,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-circle-info text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Tentang</span>
+            </button>
+            <form id="form-logout" method="POST" action="/logout" class="hidden">@csrf</form>
+            <button onclick="if(confirm('Yakin ingin keluar dari sistem?'))document.getElementById('form-logout').submit();" class="bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(244,63,94,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-right-from-bracket text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Logout</span>
+            </button>
             </div>
         </div>
 
@@ -360,7 +369,50 @@
             setTimeout(() => body.remove(), 350);
         }, 2200);
     }
+
+    function bukaModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        const bg = modal.querySelector('[id^="bg-"]');
+        const box = modal.querySelector('[id^="box-"]');
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (bg) bg.classList.remove('opacity-0');
+                if (box) { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }
+            });
+        });
+    }
+
+    function tutupModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        const bg = modal.querySelector('[id^="bg-"]');
+        const box = modal.querySelector('[id^="box-"]');
+        if (bg) bg.classList.add('opacity-0');
+        if (box) { box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0'); }
+        setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
 </script>
+<!-- MODAL TENTANG APLIKASI -->
+<div id="modal-tentang" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="bg-tentang"></div>
+    <div class="flex items-center justify-center min-h-screen px-4 pb-10">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center" id="box-tentang">
+            <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg flex items-center justify-center text-white text-4xl mb-4 ring-4 ring-emerald-50">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-800">SmartPesantren</h3>
+            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1 mb-4">Versi 2.0.0</p>
+            <div class="bg-slate-50 rounded-2xl p-4 text-xs text-slate-500 font-medium mb-6 w-full text-left leading-relaxed border border-slate-100">
+                <p class="mb-2">Sistem Informasi Akademik dan Manajemen Pesantren terpadu.</p>
+                <p class="mt-3 text-center text-[10px] font-bold text-slate-400">&copy; {{ date('Y') }} Sancod Builder.</p>
+            </div>
+            <button onclick="tutupModal('modal-tentang')" class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl transition shadow-md">Tutup Panel</button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 

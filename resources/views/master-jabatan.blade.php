@@ -35,10 +35,10 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <div class="flex justify-center space-x-1">
-                        <button onclick="bukaModalEdit({{ $j->id }}, '{{ addslashes($j->nama_jabatan) }}', '{{ addslashes($j->deskripsi ?? '') }}', '{{ $j->status }}')" title="Edit" class="w-8 h-8 rounded-full bg-orange-50 text-orange-400 hover:bg-orange-400 hover:text-white transition flex items-center justify-center">
+                        <button onclick="bukaModalEdit({{ $j->id }}, '{{ js_q($j->nama_jabatan) }}', '{{ js_q($j->deskripsi ?? '') }}', '{{ $j->status }}')" title="Edit" class="w-8 h-8 rounded-full bg-orange-50 text-orange-400 hover:bg-orange-400 hover:text-white transition flex items-center justify-center">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="bukaModalHapus({{ $j->id }}, '{{ addslashes($j->nama_jabatan) }}')" title="Hapus" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                        <button onclick="bukaModalHapus({{ $j->id }}, '{{ js_q($j->nama_jabatan) }}')" title="Hapus" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>

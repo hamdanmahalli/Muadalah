@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class JenisTagihan extends Model
 {
     protected $table = 'jenis_tagihans';
-    protected $guarded = [];
+    protected $fillable = [
+        'nama_tagihan',
+        'deskripsi',
+        'status',
+    ];
 
     public function tagihans()
     {

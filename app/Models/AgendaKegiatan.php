@@ -7,7 +7,16 @@ use Illuminate\Support\Str;
 
 class AgendaKegiatan extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'periode_id',
+        'nama_kegiatan',
+        'tanggal',
+        'jam_mulai',
+        'jam_selesai',
+        'lokasi',
+        'qr_token',
+        'is_open',
+    ];
 
     // Relasi ke tabel periode
     public function periode()

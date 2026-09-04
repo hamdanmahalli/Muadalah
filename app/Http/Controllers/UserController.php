@@ -36,6 +36,9 @@ class UserController extends Controller
             'roles'    => 'required|array|min:1', // Menerima Array dari Checkbox Multi-Role
         ]);
 
+        // Buat sandi acak & tampilkan sekali di layar (hindari sandi bawaan yang bisa ditebak)
+        $sandi = $this->buatSandiAcak();
+
         $user = User::create([
             'lembaga'  => 'PONDOK',
             'username' => $request->username,
@@ -44,13 +47,19 @@ class UserController extends Controller
             'hp'       => $request->hp,
             'role'     => implode(', ', $request->roles), // Gabungan teks untuk cadangan
             'status'   => $request->status ?? 'Aktif',
-            'password' => Hash::make('123456'), // Password bawaan: 123456
+            'password' => Hash::make($sandi),
         ]);
 
         // SINKRONISASI MULTI-ROLE SPATIE
         $user->syncRoles($request->roles);
 
-        return redirect()->back()->with('sukses', 'Pengguna baru berhasil ditambahkan dengan Multi-Role! Password bawaan: 123456');
+        session()->flash('hasil_reset', [
+            'nama'     => $user->name,
+            'username' => $user->username,
+            'sandi'    => $sandi,
+        ]);
+
+        return redirect()->back()->with('sukses', 'Pengguna baru berhasil ditambahkan dengan Multi-Role! Salin sandi sementara dari layar dan sebarkan ke pengguna.');
     }
 
     public function update(Request $request, $id)

@@ -68,7 +68,7 @@
                 $waText .= "Terima kasih.\nWASSALAMUALAIKUM WR. WB.";
             @endphp
 
-            <textarea id="teks-wa-hidden" class="hidden">{!! $waText !!}</textarea>
+            <textarea id="teks-wa-hidden" class="hidden">{{ $waText }}</textarea>
             <button type="button" onclick="salinTeksWA()" class="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all duration-300 flex items-center cursor-pointer flex-shrink-0 active:scale-95">
                 <i class="fab fa-whatsapp mr-2 text-lg"></i> <span id="teks-btn-wa">Copy WA</span>
             </button>

@@ -11,7 +11,14 @@ class KehadiranGuru extends Model
 
 
     // Membuka gembok keamanan agar semua kolom bisa diisi otomatis via AJAX
-    protected $guarded = [];
+    protected $fillable = [
+        'periode_id',
+        'jadwal_id',
+        'tanggal',
+        'status',
+        'nig_pengganti',
+        'keterangan',
+    ];
 
     // Relasi ke jadwal yang menjadi sumber sijadwal kehadiran ini
     public function jadwal()

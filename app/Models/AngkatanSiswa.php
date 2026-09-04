@@ -7,7 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class AngkatanSiswa extends Model
 {
     protected $table = 'angkatan_siswas';
-    protected $guarded = [];
+    protected $fillable = [
+        'siswa_id',
+        'periode_id',
+        'kelas_id',
+        'nomor_absen',
+        'status',
+        'tanggal_masuk',
+        'tanggal_keluar',
+    ];
 
     protected $casts = [
         'tanggal_masuk' => 'date',

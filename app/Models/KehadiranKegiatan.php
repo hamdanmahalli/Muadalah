@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class KehadiranKegiatan extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'agenda_kegiatan_id',
+        'guru_id',
+        'waktu_hadir',
+        'metode',
+        'status',
+        'keterangan',
+    ];
 
     // Relasi balik ke Agenda
     public function agenda()

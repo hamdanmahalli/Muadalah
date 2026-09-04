@@ -10,5 +10,11 @@ class HariOperasional extends Model
     use HasFactory;
 
     protected $table = 'hari_operasional';
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'hari',
+        'is_active',
+        'max_jam',
+        'jam_mulai',
+        'keterangan',
+    ];
 }

@@ -221,7 +221,7 @@
                         
                         <td class="py-3.5 px-4 text-center">
                             <div class="flex justify-center items-center">
-                                <button type="button" onclick="bukaModalDetail({{ $data->guru_id }}, '{{ addslashes($data->nama_guru) }}', {{ $data->jam_wajib }}, {{ $data->a }}, {{ $data->i }}, {{ $data->s }}, {{ $data->piket }}, {{ $data->realita }})" class="bg-gray-50 text-gray-500 hover:bg-emerald-100 hover:text-emerald-700 border border-gray-200 p-2 rounded-lg transition shadow-sm cursor-pointer">
+                                <button type="button" onclick="bukaModalDetail({{ $data->guru_id }}, '{{ js_q($data->nama_guru) }}', {{ $data->jam_wajib }}, {{ $data->a }}, {{ $data->i }}, {{ $data->s }}, {{ $data->piket }}, {{ $data->realita }})" class="bg-gray-50 text-gray-500 hover:bg-emerald-100 hover:text-emerald-700 border border-gray-200 p-2 rounded-lg transition shadow-sm cursor-pointer">
                                     <i class="fas fa-eye text-xs"></i>
                                 </button>
                             </td>

@@ -170,7 +170,7 @@
             <p class="pg-p">Data dasar yang menjadi fondasi seluruh modul. Sebaiknya diisi lengkap sebelum menyusun jadwal.</p>
 
             <h3 class="pg-h3">Master Pengurus/Guru (akses_master_guru)</h3>
-            <p class="pg-p">Data pengurus/guru: nama, NIG (unik, dipakai sebagai username login), NIP (opsional), jabatan (bisa lebih dari satu, mis. Wakil Kurikulum + TU), status (Aktif/non-aktif), profil lengkap, jenis kelamin. Akun login <strong>Dewan Guru</strong> dibuat otomatis hanya jika pengurus memiliki jabatan <strong>Guru</strong> (username = NIG, password default <span class="pg-code">123456</span>). Pengurus non-guru cukup datanya tanpa akun otomatis.</p>
+            <p class="pg-p">Data pengurus/guru: nama, NIG (unik, dipakai sebagai username login), NIP (opsional), jabatan (bisa lebih dari satu, mis. Wakil Kurikulum + TU), status (Aktif/non-aktif), profil lengkap, jenis kelamin. Akun login <strong>Dewan Guru</strong> dibuat otomatis hanya jika pengurus memiliki jabatan <strong>Guru</strong> (username = NIG, dan sandi sementara yang <strong>tampil sekali di layar</strong> setelah guru disimpan — segera ganti setelah login pertama). Pengurus non-guru cukup datanya tanpa akun otomatis.</p>
 
             <h3 class="pg-h3">Master Jabatan (akses_master_guru)</h3>
             <p class="pg-p">Kelola daftar jabatan (Kepala Sekolah, Wakil Kurikulum, Tata Usaha, Bendahara, Wali Kelas, dll). Satu pengurus bisa punya lebih dari satu jabatan.</p>

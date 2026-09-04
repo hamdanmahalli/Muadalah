@@ -3,21 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Guru;
-use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\Siswa;
 use App\Models\AngkatanSiswa;
 use App\Models\Periode;
+use App\Services\AuthenticatedGuruService;
 
 class SiswaSayaController extends Controller
 {
+    public function __construct(
+        protected AuthenticatedGuruService $guruService
+    ) {}
+
     public function index(Request $request)
     {
         // Guru pengguna saat ini (cari via NIG=username, fallback via nama)
-        $user = auth()->user();
-        $guru = Guru::where('nig', $user->username)->first()
-            ?? $user->guru
-            ?? Guru::where('nama_guru', $user->name)->first();
+        $guru = $this->guruService->fromAuthUser();
 
         // Periode aktif
         $periode = Periode::where('is_active', true)->first();
@@ -47,7 +48,22 @@ class SiswaSayaController extends Controller
 
     public function detail($siswa)
     {
+        $guru = $this->guruService->fromAuthUser();
+
         $siswa = Siswa::with(['angkatan.kelas', 'angkatan.periode', 'tagihans.jenisTagihan', 'nilais.pelajaran', 'kehadiran'])->findOrFail($siswa);
+
+        // Hanya wali kelas yang sah (wali kelas dari salah satu kelas murid ini) yang boleh mengakses detail.
+        if (!$guru) {
+            abort(403, 'Anda tidak memiliki akses ke data siswa ini.');
+        }
+
+        $kelasIdsSiswa = $siswa->angkatan->pluck('kelas_id');
+        $kelasWaliIds = Kelas::where('wali_kelas_id', $guru->id)->pluck('id');
+
+        if ($kelasIdsSiswa->intersect($kelasWaliIds)->isEmpty()) {
+            abort(403, 'Anda bukan wali kelas dari siswa ini.');
+        }
+
         $tagihans = $siswa->tagihans;
         $nilai = $siswa->nilais;
         $kehadiran = $siswa->kehadiran;

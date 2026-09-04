@@ -6,5 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class PushEvent extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'tag',
+        'title',
+        'user_agent',
+    ];
 }

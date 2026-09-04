@@ -41,10 +41,10 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-1 flex justify-center">
-                        <button onclick="bukaModalEdit({{ $k->id }}, '{{ $k->nama_kelas }}', '{{ $k->tingkat ?? '' }}', '{{ $k->wali_kelas_id ?? '' }}')" title="Edit Kelas" class="w-8 h-8 rounded-full bg-orange-50 text-orange-400 hover:bg-orange-400 hover:text-white transition flex items-center justify-center">
+                        <button onclick="bukaModalEdit({{ $k->id }}, '{{ js_q($k->nama_kelas) }}', '{{ js_q($k->tingkat ?? '') }}', '{{ js_q($k->wali_kelas_id ?? '') }}')" title="Edit Kelas" class="w-8 h-8 rounded-full bg-orange-50 text-orange-400 hover:bg-orange-400 hover:text-white transition flex items-center justify-center">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="bukaModalHapus({{ $k->id }}, '{{ $k->nama_kelas }}')" title="Hapus Kelas" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                        <button onclick="bukaModalHapus({{ $k->id }}, '{{ js_q($k->nama_kelas) }}')" title="Hapus Kelas" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>

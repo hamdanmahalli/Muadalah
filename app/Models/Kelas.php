@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Kelas extends Model
 {
     protected $table = 'kelas';
-    protected $guarded = [];
+    protected $fillable = [
+        'nama_kelas',
+        'tingkat',
+        'wali_kelas_id',
+    ];
 
     // Wali kelas (relasi ke Guru)
     public function waliKelas()

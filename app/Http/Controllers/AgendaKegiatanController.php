@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AgendaKegiatan;
 use App\Models\Periode;
-use App\Models\Guru;
-use App\Models\KehadiranKegiatan;
+use App\Services\Kehadiran\AgendaKehadiranService;
 
 class AgendaKegiatanController extends Controller
 {
+    public function __construct(
+        protected AgendaKehadiranService $kehadiran
+    ) {}
+
     public function index()
     {
         $periodeAktif = get_periode_aktif();
@@ -29,7 +32,15 @@ class AgendaKegiatanController extends Controller
     public function store(Request $request)
     {
         $periodeAktif = Periode::where('is_active', true)->firstOrFail();
-        
+
+        $request->validate([
+            'nama_kegiatan' => 'required|string|max:255',
+            'tanggal'       => 'required|date',
+            'jam_mulai'     => 'required|date_format:H:i',
+            'jam_selesai'   => 'nullable|date_format:H:i',
+            'lokasi'        => 'nullable|string|max:255',
+        ]);
+
         AgendaKegiatan::create([
             'periode_id'    => $periodeAktif->id,
             'nama_kegiatan' => $request->nama_kegiatan,
@@ -66,34 +77,14 @@ class AgendaKegiatanController extends Controller
     public function laporan($id)
     {
         $agenda = AgendaKegiatan::findOrFail($id);
-        
-        $semuaGuru = \App\Models\Guru::orderBy('nama_guru', 'asc')->get();
-        $kehadiran = \App\Models\KehadiranKegiatan::where('agenda_kegiatan_id', $id)->get()->keyBy('guru_id');
+        $data = $this->kehadiran->rangkumUntukView($agenda->id);
 
-        $dataHadir = [];
-        $dataBelumHadir = [];
+        $dataHadir = $data['data_hadir'];
+        $dataBelumHadir = $data['data_belum_hadir'];
+        $totalGuru = $data['total_guru'];
 
-        foreach ($semuaGuru as $guru) {
-            if ($kehadiran->has($guru->id)) {
-                $dataHadir[] = (object)[
-                    'guru' => $guru,
-                    'waktu_hadir' => $kehadiran[$guru->id]->waktu_hadir,
-                    'metode' => $kehadiran[$guru->id]->metode,
-                    'status' => $kehadiran[$guru->id]->status ?? 'Hadir',
-                    'keterangan' => $kehadiran[$guru->id]->keterangan
-                ];
-            } else {
-                $dataBelumHadir[] = $guru;
-            }
-        }
-
-        usort($dataHadir, function($a, $b) {
-            return strtotime($a->waktu_hadir) - strtotime($b->waktu_hadir);
-        });
-
-        $totalGuru = $semuaGuru->count();
-        // PERUBAHAN DI SINI: $totalHadir mencakup semua yang sudah masuk data tercatat (Hadir/Izin/Sakit)
-        $totalHadir = count($dataHadir); 
+        // $totalHadir mencakup semua yang sudah masuk data tercatat (Hadir/Izin/Sakit)
+        $totalHadir = count($dataHadir);
         $belumHadir = count($dataBelumHadir);
         $persentase = $totalGuru > 0 ? round(($totalHadir / $totalGuru) * 100) : 0;
 
@@ -110,16 +101,8 @@ class AgendaKegiatanController extends Controller
             'status' => 'required|in:Hadir,Izin,Sakit',
             'keterangan' => 'nullable|string|max:255'
         ]);
-        
-        \App\Models\KehadiranKegiatan::updateOrCreate(
-            ['agenda_kegiatan_id' => $agenda_id, 'guru_id' => $request->guru_id],
-            [
-                'waktu_hadir' => now(), 
-                'metode' => 'Manual Admin',
-                'status' => $request->status,
-                'keterangan' => $request->keterangan
-            ]
-        );
+
+        $this->kehadiran->catatManual($agenda_id, $request->guru_id, $request->status, $request->keterangan);
 
         return back()->with('sukses', 'Status ' . $request->status . ' berhasil dicatat!');
     }
@@ -130,33 +113,13 @@ class AgendaKegiatanController extends Controller
     public function cetakPdf($id)
     {
         $agenda = AgendaKegiatan::findOrFail($id);
-        $semuaGuru = \App\Models\Guru::orderBy('nama_guru', 'asc')->get();
-        $kehadiran = \App\Models\KehadiranKegiatan::where('agenda_kegiatan_id', $id)->get()->keyBy('guru_id');
-
-        $dataHadir = [];
-        $dataBelumHadir = [];
-
-        foreach ($semuaGuru as $guru) {
-            if ($kehadiran->has($guru->id)) {
-                $dataHadir[] = (object)[
-                    'guru' => $guru,
-                    'waktu_hadir' => $kehadiran[$guru->id]->waktu_hadir,
-                    'metode' => $kehadiran[$guru->id]->metode,
-                    'status' => $kehadiran[$guru->id]->status ?? 'Hadir', // PERBAIKAN: Suntikan Status
-                    'keterangan' => $kehadiran[$guru->id]->keterangan // PERBAIKAN: Suntikan Keterangan
-                ];
-            } else {
-                $dataBelumHadir[] = $guru;
-            }
-        }
-
-        usort($dataHadir, function($a, $b) {
-            return strtotime($a->waktu_hadir) - strtotime($b->waktu_hadir);
-        });
+        $data = $this->kehadiran->rangkumUntukView($agenda->id);
+        $dataHadir = $data['data_hadir'];
+        $dataBelumHadir = $data['data_belum_hadir'];
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.agenda-pdf', compact('agenda', 'dataHadir', 'dataBelumHadir'));
-        
-        return $pdf->download('Laporan_Acara_'.$agenda->tanggal.'_'.str_replace(' ', '_', $agenda->nama_kegiatan).'.pdf');
+
+        return $pdf->download('Laporan_Acara_' . $agenda->tanggal . '_' . str_replace(' ', '_', $agenda->nama_kegiatan) . '.pdf');
     }
 
     // ==========================================================
@@ -164,42 +127,7 @@ class AgendaKegiatanController extends Controller
     // ==========================================================
     public function getKehadiranRealtime($id)
     {
-        $semuaGuru = \App\Models\Guru::orderBy('nama_guru', 'asc')->get();
-        $kehadiran = \App\Models\KehadiranKegiatan::with('guru')->where('agenda_kegiatan_id', $id)->get()->keyBy('guru_id');
-
-        $dataHadir = [];
-        $dataBelumHadir = [];
-
-        foreach ($semuaGuru as $guru) {
-            if ($kehadiran->has($guru->id)) {
-                $dataHadir[] = [
-                    'guru_id' => $guru->id,
-                    'nama_guru' => $guru->nama_guru,
-                    'waktu' => \Carbon\Carbon::parse($kehadiran[$guru->id]->waktu_hadir)->format('Y-m-d H:i:s'),
-                    'metode' => $kehadiran[$guru->id]->metode,
-                    'status' => $kehadiran[$guru->id]->status ?? 'Hadir',
-                    'keterangan' => $kehadiran[$guru->id]->keterangan
-                ];
-            } else {
-                $dataBelumHadir[] = [
-                    'id' => $guru->id,
-                    'nama_guru' => $guru->nama_guru
-                ];
-            }
-        }
-
-        // Urutkan yang hadir berdasarkan waktu
-        usort($dataHadir, function($a, $b) {
-            return strtotime($a['waktu']) - strtotime($b['waktu']);
-        });
-
-        return response()->json([
-            'total_hadir' => count($dataHadir),
-            'total_belum' => count($dataBelumHadir),
-            'persentase' => count($semuaGuru) > 0 ? round((count($dataHadir) / $semuaGuru->count()) * 100) : 0,
-            'data_hadir' => $dataHadir,
-            'data_belum' => $dataBelumHadir
-        ]);
+        return response()->json($this->kehadiran->rangkumUntukApi($id));
     }
 
     // ==========================================================
@@ -218,55 +146,11 @@ class AgendaKegiatanController extends Controller
     public function prosesScanQR(Request $request, $id)
     {
         try {
-            $agenda = AgendaKegiatan::findOrFail($id);
-
-            if (!$agenda->is_open) {
-                return response()->json(['status' => 'error', 'pesan' => 'Absensi untuk kegiatan ini sudah ditutup oleh TU.']);
-            }
-
-            $qr_data = $request->qr_data;
-
-            // QR guru berformat GURU-<NIG>
-            if (strpos($qr_data, 'GURU-') !== 0) {
-                return response()->json(['status' => 'error', 'pesan' => 'QR tidak dikenali! Pindai QR Code pribadi guru.']);
-            }
-
-            $nig = substr($qr_data, 5);
-            if ($nig === '') {
-                return response()->json(['status' => 'error', 'pesan' => 'QR guru tidak valid (NIG kosong).']);
-            }
-
-            $guru = Guru::where('nig', $nig)->first();
-            if (!$guru) {
-                return response()->json(['status' => 'error', 'pesan' => 'Guru dengan NIG ' . $nig . ' tidak ditemukan.']);
-            }
-
-            // Catat kehadiran kegiatan (anti double-scan)
-            $kehadiran = KehadiranKegiatan::firstOrNew([
-                'agenda_kegiatan_id' => $agenda->id,
-                'guru_id' => $guru->id,
-            ]);
-
-            if ($kehadiran->exists) {
-                return response()->json([
-                    'status' => 'info',
-                    'pesan' => $guru->nama_guru . ' sudah tercatat hadir sebelumnya.'
-                ]);
-            }
-
-            $kehadiran->waktu_hadir = now();
-            $kehadiran->metode = 'Scan QR Guru';
-            $kehadiran->status = 'Hadir';
-            $kehadiran->keterangan = null;
-            $kehadiran->save();
-
-            return response()->json([
-                'status' => 'success',
-                'pesan' => $guru->nama_guru . ' (NIG ' . $guru->nig . ') tercatat hadir di ' . $agenda->nama_kegiatan . '!'
-            ]);
-
+            $result = $this->kehadiran->prosesScanQr($request->qr_data, $id);
+            return response()->json($result);
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'pesan' => 'Kesalahan sistem: ' . $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Scan QR agenda gagal: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'pesan' => 'Terjadi kesalahan sistem saat memproses kehadiran.']);
         }
     }
 }

@@ -25,7 +25,7 @@
 <body onload="window.print()">
     <div class="kertas-a4">
         <div class="kop">
-            <h1 class="judul-pesantren">SMART PESANTREN MAQNA'UL ULUM</h1>
+            <h1 class="judul-pesantren">MU'DALAH WUSTHA</h1>
             <p class="sub-judul">Sistem Kehadiran Guru Terintegrasi Berbasis QR Code</p>
         </div>
         
@@ -37,14 +37,14 @@
         </div>
         
         <div class="peringatan">
-            ⚠️ PERHATIAN: BARCODE INI HANYA BERLAKU UNTUK MINGGU INI!
+            ⚠️ PERHATIAN: BARCODE INI HANYA BERLAKU UNTUK PERIODE SABTU-KAMIS!
         </div>
         <div class="periode">
             {{ $periodeBerlaku }}
         </div>
         
         <p style="margin-top: 50px; font-size: 14px; color: #9ca3af;">
-            *Silakan buka menu <b>Jadwal Saya</b> di aplikasi SmartPesantren pada perangkat Anda, lalu tekan tombol <b>Scan Kelas</b>.
+            *Silakan buka menu <b>Scan Barcode</b> di aplikasi MUMARIS pada perangkat Anda.
         </p>
     </div>
 </body>

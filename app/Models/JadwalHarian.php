@@ -10,7 +10,19 @@ class JadwalHarian extends Model
     use SoftDeletes; // Aktifkan di sini
 
     protected $table = 'jadwal_harians';
-    protected $guarded = [];
+    protected $fillable = [
+        'periode_id',
+        'tahun_ajaran',
+        'kelas_id',
+        'hari',
+        'berlaku_mulai',
+        'berlaku_sampai',
+        'jam_ke',
+        'tgl_efektif_mulai',
+        'tgl_efektif_selesai',
+        'pelajaran_id',
+        'guru_id',
+    ];
 
     public function kelas() { return $this->belongsTo(Kelas::class); }
     public function pelajaran() { return $this->belongsTo(Pelajaran::class); }

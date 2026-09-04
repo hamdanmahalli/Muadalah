@@ -39,9 +39,14 @@ class DatabaseManagerController extends Controller
     // 2. PROSES EKSPOR (BACKUP) - Custom Format (.backup / .sql)
     public function exportSql(Request $request)
     {
+        $request->validate([
+            'tables'   => 'required|array|min:1',
+            'tables.*' => 'string|max:100',
+        ]);
+
         $selectedTables = $request->input('tables', []);
         
-        if(empty($selectedTables)) {
+        if (empty($selectedTables)) {
             return back()->with('error', 'Gagal! Anda harus memilih minimal satu tabel untuk di-backup.');
         }
 
@@ -51,25 +56,34 @@ class DatabaseManagerController extends Controller
         $dbPort = config('database.connections.' . config('database.default') . '.port', '5432');
         $dbPass = config('database.connections.' . config('database.default') . '.password');
 
+        // Simpan backup di storage privat (BUKAN public) agar tidak terekspos via symlink
         $fileName = 'Backup_SmartPesantren_' . date('Y-m-d_H-i-s') . '.backup';
-        $filePath = storage_path('app/public/' . $fileName);
+        $privatePath = storage_path('app/private');
+        if (!is_dir($privatePath)) {
+            mkdir($privatePath, 0755, true);
+        }
+        $filePath = $privatePath . '/' . $fileName;
 
-        $tableArgs = '';
-        foreach ($selectedTables as $table) {
-            $tableArgs .= " -t public." . escapeshellarg($table);
+        // Gunakan bentuk array argumen (bukan string shell) untuk mencegah injection
+        $command = array_merge(
+            [$this->getPgPath('pg_dump'), '-h', $dbHost, '-p', $dbPort, '-U', $dbUser],
+            ['-Fc'],
+            collect($selectedTables)->flatMap(fn($t) => ['-t', 'public.' . $t])->all(),
+            [$dbName, '-f', $filePath]
+        );
+
+        // Sanitasi setiap nilai yang disisipkan ke argumen (pertahanan berlapis)
+        foreach ($command as $k => $v) {
+            $command[$k] = escapeshellarg($v === $dbHost ? $dbHost : $v);
         }
 
-        // Menggunakan -Fc (Custom Format) alih-alih plain text
-        $pgDump = $this->getPgPath('pg_dump');
-        $command = "\"{$pgDump}\" -h {$dbHost} -p {$dbPort} -U {$dbUser} {$tableArgs} -Fc {$dbName} -f \"{$filePath}\"";
-
-        $process = Process::fromShellCommandline($command);
+        $process = new Process($command);
         $process->setEnv(['PGPASSWORD' => $dbPass]);
         $process->setTimeout(300);
         $process->run();
 
         if (!$process->isSuccessful()) {
-            return back()->with('error', 'Terjadi kesalahan sistem saat membuat backup: ' . $process->getErrorOutput());
+            return back()->with('error', 'Terjadi kesalahan sistem saat membuat backup.');
         }
 
         return response()->download($filePath)->deleteFileAfterSend(true);
@@ -79,7 +93,7 @@ class DatabaseManagerController extends Controller
     public function importSql(Request $request)
     {
         $request->validate([
-            'file_sql' => 'required|file'
+            'file_sql' => 'required|file|mimes:sql,plain,txt,backup|max:204800',
         ]);
 
         $file = $request->file('file_sql');
@@ -91,17 +105,25 @@ class DatabaseManagerController extends Controller
         $dbPort = config('database.connections.' . config('database.default') . '.port', '5432');
         $dbPass = config('database.connections.' . config('database.default') . '.password');
 
-        // Menggunakan pg_restore untuk format -Fc
-        $pgRestore = $this->getPgPath('pg_restore');
-        $command = "\"{$pgRestore}\" -h {$dbHost} -p {$dbPort} -U {$dbUser} -d {$dbName} --clean --if-exists \"{$filePath}\"";
+        // Menggunakan pg_restore untuk format -Fc (bentuk array argumen, tanpa string shell)
+        $command = [
+            $this->getPgPath('pg_restore'),
+            '-h', $dbHost,
+            '-p', $dbPort,
+            '-U', $dbUser,
+            '-d', $dbName,
+            '--clean',
+            '--if-exists',
+            $filePath,
+        ];
 
-        $process = Process::fromShellCommandline($command);
+        $process = new Process($command);
         $process->setEnv(['PGPASSWORD' => $dbPass]);
         $process->setTimeout(300);
         $process->run();
 
         if (!$process->isSuccessful()) {
-            return back()->with('error', 'Gagal melakukan Restore Database: ' . $process->getErrorOutput());
+            return back()->with('error', 'Gagal melakukan Restore Database.');
         }
 
         return back()->with('sukses', 'Alhamdulillah! Database berhasil dipulihkan.');

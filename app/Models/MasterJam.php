@@ -13,5 +13,9 @@ class MasterJam extends Model
     protected $table = 'master_jams';
 
     // Membuka gembok agar data bisa masuk sekaligus
-    protected $guarded = [];
+    protected $fillable = [
+        'jam_ke',
+        'jam_mulai',
+        'jam_selesai',
+    ];
 }

@@ -44,7 +44,8 @@ class PembayaranController extends Controller
 
     public function destroy($id, $bayar)
     {
-        $pembayaran = Pembayaran::findOrFail($bayar);
+        // Pastikan pembayaran benar-benar milik tagihan yang sedang dilihat.
+        $pembayaran = Pembayaran::where('id', $bayar)->where('tagihan_id', $id)->firstOrFail();
         $tagihan = $pembayaran->tagihan;
         $pembayaran->delete();
 

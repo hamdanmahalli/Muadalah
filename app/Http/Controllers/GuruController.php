@@ -8,11 +8,14 @@ use App\Models\Jabatan;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\GuruExport;
 use App\Imports\GuruImport;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Services\GuruService;
 
 class GuruController extends Controller
 {
+    public function __construct(
+        protected GuruService $guruService
+    ) {}
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -26,16 +29,11 @@ class GuruController extends Controller
                         });
                     })
                     // PERBAIKAN: Diurutkan berdasarkan NIG dari terkecil ke terbesar
-                    ->orderBy('nig', 'asc') 
+                    ->orderBy('nig', 'asc')
                     ->paginate($perPage)
                     ->withQueryString();
 
-        $lastGuru = Guru::orderBy('nig', 'desc')->first();
-        if ($lastGuru && is_numeric($lastGuru->nig)) {
-            $nigBaru = (string) ((int) $lastGuru->nig + 1);
-        } else {
-            $nigBaru = '1001';
-        }
+        $nigBaru = $this->guruService->generasikanNIG();
 
         $jabatans = Jabatan::where('status', 'Aktif')->orderBy('nama_jabatan', 'asc')->get();
 
@@ -65,34 +63,15 @@ class GuruController extends Controller
         $guru->jabatans()->sync($request->jabatan_ids ?? []);
 
         // 3. Buat akun login HANYA jika pengurus adalah guru (memiliki jabatan "Guru")
-        $isGuru = in_array('Guru', $request->jabatan_ids
-            ? Jabatan::whereIn('id', $request->jabatan_ids)->pluck('nama_jabatan')->toArray()
-            : []);
+        $hasil = $this->guruService->buatAkunGuruOtomatis($guru, $request->jabatan_ids);
 
-        if ($isGuru) {
-            // Cegah duplikasi akun jika sudah ada
-            $user = User::firstOrCreate(
-                ['username' => $guru->nig],
-                [
-                    'lembaga'  => 'PONDOK',
-                    'name'     => $guru->nama_guru,
-                    'email'    => $guru->nig . '@pesantren.com',
-                    'hp'       => $guru->no_hp,
-                    'status'   => 'Aktif',
-                    'password' => Hash::make('123456'),
-                ]
-            );
-            $user->assignRole('Dewan Guru');
-            return redirect()->back()->with('sukses', 'Data pengurus berhasil disimpan! Akun guru otomatis terbuat (Username: ' . $guru->nig . ' | Password: 123456)');
-        }
-
-        return redirect()->back()->with('sukses', 'Data pengurus berhasil disimpan!');
+        return redirect()->back()->with('sukses', $hasil['pesan']);
     }
-    
+
     public function update(Request $request, $id)
     {
         $guru = Guru::findOrFail($id);
-        
+
         $request->validate([
             'nama_guru' => 'required|string|max:255',
             'nip' => 'nullable|string|max:50',
@@ -129,13 +108,13 @@ class GuruController extends Controller
     }
 
     // FITUR EXPORT EXCEL
-    public function export() 
+    public function export()
     {
         return Excel::download(new GuruExport, 'data-guru-pesantren.xlsx');
     }
 
     // FITUR IMPORT EXCEL
-    public function import(Request $request) 
+    public function import(Request $request)
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv'

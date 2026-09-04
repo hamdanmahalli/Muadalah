@@ -20,7 +20,18 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     // Membuka gembok agar data dari web bisa masuk sekaligus
-    protected $guarded = [];
+    protected $fillable = [
+        'lembaga',
+        'username',
+        'name',
+        'email',
+        'hp',
+        'role',
+        'status',
+        'email_verified_at',
+        'password',
+        'remember_token',
+    ];
 
     protected $hidden = [
         'password',

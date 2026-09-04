@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class LogNotifikasi extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'guru_id',
+        'jadwal_id',
+        'tanggal',
+        'sent_at',
+    ];
 
     protected $casts = [
         'tanggal' => 'date',

@@ -13,7 +13,13 @@ class Jadwal extends Model
     protected $table = 'jadwals';
 
     // Membuka gembok agar data dari Excel bisa masuk sekaligus secara massal
-    protected $guarded = [];
+    protected $fillable = [
+        'kelas',
+        'hari',
+        'mata_pelajaran',
+        'jam_ke',
+        'nig_guru',
+    ];
 
     // FITUR BARU: Tali penghubung untuk memanggil Nama Guru dari tabel 'gurus'
     public function masterGuru()

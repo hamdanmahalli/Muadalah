@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class PlotJadwal extends Model
 {
     protected $table = 'plot_jadwals';
-    protected $guarded = [];
+    protected $fillable = [
+        'kelas_id',
+        'pelajaran_id',
+        'guru_id',
+        'beban_jam',
+    ];
 
     // Kabel penghubung ke Master Kelas
     public function kelas()

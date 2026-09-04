@@ -17,30 +17,15 @@
         }
     </style>
 
-    <style>
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: none;
-            justify-content: center; align-items: center;
-            z-index: 9999; flex-direction: column;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: putar 1s linear infinite;
-        }
-        @keyframes putar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-
     <!-- SPLASH SCREEN ANIMASI -->
     <style>
         #splash-screen {
             position: fixed; inset: 0; z-index: 99999;
             background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.6s ease, visibility 0.6s ease;
         }
+        #splash-screen.show { display: flex; }
         #splash-screen.fade-out { opacity: 0; visibility: hidden; }
 
         .splash-logo-wrap {
@@ -159,11 +144,6 @@
         #modal-intip.buka #box-intip { transform: scale(1) translateY(0); opacity: 1; }
     </style>
 
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <p style="margin-top: 15px; font-weight: bold; color: #333;">Memverifikasi Akun...</p>
-    </div>
-
     <!-- SPLASH SCREEN OVERLAY -->
     <div id="splash-screen">
         <div class="splash-particle"></div>
@@ -241,9 +221,13 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-emerald-600 transition">
                             <i class="fas fa-lock"></i>
                         </div>
-                        <input type="password" name="password" required autocomplete="current-password"
-                               class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                        <input type="password" name="password" id="input-password" required autocomplete="current-password"
+                               class="w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
                                placeholder="Password">
+                        <button type="button" id="toggle-password" onclick="toggleTampilPassword()" tabindex="-1"
+                                class="absolute inset-y-0 right-0 pr-4 pl-2 flex items-center text-gray-400 hover:text-emerald-600 transition cursor-pointer">
+                            <i id="ikon-password" class="fas fa-eye text-sm"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -544,7 +528,8 @@
             if (!el) {
                 el = document.createElement('div');
                 el.id = 'toast-lokal';
-                el.className = 'fixed left-4 right-4 bottom-6 z-[10050] px-4 py-3 rounded-2xl text-xs font-bold text-center shadow-2xl transition-all duration-300 opacity-0 translate-y-3';
+                el.className = 'fixed left-4 right-4 top-4 z-[10050] px-4 py-3 rounded-2xl text-xs font-bold text-center shadow-2xl transition-all duration-300 opacity-0 -translate-y-4';
+                el.style.paddingTop = 'max(0.75rem, env(safe-area-inset-top))';
                 document.body.appendChild(el);
             }
             el.className = el.className
@@ -556,7 +541,7 @@
             clearTimeout(el._t);
             el._t = setTimeout(function() {
                 el.style.opacity = '0';
-                el.style.transform = 'translateY(12px)';
+                el.style.transform = 'translateY(-12px)';
             }, 4000);
         }
 
@@ -578,7 +563,37 @@
             teks.innerText = 'Mengautentikasi...';
             ikon.className = 'fas fa-circle-notch fa-spin text-sm';
 
-            setTimeout(() => { if(form) form.submit(); }, 400);
+            // Login via AJAX agar halaman TIDAK reload (tidak berkedip) saat gagal
+            const formData = new FormData(form);
+            fetch('/login', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            })
+            .then(function(res) { return res.json().catch(function(){ return {}; }).then(function(d){ return { ok: res.ok, data: d }; }); })
+            .then(function(result) {
+                let data = result.data || {};
+                if (result.ok && data.status === 'success') {
+                    window.location.href = data.redirect || '/';
+                    return;
+                }
+                // Gagal: tampilkan pesan, kembalikan tombol tanpa reload
+                tampilToast('error', data.message || 'Login gagal. Silakan coba lagi.');
+                btn.classList.remove('opacity-90', 'cursor-wait', 'pointer-events-none');
+                btn.classList.add('hover:bg-emerald-700');
+                btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
+                teks.innerText = 'MASUK';
+                ikon.className = 'fas fa-arrow-right text-sm transition-all duration-300';
+            })
+            .catch(function() {
+                tampilToast('error', 'Gagal terhubung ke server. Coba lagi.');
+                btn.classList.remove('opacity-90', 'cursor-wait', 'pointer-events-none');
+                btn.classList.add('hover:bg-emerald-700');
+                btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
+                teks.innerText = 'MASUK';
+                ikon.className = 'fas fa-arrow-right text-sm transition-all duration-300';
+            });
         }
 
         // Simpan username saat login hanya jika "ingat identitas" aktif (default NON-aktif)
@@ -588,12 +603,9 @@
                 localStorage.setItem(SN_USR, loginId);
             }
 
-            document.getElementById('loading-overlay').style.display = 'flex';
-            let btnSubmit = this.querySelector('button[type="submit"]');
-            if(btnSubmit) {
-                btnSubmit.disabled = true;
-                btnSubmit.innerHTML = 'Memproses...';
-            }
+            // Cegah submit-asli (reload) dan gunakan jalur AJAX yang sama seperti tombol
+            // (mencakup submit via tombol Enter di input).
+            loadingLoginElegan(event, this);
         });
 
         // ==========================================================
@@ -613,16 +625,31 @@
 
         renderMasukSebagai();
 
+        // Toggle tampil/sembunyikan password
+        function toggleTampilPassword() {
+            var input = document.getElementById('input-password');
+            var ikon = document.getElementById('ikon-password');
+            if (!input || !ikon) return;
+            var tampil = input.type === 'password';
+            input.type = tampil ? 'text' : 'password';
+            ikon.className = tampil ? 'fas fa-eye-slash text-sm' : 'fas fa-eye text-sm';
+        }
+
         // ==========================================================
         // SPLASH SCREEN & CLEANUP
         // ==========================================================
+        // Splash default tersembunyi (display:none) agar tidak berkedip
+        // saat reload (mis. login gagal). Hanya tampil sekali per sesi tab.
         window.addEventListener('load', function() {
+            var splash = document.getElementById('splash-screen');
+            if (!splash) return;
+            // Sudah pernah ditampilkan -> biarkan tetap tersembunyi
+            if (sessionStorage.getItem('splash_shown')) return;
+            splash.classList.add('show');
             setTimeout(function() {
-                var splash = document.getElementById('splash-screen');
-                if (splash) {
-                    splash.classList.add('fade-out');
-                    setTimeout(function() { splash.remove(); }, 600);
-                }
+                splash.classList.add('fade-out');
+                sessionStorage.setItem('splash_shown', '1');
+                setTimeout(function() { splash.remove(); }, 600);
             }, 2500);
         });
 

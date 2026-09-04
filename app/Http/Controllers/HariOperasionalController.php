@@ -34,10 +34,16 @@ class HariOperasionalController extends Controller
         return view('hari-operasional', compact('data', 'total_kapasitas'));
     }
 
-    public function update(Request $request)
+    public function store(Request $request)
     {
         // Mesin penangkap pembaruan massal (Auto-Save dari banyak baris sekaligus)
         $hari_data = $request->hari_data; // Array data dari form UI
+
+        $request->validate([
+            'hari_data'          => 'nullable|array',
+            'hari_data.*.max_jam' => 'nullable|integer|between:0,15',
+            'hari_data.*.keterangan' => 'nullable|string|max:255',
+        ]);
 
         if ($hari_data) {
             foreach ($hari_data as $id => $data) {

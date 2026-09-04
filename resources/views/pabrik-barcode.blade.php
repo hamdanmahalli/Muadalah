@@ -5,7 +5,7 @@
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-qrcode mr-2 text-indigo-600"></i> Pabrik Barcode Kehadiran</h2>
-            <p class="text-sm text-gray-500 mt-1">Sistem Keamanan Anti-Kecurangan (Barcode berganti setiap hari Sabtu)</p>
+            <p class="text-sm text-gray-500 mt-1">Sistem Keamanan Anti-Kecurangan (Cetak mulai Kamis 18.00 — Berlaku Sabtu s/d Kamis)</p>
         </div>
         <div class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold border border-indigo-100 shadow-sm flex items-center sm:shrink-0">
             <i class="far fa-calendar-alt mr-2"></i> Berlaku: {{ $periodeBerlaku }}

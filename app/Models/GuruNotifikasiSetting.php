@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class GuruNotifikasiSetting extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'guru_id',
+        'is_enabled',
+        'mode',
+        'reminder_minutes',
+    ];
 
     protected $casts = [
         'is_enabled' => 'boolean',

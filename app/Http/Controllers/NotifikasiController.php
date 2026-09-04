@@ -4,19 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\GuruNotifikasiSetting;
+use App\Services\AuthenticatedGuruService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class NotifikasiController extends Controller
 {
-    public function __construct(private NotificationService $service) {}
+    public function __construct(
+        private NotificationService $service,
+        private AuthenticatedGuruService $guruService
+    ) {}
 
     private function getGuru(): ?Guru
     {
-        $user = auth()->user();
-        return Guru::where('nama_guru', $user->name)
-            ->orWhere('nig', $user->username)
-            ->first();
+        return $this->guruService->fromAuthUser();
     }
 
     public function pengaturan()
@@ -94,9 +95,10 @@ class NotifikasiController extends Controller
                 'detail' => $result['detail'] ?? [],
             ]);
         } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Test notifikasi gagal: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan sistem saat mengirim notifikasi uji.',
             ], 500);
         }
     }
@@ -118,17 +120,23 @@ class NotifikasiController extends Controller
                 'detail' => $result['detail'] ?? [],
             ]);
         } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Test pulse gagal: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan sistem saat mengirim notifikasi uji.',
             ], 500);
         }
     }
 
     public function pulse(Request $request)
     {
+        // Endpoint kini di balik middleware 'auth' sehingga hanya pengguna login yang bisa memanggil.
+        // Input divalidasi & dibatasi panjangnya sebelum disimpan.
         $tag = $request->input('tag', '-');
         $title = $request->input('title', '-');
+
+        $tag = is_string($tag) ? mb_substr($tag, 0, 191) : '-';
+        $title = is_string($title) ? mb_substr($title, 0, 191) : '-';
 
         \Illuminate\Support\Facades\Log::info('PUSH-PULSE: push sampai di perangkat', [
             'tag' => $tag,
@@ -141,7 +149,7 @@ class NotifikasiController extends Controller
             \App\Models\PushEvent::create([
                 'tag' => $tag,
                 'title' => $title,
-                'user_agent' => substr((string) $request->userAgent(), 0, 255),
+                'user_agent' => mb_substr((string) $request->userAgent(), 0, 255),
             ]);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning('PUSH-PULSE gagal simpan: ' . $e->getMessage());

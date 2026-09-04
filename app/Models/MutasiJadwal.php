@@ -7,7 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class MutasiJadwal extends Model
 {
     protected $table = 'mutasi_jadwals';
-    protected $guarded = [];
+    protected $fillable = [
+        'periode_id',
+        'tahun_ajaran',
+        'kelas_id',
+        'pelajaran_id',
+        'hari',
+        'jam_ke',
+        'jadwal_id',
+        'guru_lama_id',
+        'guru_baru_id',
+        'tipe',
+        'tanggal_kejadian',
+        'tanggal_efektif',
+        'keterangan',
+        'user_id',
+    ];
 
     protected $casts = [
         'tanggal_kejadian' => 'date',

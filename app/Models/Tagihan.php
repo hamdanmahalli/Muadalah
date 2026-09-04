@@ -7,7 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Tagihan extends Model
 {
     protected $table = 'tagihans';
-    protected $guarded = [];
+    protected $fillable = [
+        'siswa_id',
+        'jenis_tagihan_id',
+        'periode_id',
+        'target_scope',
+        'target_kelas_id',
+        'keterangan',
+        'nominal',
+        'tanggal_jatuh_tempo',
+        'status',
+        'dibuat_oleh',
+    ];
 
     protected $casts = [
         'tanggal_jatuh_tempo' => 'date',

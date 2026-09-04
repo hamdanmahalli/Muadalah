@@ -7,168 +7,30 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\JadwalHarian;
 use App\Models\KehadiranGuru;
 use App\Models\Guru;
-use App\Models\Kelas;
-use App\Models\Pelajaran;
 use App\Models\MasterJam;
+use App\Models\Periode;
 use App\Services\JadwalService;
+use App\Services\JadwalMatrixService;
+use App\Services\DashboardService;
+use App\Services\AuthenticatedGuruService;
 use Carbon\Carbon;
 
 class JadwalController extends Controller
 {
-    protected JadwalService $service;
-
-    public function __construct(JadwalService $service)
-    {
-        $this->service = $service;
-    }
+    public function __construct(
+        protected JadwalService $service,
+        protected JadwalMatrixService $matrix,
+        protected DashboardService $dashboard,
+        protected AuthenticatedGuruService $guruContext,
+    ) {}
 
     // ========================================================
     // 1. DASHBOARD UTAMA
     // ========================================================
     public function dashboard()
     {
-        $waktuSekarang = Carbon::now();
-        $tanggalHariIni = $waktuSekarang->format('Y-m-d');
-        
-        $hariIni = map_hari($waktuSekarang->format('l'));
-
-        $periodeAktif = get_periode_aktif();
-        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
-
-        // ===== KARTU STATISTIK ATAS =====
-        $totalJadwal = JadwalHarian::where('hari', 'ilike', $hariIni)
-                                    ->where('tahun_ajaran', $tahunAjaran)
-                                    ->count();
-
-$kehadiranHariIni = KehadiranGuru::where('tanggal', $tanggalHariIni)->get();
-        $guruHadir = $kehadiranHariIni->where('status', 'Hadir')->count();
-        // Sakit dimasukkan ke kategori "perlu perhatian" agar konsisten dengan monitoring
-        $guruIzinKosong = $kehadiranHariIni->whereIn('status', ['Izin', 'Kosong', 'Alpha', 'Sakit'])->count();
-        $totalGuru = Guru::count();
-
-        // ===== GRAFIK KEHADIRAN 7 HARI (Area Chart) =====
-        $labelsGrafik = [];
-        $dataHadirGrafik = [];
-        $dataIzinGrafik = [];
-        $dataKosongGrafik = [];
-        $sparkJadwal = [];
-        $namaHariSingkat = ['Monday' => 'Sen', 'Tuesday' => 'Sel', 'Wednesday' => 'Rab', 'Thursday' => 'Kam', 'Friday' => 'Jum', 'Saturday' => 'Sab', 'Sunday' => 'Min'];
-
-        $startMinggu = $waktuSekarang->copy()->startOfWeek();
-        for ($i = 0; $i < 7; $i++) {
-            $tanggal = $startMinggu->copy()->addDays($i);
-            $tanggalStr = $tanggal->format('Y-m-d');
-            $labelHari = $namaHariSingkat[$tanggal->format('l')] ?? $tanggal->format('D');
-            $labelsGrafik[] = $labelHari;
-
-            $kh = KehadiranGuru::where('tanggal', $tanggalStr)->get();
-            $dataHadirGrafik[] = $kh->where('status', 'Hadir')->count();
-            $dataIzinGrafik[] = $kh->whereIn('status', ['Izin', 'Kosong', 'Sakit'])->count();
-            $dataKosongGrafik[] = $kh->where('status', 'Alpha')->count();
-
-            $hr = map_hari($tanggal->format('l'));
-            $sparkJadwal[] = JadwalHarian::where('hari', 'ilike', $hr)
-                                          ->where('tahun_ajaran', $tahunAjaran)
-                                          ->count();
-        }
-
-        // ===== DATA PENDUKUNG KARTU STATISTIK ATAS (delta & spark per kartu) =====
-        $rataRataHadir7 = count($dataHadirGrafik) > 0 ? (array_sum($dataHadirGrafik) / count($dataHadirGrafik)) : 0;
-        $rataRataIzinKosong7 = (count($dataIzinGrafik) + count($dataKosongGrafik)) > 0 ? ((array_sum($dataIzinGrafik) + array_sum($dataKosongGrafik)) / 7) : 0;
-        $rataRataJadwal7 = count($sparkJadwal) > 0 ? (array_sum($sparkJadwal) / count($sparkJadwal)) : 0;
-
-        $deltaTotalJadwal = $rataRataJadwal7 > 0 ? round((($totalJadwal - $rataRataJadwal7) / $rataRataJadwal7) * 100, 1) : 0;
-        $deltaGuruHadir = $rataRataHadir7 > 0 ? round((($guruHadir - $rataRataHadir7) / $rataRataHadir7) * 100, 1) : 0;
-        $deltaIzinKosong = $rataRataIzinKosong7 > 0 ? round((($guruIzinKosong - $rataRataIzinKosong7) / $rataRataIzinKosong7) * 100, 1) : 0;
-        $deltaTotalGuru = 0; // belum ada data pembanding historis total guru
-
-        $sparkHadir = $dataHadirGrafik;
-        $sparkIzin = array_map(function ($izin, $alpa) { return $izin + $alpa; }, $dataIzinGrafik, $dataKosongGrafik);
-
-        // ===== STRIP KALENDER MINGGU INI =====
-        $stripMinggu = [];
-        for ($i = 0; $i < 7; $i++) {
-            $tanggal = $startMinggu->copy()->addDays($i);
-            $stripMinggu[] = [
-                'nama'   => $namaHariSingkat[$tanggal->format('l')] ?? $tanggal->format('D'),
-                'tanggal'=> (int) $tanggal->format('d'),
-                'bulan'  => $tanggal->format('M'),
-                'penuh'  => $tanggal->format('Y-m-d'),
-                'aktif'  => ($tanggal->format('Y-m-d') === $tanggalHariIni),
-            ];
-        }
-
-        // ===== LIST MONITORING (analog "daftar pasien") =====
-        $monitorGuru = [];
-$queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
-                                     ->whereIn('status', ['Izin', 'Kosong', 'Alpha', 'Sakit'])
-                                     ->orderBy('id')
-                                     ->get();
-        foreach ($queryMonitor as $kh) {
-            $jadwal = $kh->jadwal_id ? JadwalHarian::with(['guru', 'kelas'])->find($kh->jadwal_id) : null;
-            $guruInfo = $jadwal ? $jadwal->guru : null;
-            $kelasNama = $jadwal && $jadwal->kelas ? $jadwal->kelas->nama_kelas : '-';
-            $jamKe = ($jadwal && $jadwal->jam_ke) ? 'Jam Ke-'.$jadwal->jam_ke : '';
-
-            $monitorGuru[] = [
-                'nama'   => $guruInfo ? $guruInfo->nama_guru : ($kh->nig_pengganti ?? '-'),
-                'kelas'  => $kelasNama,
-                'jam'    => $jamKe,
-                'status' => $kh->status,
-                'nig'    => $guruInfo ? $guruInfo->nig : null,
-            ];
-            if (count($monitorGuru) >= 6) break;
-        }
-        $belumCatatCount = max(0, $totalJadwal - $kehadiranHariIni->count());
-
-// ===== KARTU TUGAS 2x2 (persentase data riil) =====
-        $jmlHariOperasionalAktif = \App\Models\HariOperasional::where('is_active', true)->count();
-        $jmlAgendaTotal = \App\Models\AgendaKegiatan::count();
-        $jmlAgendaMendatang = \App\Models\AgendaKegiatan::whereDate('tanggal', '>=', $tanggalHariIni)->count();
-        $jmlPlotTotal = \App\Models\PlotJadwal::count();
-        $jmlPlotBerGuru = \App\Models\PlotJadwal::whereNotNull('guru_id')->count();
-
-        $kartuTugas = [
-            [
-                'judul'   => 'Periode Aktif',
-                'sub'     => $periodeAktif ? 'TA. '.$periodeAktif->tahun_ajaran.' ('.$periodeAktif->semester.')' : 'Belum diatur',
-                'ikon'    => 'fa-calendar-check',
-                'warna'   => 'sky',
-                'link'    => '/master-periode',
-                'pct'     => $periodeAktif ? 100 : 0,
-            ],
-            [
-                'judul'   => 'Hari Operasional',
-                'sub'     => $jmlHariOperasionalAktif.' dari 7 hari aktif',
-                'ikon'    => 'fa-calendar-week',
-                'warna'   => 'emerald',
-                'link'    => '/master-hari-operasional',
-                'pct'     => $jmlHariOperasionalAktif > 0 ? (int) round(($jmlHariOperasionalAktif / 7) * 100) : 0,
-            ],
-            [
-                'judul'   => 'Agenda Kegiatan',
-                'sub'     => $jmlAgendaMendatang.' agenda mendatang',
-                'ikon'    => 'fa-calendar-alt',
-                'warna'   => 'indigo',
-                'link'    => '/agenda-kegiatan',
-                'pct'     => $jmlAgendaTotal > 0 ? (int) round(($jmlAgendaMendatang / $jmlAgendaTotal) * 100) : 0,
-            ],
-            [
-                'judul'   => 'Target Mengajar',
-                'sub'     => $jmlPlotBerGuru.' dari '.$jmlPlotTotal.' plot ber-guru',
-                'ikon'    => 'fa-sitemap',
-                'warna'   => 'rose',
-                'link'    => '/master-plot-jadwal',
-                'pct'     => $jmlPlotTotal > 0 ? (int) round(($jmlPlotBerGuru / $jmlPlotTotal) * 100) : 0,
-            ],
-        ];
-
-        return view('dashboard', compact(
-            'totalJadwal', 'guruHadir', 'guruIzinKosong', 'totalGuru', 'waktuSekarang',
-            'labelsGrafik', 'dataHadirGrafik', 'dataIzinGrafik', 'dataKosongGrafik', 'sparkJadwal',
-            'sparkHadir', 'sparkIzin', 'stripMinggu', 'monitorGuru', 'belumCatatCount', 'kartuTugas',
-            'deltaTotalJadwal', 'deltaGuruHadir', 'deltaIzinKosong', 'deltaTotalGuru'
-        ));
+        $data = $this->dashboard->dataDashboard();
+        return view('dashboard', $data);
     }
 
     // ========================================================
@@ -178,22 +40,22 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
     {
         $tanggalPilihan = $request->input('tanggal', Carbon::now()->format('Y-m-d'));
         $waktuSekarang = Carbon::parse($tanggalPilihan);
-        
+
         $waktuAsliKomputer = Carbon::now();
         $isHariIni = ($tanggalPilihan === $waktuAsliKomputer->format('Y-m-d'));
         $jamSekarang = $waktuAsliKomputer->format('H:i:s');
-        
+
         $hariIni = map_hari($waktuSekarang->format('l'));
 
         $semuaJam = MasterJam::orderBy('jam_ke', 'asc')->get();
-        
+
         $opsiBlokJam = [];
         $blokAktifOtomatis = null;
 
         for ($i = 0; $i < count($semuaJam); $i += 2) {
             $jam1 = $semuaJam[$i];
-            $jam2 = $semuaJam[$i + 1] ?? $jam1; 
-            
+            $jam2 = $semuaJam[$i + 1] ?? $jam1;
+
             $keyBlok = $jam1->jam_ke . '-' . $jam2->jam_ke;
             if ($jam1->jam_ke == $jam2->jam_ke) {
                 $keyBlok = (string) $jam1->jam_ke;
@@ -209,7 +71,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
 
         $jamDefault = $blokAktifOtomatis ?? ($opsiBlokJam[0]['nilai'] ?? '1-2');
         $jamPilihan = $request->input('jam', $jamDefault);
-        $arrayJamPilihan = explode('-', $jamPilihan); 
+        $arrayJamPilihan = explode('-', $jamPilihan);
 
         $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
@@ -225,20 +87,20 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
 
         $jadwals = [];
         foreach ($jadwalsMentah as $j) {
-            $kunci = ($j->kelas_id ?? '0') . '_' . ($j->guru_id ?? '0') . '_' . ($j->pelajaran_id ?? '0'); 
-            
+            $kunci = ($j->kelas_id ?? '0') . '_' . ($j->guru_id ?? '0') . '_' . ($j->pelajaran_id ?? '0');
+
             $libur = $this->service->isLibur($j, $daftarLibur, null, true);
             $isLibur = $libur['is_libur'];
             $namaLibur = $libur['nama_libur'];
 
             $namaKelas = $j->kelas->nama_kelas ?? 'Kelas -';
-            $tingkatKelas = preg_replace('/[^0-9]/', '', $namaKelas); 
+            $tingkatKelas = preg_replace('/[^0-9]/', '', $namaKelas);
             $petaKitab = $j->pelajaran->kitab_tingkat ?? [];
             $namaKitab = $petaKitab[$tingkatKelas] ?? ($j->pelajaran->nama_kitab ?? '-');
 
             if (!isset($jadwals[$kunci])) {
                 $jadwals[$kunci] = [
-                    'id_list' => [], 
+                    'id_list' => [],
                     'kelas' => $namaKelas,
                     'mata_pelajaran' => $j->pelajaran->nama_pelajaran ?? 'Tanpa Pelajaran',
                     'nama_kitab' => $namaKitab,
@@ -246,7 +108,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
                     'nama_guru' => $j->guru->nama_guru ?? 'Belum ada guru',
                     'jam_tampil' => $jamPilihan,
                     'is_libur' => $isLibur,
-                    'nama_libur' => $namaLibur
+                    'nama_libur' => $namaLibur,
                 ];
             } else {
                 if ($isLibur) {
@@ -275,7 +137,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         $request->validate([
             'jadwal_ids' => 'required|array',
             'status' => 'required|string',
-            'tanggal' => 'nullable|date'
+            'tanggal' => 'nullable|date',
         ]);
 
         $periodeAktif = get_periode_aktif();
@@ -285,15 +147,12 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
 
         foreach ($request->jadwal_ids as $id) {
             KehadiranGuru::updateOrCreate(
-                [
-                    'jadwal_id' => $id,
-                    'tanggal' => $tanggalPilihan
-                ],
+                ['jadwal_id' => $id, 'tanggal' => $tanggalPilihan],
                 [
                     'status' => $request->status,
                     'nig_pengganti' => $request->nig_pengganti ?? null,
                     'keterangan' => $request->keterangan ?? null,
-                    'periode_id' => $periodeId 
+                    'periode_id' => $periodeId,
                 ]
             );
         }
@@ -354,27 +213,24 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
             'persenTotalKelasTerisi', 'persenTotalKosong', 'daftarLibur'
         ));
 
-        return $pdf->download('Rekap_Kehadiran_'.$tglMulai.'_hingga_'.$tglSelesai.'.pdf');
+        return $pdf->download('Rekap_Kehadiran_' . $tglMulai . '_hingga_' . $tglSelesai . '.pdf');
     }
 
-    // Hitungan rekap di-cache per rentang tanggal, dipakai ulang oleh web & PDF agar tidak diulang.
-    // Hanya data murni (array/scalar) yang di-cache — hindari serialisasi objek (stdClass/Eloquent)
-    // yang bisa memicu "incomplete object" saat unserialize akibat opcache.preload.
-
-
-    // FITUR BARU: Menyuplai data terbaru untuk Radar Layar TU
+    // ========================================================
+    // RADAR LAYAR TU: Data kehadiran terbaru (AJAX)
+    // ========================================================
     public function cekKehadiranTerbaru()
     {
         $tanggalHariIni = Carbon::now()->format('Y-m-d');
         $kehadiran = KehadiranGuru::where('tanggal', $tanggalHariIni)
                         ->get(['jadwal_id', 'status', 'keterangan', 'nig_pengganti']);
-                        
+
         return response()->json($kehadiran);
     }
 
-    // ==========================================================
-    // FUNGSI BANTUAN 2: Pop-Up AJAX Riwayat (Layar Admin)
-    // ==========================================================
+    // ========================================================
+    // Pop-Up AJAX Riwayat (Layar Admin)
+    // ========================================================
     public function riwayatGuruAjax(Request $request)
     {
         $guruId = $request->guru_id;
@@ -395,19 +251,19 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         return response()->json($riwayat);
     }
 
-    // ==========================================================
-    // KHUSUS GURU: HALAMAN JADWAL & RIWAYAT SAYA (PERIODE DINAMIS)
-    // ==========================================================
+    // ========================================================
+    // KHUSUS GURU: HALAMAN JADWAL & RIWAYAT SAYA
+    // ========================================================
     public function jadwalSaya()
     {
         $user = auth()->user();
-        $guru = Guru::where('nama_guru', $user->name)->first();
+        $guru = $this->guruContext->fromUser($user);
 
         if (!$guru) {
             return view('jadwal-saya', [
-                'guru' => null, 
-                'jadwalTerstruktur' => [], 
-                'pesan' => 'Akun Anda belum terhubung dengan Data Guru. Silakan hubungi Administrator/TU.'
+                'guru' => null,
+                'jadwalTerstruktur' => [],
+                'pesan' => 'Akun Anda belum terhubung dengan Data Guru. Silakan hubungi Administrator/TU.',
             ]);
         }
 
@@ -422,39 +278,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
             ->orderBy('jam_ke', 'asc')
             ->get();
 
-        $jadwalTerstruktur = [];
-        $urutanHari = ['Senin' => 1, 'Selasa' => 2, 'Rabu' => 3, 'Kamis' => 4, 'Jumat' => 5, 'Sabtu' => 6, 'Ahad' => 7];
-
-        $jadwalGrouped = $jadwalMentah->groupBy('hari')->sortBy(function ($item, $key) use ($urutanHari) {
-            return $urutanHari[$key] ?? 99;
-        });
-
-        foreach ($jadwalGrouped as $hari => $jadwals) {
-            $blokJadwal = [];
-            $currentBlock = null;
-
-            foreach ($jadwals as $j) {
-                $namaPel = $j->pelajaran->nama_pelajaran ?? '-';
-                $namaKel = $j->kelas->nama_kelas ?? '-';
-
-                if (!$currentBlock) {
-                    $currentBlock = ['jam_mulai' => $j->jam_ke, 'jam_selesai' => $j->jam_ke, 'pelajaran' => $namaPel, 'kelas' => $namaKel];
-                } else {
-                    if ($currentBlock['pelajaran'] == $namaPel && $currentBlock['kelas'] == $namaKel && $j->jam_ke == $currentBlock['jam_selesai'] + 1) {
-                        $currentBlock['jam_selesai'] = $j->jam_ke;
-                    } else {
-                        $blokJadwal[] = $currentBlock;
-                        $currentBlock = ['jam_mulai' => $j->jam_ke, 'jam_selesai' => $j->jam_ke, 'pelajaran' => $namaPel, 'kelas' => $namaKel];
-                    }
-                }
-            }
-            if ($currentBlock) {
-                $blokJadwal[] = $currentBlock;
-            }
-            if (count($blokJadwal) > 0) {
-                $jadwalTerstruktur[$hari] = $blokJadwal;
-            }
-        }
+        $jadwalTerstruktur = $this->matrix->blokJadwalPerGuru($jadwalMentah);
 
         $sekarang = Carbon::now();
         $tglMulaiPeriode   = ($periodeAktif && $periodeAktif->tanggal_mulai) ? $periodeAktif->tanggal_mulai : $sekarang->copy()->startOfYear()->format('Y-m-d');
@@ -476,13 +300,13 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         return view('jadwal-saya', compact('guru', 'jadwalTerstruktur', 'periodeAktif', 'rekapBulan', 'rekapTahun'));
     }
 
-    // ==========================================================
+    // ========================================================
     // KHUSUS GURU: HALAMAN REKAP PRESENSI PRIBADI & RIWAYAT
-    // ==========================================================
+    // ========================================================
     public function rekapPresensiPribadi(Request $request)
     {
         $user = auth()->user();
-        $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $guru = $this->guruContext->fromUser($user);
 
         if (!$guru) {
             return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
@@ -517,13 +341,13 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         return view('rekap-presensi', compact('guru', 'periodeAktif', 'rekap', 'filterTipe', 'tglMulai', 'tglSelesai', 'riwayat'));
     }
 
-    // ==========================================================
+    // ========================================================
     // KHUSUS GURU: HALAMAN KALDIK (TARGET KURIKULUM & PETA MENGAJAR)
-    // ==========================================================
+    // ========================================================
     public function kaldikGuru()
     {
         $user = auth()->user();
-        $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $guru = $this->guruContext->fromUser($user);
 
         if (!$guru) {
             return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
@@ -554,13 +378,10 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         foreach ($jadwals as $j) {
             $keyGrup = $j->kelas_id . '_' . $j->pelajaran_id;
             $hIndo = strtolower($j->hari);
-            if ($hIndo == 'Ahad') {
-                $hIndo = 'ahad';
-            }
 
             if (!isset($targetMengajar[$keyGrup])) {
                 $namaKel = $j->kelas->nama_kelas ?? '-';
-                $tingkat = preg_replace('/[^0-9]/', '', $namaKel); 
+                $tingkat = preg_replace('/[^0-9]/', '', $namaKel);
 
                 $targetMengajar[$keyGrup] = (object) [
                     'nama_kelas' => $namaKel,
@@ -572,7 +393,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
                     'sisa_pertemuan_total' => 0,
                     'sisa_pertemuan_pra_uts' => 0,
                     'hari_mengajar' => [],
-                    'batas' => $batasPelajaran->where('tingkat', $tingkat)->where('pelajaran_id', $j->pelajaran_id)->first()
+                    'batas' => $batasPelajaran->where('tingkat', $tingkat)->where('pelajaran_id', $j->pelajaran_id)->first(),
                 ];
             }
             if (!in_array($hIndo, $targetMengajar[$keyGrup]->hari_mengajar)) {
@@ -587,7 +408,6 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
 
             foreach ($targetMengajar as $keyGrup => $item) {
                 if (in_array($hariIndo, $item->hari_mengajar)) {
-                    // Cek libur tanpa parsial (cukup cek hari)
                     $libur = $this->service->isLibur(
                         (object) ['kelas_id' => $item->kelas_id, 'jam_ke' => 0],
                         $agendaPemotongKBM,
@@ -596,8 +416,8 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
                     );
 
                     if (!$libur['is_libur']) {
-                        $item->target_total++; 
-                        
+                        $item->target_total++;
+
                         if ($tglStr <= $hariIni) {
                             $item->telah_berlalu++;
                         } else {
@@ -618,16 +438,13 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         return view('kaldik', compact('guru', 'periodeAktif', 'targetMengajar', 'agendaUts'));
     }
 
-    // ==========================================================
+    // ========================================================
     // KHUSUS GURU: HALAMAN DASHBOARD MOBILE SPA
-    // ==========================================================
+    // ========================================================
     public function dashboardGuru()
     {
         $user = auth()->user();
-        
-        $guru = Guru::where('nama_guru', $user->name)
-                                ->orWhere('nig', $user->username)
-                                ->first();
+        $guru = $this->guruContext->fromUser($user);
 
         $periodeAktif = get_periode_aktif();
         $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
@@ -640,80 +457,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
                         ->where('tahun_ajaran', $tahunAjaran)
                         ->get();
 
-            $hariIniStr = map_hari(Carbon::now()->format('l'));
-
-            $hariSeAhad = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
-            
-            $indexHariIni = array_search($hariIniStr, $hariSeAhad);
-            
-            $hariDiurutkan = array_merge(
-                array_slice($hariSeAhad, $indexHariIni), 
-                array_slice($hariSeAhad, 0, $indexHariIni) 
-            );
-
-            $urutanDinamis = [];
-            foreach ($hariDiurutkan as $index => $hari) {
-                $urutanDinamis[$hari] = $index + 1;
-            }
-
-            $jadwalGrouped = $jadwalMentah->groupBy('hari')->sortBy(function ($item, $key) use ($urutanDinamis) {
-                return $urutanDinamis[$key] ?? 99;
-            });
-
-            foreach ($jadwalGrouped as $hari => $list) {
-                $list = $list->sortBy('jam_ke')->values();
-                
-                $blokJadwal = [];
-                $currentBlock = null;
-
-                foreach ($list as $j) {
-                    $namaPel = $j->pelajaran->nama_pelajaran ?? 'Pelajaran';
-                    $namaKel = $j->kelas->nama_kelas ?? '-';
-                    $pelajaranId = $j->pelajaran_id ?? ''; 
-                    
-                    $tingkatKelas = preg_replace('/[^0-9]/', '', $namaKel); 
-                    $petaKitab = $j->pelajaran->kitab_tingkat ?? [];
-                    $namaKitab = $petaKitab[$tingkatKelas] ?? ($j->pelajaran->nama_kitab ?? '-');
-
-                    if (!$currentBlock) {
-                        $currentBlock = [
-                            'jam_mulai' => $j->jam_ke, 
-                            'jam_selesai' => $j->jam_ke, 
-                            'mata_pelajaran' => $namaPel, 
-                            'nama_kitab' => $namaKitab, 
-                            'kelas' => $namaKel,
-                            'pelajaran_id' => $pelajaranId 
-                        ];
-                    } else {
-                        if ($currentBlock['mata_pelajaran'] == $namaPel && 
-                            $currentBlock['kelas'] == $namaKel && 
-                            $j->jam_ke == $currentBlock['jam_selesai'] + 1 &&
-                            ($currentBlock['jam_selesai'] - $currentBlock['jam_mulai'] < 1)
-                        ) {
-                            $currentBlock['jam_selesai'] = $j->jam_ke;
-                        } else {
-                            $currentBlock['jam_tampil'] = ($currentBlock['jam_mulai'] == $currentBlock['jam_selesai']) ? (string) $currentBlock['jam_mulai'] : $currentBlock['jam_mulai'] . '-' . $currentBlock['jam_selesai'];
-                            $blokJadwal[] = $currentBlock;
-                            
-                            $currentBlock = [
-                                'jam_mulai' => $j->jam_ke, 
-                                'jam_selesai' => $j->jam_ke, 
-                                'mata_pelajaran' => $namaPel, 
-                                'nama_kitab' => $namaKitab, 
-                                'kelas' => $namaKel,
-                                'pelajaran_id' => $pelajaranId
-                            ];
-                        }
-                    }
-                }
-                if ($currentBlock) {
-                    $currentBlock['jam_tampil'] = ($currentBlock['jam_mulai'] == $currentBlock['jam_selesai']) ? (string) $currentBlock['jam_mulai'] : $currentBlock['jam_mulai'] . '-' . $currentBlock['jam_selesai'];
-                    $blokJadwal[] = $currentBlock;
-                }
-                if (count($blokJadwal) > 0) {
-                    $jadwals[$hari] = $blokJadwal;
-                }
-            }
+            $jadwals = $this->matrix->blokJadwalDashboardGuru($jadwalMentah);
         }
 
         $pengumumans = \App\Models\Pengumuman::where('aktif', true)
@@ -729,26 +473,26 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans'));
     }
 
-    // ==========================================================
+    // ========================================================
     // KHUSUS GURU: HALAMAN PROFIL PENGGUNA
-    // ==========================================================
+    // ========================================================
     public function menu()
     {
         $user = auth()->user();
-        $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $guru = $this->guruContext->fromUser($user);
         $passkeys = $user->passkeys()->pluck('id')->all();
         $passkeyCount = count($passkeys);
 
         return view('guru.menu', compact('guru', 'user', 'passkeys', 'passkeyCount'));
     }
 
-    // ==========================================================
+    // ========================================================
     // KHUSUS GURU: HALAMAN PROFIL LENGKAP & EDIT BIODATA
-    // ==========================================================
+    // ========================================================
     public function profilLengkap()
     {
         $user = auth()->user();
-        $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $guru = $this->guruContext->fromUser($user);
 
         if (!$guru) {
             return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
@@ -760,7 +504,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
     public function updateProfil(Request $request)
     {
         $user = auth()->user();
-        $guru = Guru::where('nama_guru', $user->name)->orWhere('nig', $user->username)->first();
+        $guru = $this->guruContext->fromUser($user);
 
         if (!$guru) {
             return back()->with('error', 'Data Guru tidak ditemukan.');
@@ -769,7 +513,7 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         $data = $request->only([
             'nama_guru', 'no_hp', 'gender', 'alamat', 'status', 'alamat_asal',
             'tempat_lahir', 'tanggal_lahir', 'pendidikan', 'nama_ayah', 'nama_ibu',
-            'alamat_ortu', 'foto', 'email_pribadi'
+            'alamat_ortu', 'foto', 'email_pribadi',
         ]);
 
         $guru->update($data);
@@ -777,5 +521,3 @@ $queryMonitor = KehadiranGuru::where('tanggal', $tanggalHariIni)
         return back()->with('status', 'Biodata profil berhasil diperbarui!');
     }
 }
-
-

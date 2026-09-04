@@ -9,43 +9,58 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class BarcodeController extends Controller
 {
+    private function getTanggalKunci(): Carbon
+    {
+        $now = Carbon::now();
+        $hari = $now->dayOfWeek;
+        $jam = (int) $now->format('H');
+
+        if ($hari === Carbon::THURSDAY && $jam >= 18 || $hari === Carbon::FRIDAY) {
+            return $now->copy()->next(Carbon::SATURDAY)->startOfDay();
+        }
+
+        return $now->copy()->startOfWeek(Carbon::SATURDAY);
+    }
+
+    private function isCetakAllowed(): bool
+    {
+        $now = Carbon::now();
+        return !($now->dayOfWeek === Carbon::THURSDAY && (int) $now->format('H') < 18);
+    }
+
+    private function getPeriodeBerlaku(): string
+    {
+        $sabtu = $this->getTanggalKunci();
+        $kamis = $sabtu->copy()->addDays(5);
+        return $sabtu->translatedFormat('d M Y') . ' s/d ' . $kamis->translatedFormat('d M Y');
+    }
+
     public function index()
     {
         $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
-        
-        // Menghitung tanggal Hari Sabtu di minggu ini (Siklus mingguan)
-        $sabtuMingguIni = Carbon::now()->startOfWeek(Carbon::SATURDAY);
-        $jumatDepan = $sabtuMingguIni->copy()->addDays(6);
-        
-        $periodeBerlaku = $sabtuMingguIni->translatedFormat('d M Y') . ' s/d ' . $jumatDepan->translatedFormat('d M Y');
+        $periodeBerlaku = $this->getPeriodeBerlaku();
 
         return view('pabrik-barcode', compact('kelas', 'periodeBerlaku'));
     }
 
     public function cetak($kelas_id)
     {
+        if (!$this->isCetakAllowed()) {
+            return redirect('/pabrik-barcode')->with('error', 'Cetak barcode hanya bisa dimulai dari hari Kamis pukul 18.00!');
+        }
+
         $kelas = Kelas::findOrFail($kelas_id);
-        
-        // 1. Menentukan Tanggal Kunci (Selalu Hari Sabtu di minggu berjalan)
-        $tanggalKunci = Carbon::now()->startOfWeek(Carbon::SATURDAY)->format('Y-m-d');
-        
-        // 2. Meracik Teks Rahasia: IDKelas + TanggalKunci + KunciAplikasi
+
+        $tanggalKunci = $this->getTanggalKunci()->format('Y-m-d');
         $teksRahasia = $kelas->id . '|' . $tanggalKunci . '|' . config('app.key');
-        
-        // 3. Mengenkripsi Teks (Hash SHA256) agar tidak bisa dibaca/ditebak manusia
         $tokenBarcode = hash_hmac('sha256', $teksRahasia, config('app.key'));
-        
-        // Format Final Barcode: SP (SmartPesantren) - ID Kelas - Token Rahasia
         $isiBarcode = 'SP-' . $kelas->id . '-' . $tokenBarcode;
 
-        // 4. Menggambar QR Code
         $qrCodeImage = QrCode::size(300)
                         ->margin(2)
                         ->generate($isiBarcode);
 
-        $sabtuMingguIni = Carbon::now()->startOfWeek(Carbon::SATURDAY);
-        $jumatDepan = $sabtuMingguIni->copy()->addDays(6);
-        $periodeBerlaku = $sabtuMingguIni->translatedFormat('d M Y') . ' s/d ' . $jumatDepan->translatedFormat('d M Y');
+        $periodeBerlaku = $this->getPeriodeBerlaku();
 
         return view('cetak-barcode', compact('kelas', 'qrCodeImage', 'periodeBerlaku'));
     }

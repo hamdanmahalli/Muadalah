@@ -36,6 +36,17 @@ class BatasPelajaranController extends Controller
     {
         // Kunci ke Periode Aktif (Hanya menggunakan is_active)
         $periodeAktif = Periode::where('is_active', true)->firstOrFail();
+
+        $request->validate([
+            'tingkat'                        => 'required|string|max:10',
+            'batas'                          => 'nullable|array',
+            'batas.*.mulai_dari'             => 'nullable|string|max:100',
+            'batas.*.batas_uts_ganjil'       => 'nullable|string|max:100',
+            'batas.*.batas_uas_ganjil'       => 'nullable|string|max:100',
+            'batas.*.batas_uts_genap'        => 'nullable|string|max:100',
+            'batas.*.batas_uas_genap'        => 'nullable|string|max:100',
+        ]);
+
         $tingkat = $request->tingkat;
 
         if ($request->has('batas')) {

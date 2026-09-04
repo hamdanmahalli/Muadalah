@@ -7,7 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Pembayaran extends Model
 {
     protected $table = 'pembayarans';
-    protected $guarded = [];
+    protected $fillable = [
+        'tagihan_id',
+        'nominal_dibayar',
+        'tanggal_bayar',
+        'metode',
+        'keterangan',
+        'user_id',
+    ];
 
     protected $casts = [
         'tanggal_bayar' => 'date',

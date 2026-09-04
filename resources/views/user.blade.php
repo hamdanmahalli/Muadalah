@@ -70,14 +70,14 @@
                             <i class="fas fa-edit"></i>
                         </button>
                         
-                        <form method="POST" action="/setup-user/{{ $user->id }}/reset-password" class="inline" onsubmit="return confirm('Reset sandi untuk {{ $user->name }} menjadi sandi acak baru? Hasilnya akan ditampilkan di layar.');">
+                        <form method="POST" action="/setup-user/{{ $user->id }}/reset-password" class="inline" onsubmit="return confirm('Reset sandi untuk {{ js_q($user->name) }} menjadi sandi acak baru? Hasilnya akan ditampilkan di layar.');">
                             @csrf @method('PUT')
                             <button type="submit" title="Reset Sandi (Sandi Acak Baru)" class="w-8 h-8 inline-flex rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition items-center justify-center cursor-pointer">
                                 <i class="fas fa-key"></i>
                             </button>
                         </form>
 
-                        <button onclick="bukaModalHapus({{ $user->id }}, '{{ $user->name }}')" title="Hapus User" class="w-8 h-8 inline-flex rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition items-center justify-center cursor-pointer">
+                        <button onclick="bukaModalHapus({{ $user->id }}, '{{ js_q($user->name) }}')" title="Hapus User" class="w-8 h-8 inline-flex rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition items-center justify-center cursor-pointer">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>

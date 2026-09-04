@@ -38,10 +38,10 @@ use App\Http\Controllers\SiswaSayaController;
 // 1. ZONA PUBLIK (Bisa diakses tanpa login)
 // ==========================================================
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'prosesLogin']);
+Route::post('/login', [AuthController::class, 'prosesLogin'])->middleware('throttle:5,1');
 
 // Intip Jadwal Hari Ini (khusus guru, tanpa login)
-Route::get('/login/intip-jadwal', [AuthController::class, 'intipJadwal']);
+Route::get('/login/intip-jadwal', [AuthController::class, 'intipJadwal'])->middleware('throttle:30,1');
 
 // ==========================================================
 // 2. BENTENG UTAMA (Seluruh rute di dalam ini WAJIB LOGIN)
@@ -83,21 +83,25 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/monitoring-kehadiran/simpan', [MonitoringKehadiranController::class, 'update']);
     });
 
-    // Rute Kelola Agenda & QR Code
-    Route::get('/agenda-kegiatan', [AgendaKegiatanController::class, 'index']);
-    Route::post('/agenda-kegiatan', [AgendaKegiatanController::class, 'store']);
-    Route::get('/agenda-kegiatan/{id}/proyektor', [AgendaKegiatanController::class, 'proyektor']);
-    Route::get('/agenda-kegiatan/{id}/laporan', [AgendaKegiatanController::class, 'laporan']);
-    Route::post('/agenda-kegiatan/{id}/manual', [AgendaKegiatanController::class, 'hadirManual']);
-    Route::get('/agenda-kegiatan/{id}/scan-qr', [AgendaKegiatanController::class, 'scanQR']);
-    Route::post('/agenda-kegiatan/{id}/scan-proses-guru', [AgendaKegiatanController::class, 'prosesScanQR']);
-Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetakPdf']);
-    Route::get('/api/agenda-kegiatan/{id}/realtime', [AgendaKegiatanController::class, 'getKehadiranRealtime']);
-    Route::delete('/agenda-kegiatan/{id}', [AgendaKegiatanController::class, 'destroy']);
+    // Rute Kelola Agenda & QR Code (khusus yang berhak mengelola agenda)
+    Route::middleware(['can:akses_agenda'])->group(function () {
+        Route::get('/agenda-kegiatan', [AgendaKegiatanController::class, 'index']);
+        Route::post('/agenda-kegiatan', [AgendaKegiatanController::class, 'store']);
+        Route::get('/agenda-kegiatan/{id}/proyektor', [AgendaKegiatanController::class, 'proyektor']);
+        Route::get('/agenda-kegiatan/{id}/laporan', [AgendaKegiatanController::class, 'laporan']);
+        Route::post('/agenda-kegiatan/{id}/manual', [AgendaKegiatanController::class, 'hadirManual']);
+        Route::get('/agenda-kegiatan/{id}/scan-qr', [AgendaKegiatanController::class, 'scanQR']);
+        Route::post('/agenda-kegiatan/{id}/scan-proses-guru', [AgendaKegiatanController::class, 'prosesScanQR']);
+        Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetakPdf']);
+        Route::get('/api/agenda-kegiatan/{id}/realtime', [AgendaKegiatanController::class, 'getKehadiranRealtime']);
+        Route::delete('/agenda-kegiatan/{id}', [AgendaKegiatanController::class, 'destroy']);
+    });
     
-    // Pabrik Barcode (Masuk ke dalam benteng Auth agar aman)
-    Route::get('/pabrik-barcode', [BarcodeController::class, 'index']);
-    Route::get('/pabrik-barcode/cetak/{kelas_id}', [BarcodeController::class, 'cetak']);
+// Pabrik Barcode (QR presensi guru per kelas — hanya yang memegang jadwal-saya boleh mencetak)
+    Route::middleware(['can:akses_jadwal_saya'])->group(function () {
+        Route::get('/pabrik-barcode', [BarcodeController::class, 'index']);
+        Route::get('/pabrik-barcode/cetak/{kelas_id}', [BarcodeController::class, 'cetak']);
+    });
 
     Route::middleware(['can:akses_laporan'])->group(function () {
         Route::get('/laporan', [JadwalController::class, 'laporanKehadiran']);
@@ -152,6 +156,7 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
         Route::post('/input-nilai', [NilaiController::class, 'store'])->name('nilai.store');
         Route::get('/input-nilai/import-template', [NilaiController::class, 'downloadTemplate']);
         Route::post('/input-nilai/simpan-massal', [NilaiController::class, 'simpanMassal'])->name('nilai.simpanMassal');
+        Route::post('/input-nilai/kolom', [NilaiController::class, 'updateKolom'])->name('nilai.updateKolom');
     });
 
     // Absensi siswa (mingguan)
@@ -159,6 +164,8 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
         Route::get('/absen-siswa', [KehadiranSiswaController::class, 'index'])->name('absen-siswa.index');
         Route::post('/absen-siswa', [KehadiranSiswaController::class, 'store'])->name('absen-siswa.store');
         Route::get('/absen-siswa/cetak', [KehadiranSiswaController::class, 'cetak'])->name('absen-siswa.cetak');
+        Route::post('/absen-siswa/import', [KehadiranSiswaController::class, 'importAbsen'])->name('absen-siswa.import');
+        Route::get('/absen-siswa/import/template', [KehadiranSiswaController::class, 'templateAbsen'])->name('absen-siswa.import-template');
     });
 
     // Raport
@@ -184,8 +191,8 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
 
 
     // Rute Batas Pelajaran / Kurikulum
-    Route::get('/batas-pelajaran', [BatasPelajaranController::class, 'index']);
-    Route::post('/batas-pelajaran', [BatasPelajaranController::class, 'store']);
+    Route::get('/batas-pelajaran', [BatasPelajaranController::class, 'index'])->middleware('can:akses_batas_pelajaran');
+    Route::post('/batas-pelajaran', [BatasPelajaranController::class, 'store'])->middleware('can:akses_batas_pelajaran');
     
     // ----------------------------------------------------------
     // ZONA PUSAT IMPORT DATA (EXCEL)
@@ -261,9 +268,12 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
         Route::post('/riwayat-mutasi/kelola-tanggal', [\App\Http\Controllers\RiwayatMutasiController::class, 'simpanTanggal']);
     });
 
-    Route::get('/backup-restore', [DatabaseManagerController::class, 'index']);
-    Route::post('/backup-restore/export', [DatabaseManagerController::class, 'exportSql']);
-    Route::post('/backup-restore/import', [DatabaseManagerController::class, 'importSql']);
+    // Backup/dan Restore hanya untuk Administrator (karena bersifat total & destruktif)
+    Route::middleware(['role:Administrator'])->group(function () {
+        Route::get('/backup-restore', [DatabaseManagerController::class, 'index']);
+        Route::post('/backup-restore/export', [DatabaseManagerController::class, 'exportSql']);
+        Route::post('/backup-restore/import', [DatabaseManagerController::class, 'importSql']);
+    });
 
 
     // ----------------------------------------------------------
@@ -275,8 +285,8 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
 
     
 
-    // Rute API untuk pop-up target kurikulum di Beranda Guru
-    Route::get('/api/target-kurikulum', [BatasPelajaranController::class, 'getTargetKurikulum']);
+// Rute API untuk pop-up target kurikulum di Beranda Guru
+    Route::get('/api/target-kurikulum', [BatasPelajaranController::class, 'getTargetKurikulum'])->middleware('can:akses_batas_pelajaran');
 
     Route::middleware(['can:akses_jadwal_saya'])->group(function () {
         Route::get('/jadwal-saya', [JadwalController::class, 'jadwalSaya']);
@@ -303,9 +313,9 @@ Route::get('/agenda-kegiatan/{id}/pdf', [AgendaKegiatanController::class, 'cetak
         Route::post('/notifikasi/unsubscribe', [NotifikasiController::class, 'unsubscribe']);
         Route::post('/notifikasi/test', [NotifikasiController::class, 'test']);
         Route::post('/notifikasi/test-pulse', [NotifikasiController::class, 'testPulse']);
+        // Telemetri push dari Service Worker (wajib login; CSRF tetap dikecualikan di bootstrap)
+        Route::post('/notifikasi/pulse', [\App\Http\Controllers\NotifikasiController::class, 'pulse']);
     });
 
 }); // <--- PENUTUP BENTENG UTAMA (auth)
 
-// Telemetri push dari Service Worker (pulse) — di luar auth & CSRF (hanya mencatat log)
-Route::post('/notifikasi/pulse', [\App\Http\Controllers\NotifikasiController::class, 'pulse']);

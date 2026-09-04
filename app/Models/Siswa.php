@@ -11,7 +11,22 @@ class Siswa extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'siswas';
-    protected $guarded = [];
+    protected $fillable = [
+        'nis',
+        'nisn',
+        'nama_siswa',
+        'jenis_kelamin',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'alamat',
+        'nama_ayah',
+        'nama_ibu',
+        'pekerjaan_ortu',
+        'no_hp_ortu',
+        'foto',
+        'tahun_masuk',
+        'status',
+    ];
 
     protected $casts = [
         'tanggal_lahir' => 'date',
