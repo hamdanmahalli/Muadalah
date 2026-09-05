@@ -22,8 +22,18 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(Request $request): void
     {
+        // WebAuthn: sesuaikan allowed_origins dengan host & skema yang benar-benar
+        // dipakai saat ini, agar tidak bergantung pada nilai APP_URL di server
+        // (mencegah error "Invalid origin. Not in the list of allowed origins.").
+        config([
+            'passkeys.allowed_origins' => array_values(array_filter([
+                'https://'.$request->getHost(),
+                'http://'.$request->getHost(),
+            ])),
+        ]);
+
         // Tolak login passkey bila akun tidak Aktif (konsisten dengan prosesLogin)
         Passkeys::authorizeLoginUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
             if ($user instanceof \App\Models\User && $user->status !== 'Aktif') {
