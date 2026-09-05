@@ -195,7 +195,7 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-slate-800 truncate" title="{{ $g['nama'] }}">{{ $g['nama'] }}</p>
-                                <p class="text-[11px] text-slate-500 font-medium truncate" title="{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_ke'] }}">{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_ke'] }}</p>
+                                <p class="text-[11px] text-slate-500 font-medium truncate" title="{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_tampil'] ?? $g['jam_ke'] }}">{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_tampil'] ?? $g['jam_ke'] }}</p>
                             </div>
                             <span class="text-[10px] font-bold px-2 py-1 rounded-full {{ $warnaStatus }} flex-shrink-0">{{ $st }}</span>
                             <a href="/master-guru{{ $g['nig'] ? '?cari='.$g['nig'] : '' }}" class="text-[10px] font-bold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 px-2.5 py-1 rounded-full flex-shrink-0 transition">Profil</a>

@@ -220,18 +220,45 @@ class DashboardService
 
         $records = KehadiranGuru::where('tanggal', $tglStr)->get()->keyBy('jadwal_id');
 
-        $guru = [];
+        // Kelompokkan per guru + kelas, lalu gabungkan jam-nya menjadi blok
+        // (mis. 1-2, 3-4) agar nama guru tidak tampil dua kali.
+        $kelompok = [];
         foreach ($jadwals as $jadwal) {
             $record = $records->get($jadwal->id);
             $statusAsli = $record ? $record->status : 'Menunggu';
             $statusTampil = in_array($statusAsli, ['Kosong', 'Alpha']) ? 'Alpa' : $statusAsli;
 
+            $nama = $jadwal->guru->nama_guru ?? '-';
+            $kunci = $nama . '|' . ($jadwal->guru->nig ?? '') . '|' . ($jadwal->kelas->nama_kelas ?? '-');
+
+            if (! isset($kelompok[$kunci])) {
+                $kelompok[$kunci] = [
+                    'nama'     => $nama,
+                    'nig'      => $jadwal->guru->nig ?? null,
+                    'kelas'    => $jadwal->kelas->nama_kelas ?? '-',
+                    'jam_list' => [(int) $jadwal->jam_ke],
+                    'status'   => $statusTampil,
+                ];
+            } else {
+                $kelompok[$kunci]['jam_list'][] = (int) $jadwal->jam_ke;
+                if ($statusTampil !== 'Hadir' && $kelompok[$kunci]['status'] === 'Hadir') {
+                    $kelompok[$kunci]['status'] = $statusTampil;
+                }
+            }
+        }
+
+        $guru = [];
+        foreach ($kelompok as $row) {
+            $jamList = array_values(array_unique($row['jam_list']));
+            sort($jamList);
+
             $guru[] = [
-                'nama'  => $jadwal->guru->nama_guru ?? '-',
-                'nig'   => $jadwal->guru->nig ?? null,
-                'kelas' => $jadwal->kelas->nama_kelas ?? '-',
-                'jam_ke'=> (int) $jadwal->jam_ke,
-                'status'=> $statusTampil,
+                'nama'       => $row['nama'],
+                'nig'        => $row['nig'],
+                'kelas'      => $row['kelas'],
+                'jam_ke'     => $jamList[0] ?? 0,
+                'jam_tampil' => $this->formatBlokJam($jamList),
+                'status'     => $row['status'],
             ];
         }
 
@@ -240,5 +267,34 @@ class DashboardService
             strcmp($a['status'] === 'Hadir' ? 'z' : 'a', $b['status'] === 'Hadir' ? 'z' : 'a'));
 
         return ['guru' => $guru, 'blok' => $blokAktif];
+    }
+
+    /**
+     * Gabungkan daftar jam_ke menjadi blok berurutan (maks 2 jam per blok),
+     * mengikuti konvensi tampilan jam di aplikasi: 1-2, 3-4, dst.
+     *
+     * @param  array<int, int>  $jamList
+     */
+    protected function formatBlokJam(array $jamList): string
+    {
+        $blok = [];
+        $sekarang = [];
+
+        foreach ($jamList as $jam) {
+            if ($sekarang === []) {
+                $sekarang[] = $jam;
+            } elseif (($jam === max($sekarang) + 1) && count($sekarang) < 2) {
+                $sekarang[] = $jam;
+            } else {
+                $blok[] = (count($sekarang) === 1) ? (string) $sekarang[0] : min($sekarang) . '-' . max($sekarang);
+                $sekarang = [$jam];
+            }
+        }
+
+        if ($sekarang !== []) {
+            $blok[] = (count($sekarang) === 1) ? (string) $sekarang[0] : min($sekarang) . '-' . max($sekarang);
+        }
+
+        return implode(', ', $blok);
     }
 }
