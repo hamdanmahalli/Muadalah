@@ -25,7 +25,7 @@
 <body onload="window.print()">
     <div class="kertas-a4">
         <div class="kop">
-            <h1 class="judul-pesantren">MU'DALAH WUSTHA</h1>
+            <h1 class="judul-pesantren">MU'ADALAH WUSTHA</h1>
             <p class="sub-judul">Sistem Kehadiran Guru Terintegrasi Berbasis QR Code</p>
         </div>
         
