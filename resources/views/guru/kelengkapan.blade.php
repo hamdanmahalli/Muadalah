@@ -2,7 +2,8 @@
 @section('title', 'Biodata & Kelengkapan Guru - SmartPesantren')
 @section('content')
 <style>
-    header, aside { display: none !important; }
+    header { display: none !important; }
+    #btn-buka-sidebar { display: none !important; }
     main { padding: 0 !important; background-color: #f8fafc !important; overflow: hidden !important; }
     body { overflow: hidden !important; background-color: #f8fafc !important; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -20,15 +21,18 @@
 
     <!-- HEADER STICKY -->
     <div class="shrink-0 bg-white border-b border-slate-100 px-4 py-4 flex items-center relative z-20">
-        <a href="javascript:history.back()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0">
+        <a href="{{ url()->previous() }}" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0">
             <i class="fas fa-arrow-left text-sm"></i>
         </a>
         <div class="flex-1 px-3">
             <h2 class="text-base font-black text-slate-900 tracking-tight">Biodata Guru</h2>
             <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Profil &amp; Kelengkapan Data</p>
         </div>
+        <button type="button" onclick="toggleSidebar()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0" title="Buka Menu">
+            <i class="fas fa-bars text-sm"></i>
+        </button>
         @if($isAdmin || $editMode)
-            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wide {{ $editable ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
+            <span class="ml-2 inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wide {{ $editable ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
                 <i class="fas fa-lock-open mr-1"></i> Boleh Edit
             </span>
         @endif
@@ -88,23 +92,21 @@
                 'dokumenAction' => route('guru.profil.dokumen'),
             ])
 
+            <!-- TOMBOL SIMPAN DI DALAM FORM (selalu tampil, scroll normal) -->
+            <div class="mb-2 rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
+                @if($editable)
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.99] text-white font-black text-sm py-4 rounded-2xl transition-all shadow-[0_10px_24px_-8px_rgba(16,185,129,0.5)] flex items-center justify-center group">
+                        <i class="fas fa-save mr-2.5 text-lg group-hover:scale-110 transition-transform"></i> Simpan Perubahan Biodata
+                    </button>
+                @else
+                    <div class="w-full bg-slate-100 text-slate-500 font-bold text-xs text-center py-4 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-lock mr-2"></i> Data Terkunci
+                    </div>
+                @endif
+            </div>
+
         </form>
     </div>
-
-    <!-- TOMBOL SIMPAN MELAYANG -->
-    @if($editable)
-        <div class="absolute bottom-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_25px_rgba(15,23,42,0.04)] px-5 py-4 pb-safe">
-            <button type="submit" form="form-profil" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] text-white font-black text-sm py-4 rounded-2xl transition-all shadow-[0_10px_24px_-8px_rgba(16,185,129,0.5)] flex items-center justify-center group">
-                <i class="fas fa-save mr-2.5 text-lg group-hover:scale-110 transition-transform"></i> Simpan Perubahan Biodata
-            </button>
-        </div>
-    @else
-        <div class="absolute bottom-0 left-0 right-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 px-5 py-4 pb-safe">
-            <div class="w-full bg-slate-100 text-slate-500 font-bold text-xs text-center py-4 rounded-2xl flex items-center justify-center">
-                <i class="fas fa-lock mr-2"></i> Data Terkunci
-            </div>
-        </div>
-    @endif
 
 </div>
 @endsection
