@@ -66,10 +66,10 @@
                 <table class="min-w-full divide-y divide-slate-100 text-sm">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-8">No.Absen</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">NIS</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase w-8">ABS</th>
+                            <th class="hidden md:table-cell px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">NIS</th>
                             <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Nama</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">JK</th>
+                            <th class="hidden md:table-cell px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">JK</th>
                             <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Tagihan Belum Lunas</th>
                             <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase">Aksi</th>
                         </tr>
@@ -80,10 +80,10 @@
                             $belum = $s->tagihans->filter(fn($t) => $t->sisa() > 0);
                         @endphp
                         <tr class="hover:bg-slate-50">
-                            <td class="px-4 py-3 text-slate-500">{{ $s->angkatan->where('kelas_id', $kelasId)->sortByDesc('periode.is_active')->first()?->nomor_absen ?? $loop->iteration }}</td>
-                            <td class="px-4 py-3 font-bold text-slate-700">{{ $s->nis }}</td>
+                            <td class="px-4 py-3 text-center text-slate-500">{{ $s->angkatan->where('kelas_id', $kelasId)->sortByDesc('periode.is_active')->first()?->nomor_absen ?? $loop->iteration }}</td>
+                            <td class="hidden md:table-cell px-4 py-3 font-bold text-slate-700">{{ $s->nis }}</td>
                             <td class="px-4 py-3 font-semibold text-slate-800">{{ $s->nama_siswa }}</td>
-                            <td class="px-4 py-3 text-slate-500">{{ $s->jenis_kelamin }}</td>
+                            <td class="hidden md:table-cell px-4 py-3 text-slate-500">{{ $s->jenis_kelamin }}</td>
                             <td class="px-4 py-3">
                                 @if($belum->isNotEmpty())
                                     <span class="text-xs font-bold text-rose-600">{{ $belum->count() }} tagihan · Rp {{ number_format($belum->sum(fn($t)=>$t->sisa()),0,',','.') }}</span>
