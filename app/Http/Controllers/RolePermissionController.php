@@ -43,6 +43,7 @@ class RolePermissionController extends Controller
                 'akses_dashboard_guru',
                 'akses_jadwal_saya',
                 'akses_siswa_saya',
+                'akses_honor',
             ],
             'Siswa' => [
                 'akses_penempatan_siswa',
@@ -81,6 +82,7 @@ class RolePermissionController extends Controller
             'akses_dashboard_guru' => 'Beranda Guru',
             'akses_jadwal_saya' => 'Jadwal Saya, Scan Hadir & Cetak Barcode',
             'akses_siswa_saya' => 'Siswa Saya (Wali Kelas)',
+            'akses_honor' => 'Honor Guru',
             'akses_penempatan_siswa' => 'Penempatan Siswa',
             'akses_absen_siswa' => 'Absensi Siswa',
             'akses_input_nilai' => 'Input Nilai',

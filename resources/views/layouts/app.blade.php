@@ -356,7 +356,7 @@
                 <div class="flex-1 overflow-y-auto flex flex-col gap-1 py-2 px-2 scrollbar-none">
 
                     @php
-                        $gBeranda  = request()->is('/', 'meja-kontrol', 'monitoring-kehadiran*', 'laporan', 'pabrik-barcode', 'agenda-kegiatan*');
+                        $gBeranda  = request()->is('/', 'meja-kontrol', 'monitoring-kehadiran*', 'laporan', 'pabrik-barcode', 'agenda-kegiatan*', 'honor*');
                         $gMaster   = request()->is('master-guru*', 'master-jabatan*', 'master-pelajaran*', 'batas-pelajaran*', 'master-kelas*', 'master-siswa*', 'master-periode*');
                         $gJadwal   = request()->is('master-hari-operasional*', 'agenda-kaldik*', 'pengumuman*', 'master-plot-jadwal*', 'master-jadwal-harian*', 'riwayat-mutasi*');
                         $gGuru     = request()->is('dashboard-guru', 'jadwal-saya', 'scan-kelas', 'siswa-saya*');
@@ -365,7 +365,7 @@
                     @endphp
 
                     <!-- GRUP: BERANDA & MONITORING -->
-                    @canany(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_jadwal_saya', 'akses_master_kelas', 'akses_agenda'])
+                    @canany(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_jadwal_saya', 'akses_master_kelas', 'akses_agenda', 'akses_honor'])
                     <div class="sb-group {{ $gBeranda ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
@@ -420,6 +420,14 @@
                                 <a href="/agenda-kegiatan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('agenda-kegiatan*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-alt text-xl"></i></div>
                                     <span class="sb-text flex-1 text-left text-sm font-semibold">Agenda Kegiatan</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_honor')
+                            <div class="relative flex items-center group">
+                                <a href="/honor" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('honor*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-money-bill-wave text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Honor Guru</span>
                                 </a>
                             </div>
                             @endcan

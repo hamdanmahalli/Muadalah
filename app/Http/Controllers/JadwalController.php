@@ -9,6 +9,7 @@ use App\Models\KehadiranGuru;
 use App\Models\Guru;
 use App\Models\MasterJam;
 use App\Models\Periode;
+use App\Models\HonorDetail;
 use App\Services\JadwalService;
 use App\Services\JadwalMatrixService;
 use App\Services\DashboardService;
@@ -482,7 +483,18 @@ class JadwalController extends Controller
 
         $qrPribadi = app(\App\Services\Kehadiran\KehadiranScanService::class)->qrPribadi();
 
-        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans', 'qrPribadi'));
+        $honorTerbaru = null;
+        $honorAll = collect();
+        if ($guru) {
+            $honorAll = HonorDetail::with(['periode.konfigurasi'])
+                ->where('guru_id', $guru->id)
+                ->whereHas('periode.konfigurasi')
+                ->orderByDesc('created_at')
+                ->get();
+            $honorTerbaru = $honorAll->first();
+        }
+
+        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans', 'qrPribadi', 'honorTerbaru', 'honorAll'));
     }
 
     // ========================================================

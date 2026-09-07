@@ -242,6 +242,20 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/master-periode/{id}', [PeriodeController::class, 'destroy']);
     });
 
+    // ----------------------------------------------------------
+    // ZONA HONOR GURU (Admin)
+    // ----------------------------------------------------------
+    Route::middleware(['can:akses_honor'])->group(function () {
+        Route::get('/honor', [\App\Http\Controllers\HonorController::class, 'index'])->name('honor.index');
+        Route::get('/honor/konfigurasi', [\App\Http\Controllers\HonorController::class, 'konfigurasi'])->name('honor.konfigurasi');
+        Route::post('/honor/konfigurasi', [\App\Http\Controllers\HonorController::class, 'simpanKonfigurasi'])->name('honor.konfigurasi.simpan');
+        Route::post('/honor/hitung', [\App\Http\Controllers\HonorController::class, 'hitung'])->name('honor.hitung');
+        Route::get('/honor/rekap/{id}', [\App\Http\Controllers\HonorController::class, 'rekap'])->name('honor.rekap');
+        Route::post('/honor/final/{id}', [\App\Http\Controllers\HonorController::class, 'finalisasi'])->name('honor.final');
+        Route::get('/honor/scan-penerimaan', [\App\Http\Controllers\HonorController::class, 'scanPenerimaan'])->name('honor.scan');
+        Route::post('/honor/proses-scan', [\App\Http\Controllers\HonorController::class, 'prosesScan'])->name('honor.proses-scan');
+    });
+
 
     // ----------------------------------------------------------
     // ZONA SETUP PENGGUNA & HAK AKSES
@@ -296,6 +310,10 @@ Route::middleware(['auth'])->group(function () {
         // TAMBAHAN RUTE BARU UNTUK PROSES PIKET:
         Route::post('/scan-piket', [ScanController::class, 'prosesPiket']);
         
+        // Rute Honor Guru
+        Route::get('/guru/honor', [\App\Http\Controllers\GuruHonorController::class, 'index'])->name('guru.honor');
+        Route::post('/guru/honor/scan', [\App\Http\Controllers\GuruHonorController::class, 'scan'])->name('guru.honor.scan');
+
         Route::get('/rekap-presensi', [JadwalController::class, 'rekapPresensiPribadi']);
         Route::get('/kaldik', [JadwalController::class, 'kaldikGuru']);
         // Halaman Profil Guru
