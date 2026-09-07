@@ -49,7 +49,7 @@ return [
 
         'public_uploads' => [
             'driver' => 'local',
-            'root' => public_path('uploads'),
+            'root' => base_path(env('UPLOADS_PATH', 'public/uploads')),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
