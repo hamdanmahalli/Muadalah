@@ -31,8 +31,8 @@ class PanduanController extends Controller
         // Matriks sederhana: role -> permissions yang di-seed di PermissionSeeder
         $matriksRole = [
             'Administrator' => 'Semua permission',
-            'Pimpinan'      => ['akses_dashboard', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian'],
-            'Tata Usaha'    => ['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi'],
+            'Pimpinan'      => ['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian', 'akses_laporan_siswa'],
+            'Tata Usaha'    => ['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi'],
             'Dewan Guru'    => ['akses_dashboard_guru', 'akses_jadwal_saya'],
             'Kepanitiaan'   => ['–'],
             'Wali Kelas'    => ['–'],

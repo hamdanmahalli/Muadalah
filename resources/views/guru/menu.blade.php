@@ -179,7 +179,7 @@
     <!-- ========================================== -->
     <div id="modal-tentang" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="bg-tentang" onclick="tutupModal('modal-tentang', 'bg-tentang', 'box-tentang')"></div>
-        <div class="flex items-center justify-center min-h-screen px-4 pb-10">
+        <div class="relative z-10 flex items-center justify-center min-h-screen px-4 pb-10">
             <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center" id="box-tentang">
                 <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg flex items-center justify-center text-white text-4xl mb-4 ring-4 ring-emerald-50">
                     <i class="fas fa-graduation-cap"></i>

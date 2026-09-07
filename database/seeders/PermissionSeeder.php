@@ -16,9 +16,10 @@ class PermissionSeeder extends Seeder
 
         // 2. Daftar Kunci Pintu (Permissions)
         $permissions = [
-            'akses_dashboard',
+'akses_dashboard',
             'akses_dashboard_guru', // <--- FITUR BARU: Kunci untuk Dashboard Guru (Mobile)
             'akses_meja_kontrol',
+            'akses_monitoring_kehadiran',
             'akses_laporan',
             'akses_import_excel',
             'akses_master_guru',
@@ -70,8 +71,8 @@ class PermissionSeeder extends Seeder
 
         // 4. Sinkronisasi Kunci Sementara
         $roleAdmin->syncPermissions($permissions); // Admin pegang semua kunci
-        $rolePimpinan->syncPermissions(['akses_dashboard', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian', 'akses_laporan_siswa']);
-        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi', 'akses_pengumuman', 'akses_master_siswa', 'akses_penempatan_siswa', 'akses_pembayaran', 'akses_absen_siswa', 'akses_laporan_siswa', 'akses_input_nilai', 'akses_agenda', 'akses_batas_pelajaran']);
+        $rolePimpinan->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian', 'akses_laporan_siswa']);
+        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi', 'akses_pengumuman', 'akses_master_siswa', 'akses_penempatan_siswa', 'akses_pembayaran', 'akses_absen_siswa', 'akses_laporan_siswa', 'akses_input_nilai', 'akses_agenda', 'akses_batas_pelajaran']);
         
         // PENTING: Berikan Kunci Dashboard Guru ke Dewan Guru (+ input nilai harian)
         $roleDewanGuru->syncPermissions(['akses_dashboard_guru', 'akses_jadwal_saya', 'akses_input_nilai']);

@@ -38,7 +38,12 @@ class JadwalController extends Controller
     // ========================================================
     public function mejaKontrol(Request $request)
     {
-        $tanggalPilihan = $request->input('tanggal', Carbon::now()->format('Y-m-d'));
+        $bolehUbahWaktu = auth()->user()->getRoleNames()->contains('Administrator')
+            || auth()->user()->getRoleNames()->contains('Pimpinan');
+
+        $tanggalPilihan = $bolehUbahWaktu
+            ? $request->input('tanggal', Carbon::now()->format('Y-m-d'))
+            : Carbon::now()->format('Y-m-d');
         $waktuSekarang = Carbon::parse($tanggalPilihan);
 
         $waktuAsliKomputer = Carbon::now();
@@ -70,7 +75,7 @@ class JadwalController extends Controller
         }
 
         $jamDefault = $blokAktifOtomatis ?? ($opsiBlokJam[0]['nilai'] ?? '1-2');
-        $jamPilihan = $request->input('jam', $jamDefault);
+        $jamPilihan = $bolehUbahWaktu ? $request->input('jam', $jamDefault) : $jamDefault;
         $arrayJamPilihan = explode('-', $jamPilihan);
 
         $periodeAktif = get_periode_aktif();
@@ -126,7 +131,7 @@ class JadwalController extends Controller
 
         $jadwals = collect($jadwals)->sortBy('kelas')->values()->all();
 
-        return view('meja-kontrol', compact('jadwals', 'kehadiranHariIni', 'infoJam', 'daftarGuru', 'opsiBlokJam', 'jamPilihan', 'hariIni', 'tanggalPilihan', 'waktuSekarang', 'daftarLibur'));
+        return view('meja-kontrol', compact('jadwals', 'kehadiranHariIni', 'infoJam', 'daftarGuru', 'opsiBlokJam', 'jamPilihan', 'hariIni', 'tanggalPilihan', 'waktuSekarang', 'daftarLibur', 'bolehUbahWaktu'));
     }
 
     // ========================================================
@@ -143,7 +148,12 @@ class JadwalController extends Controller
         $periodeAktif = get_periode_aktif();
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
-        $tanggalPilihan = $request->tanggal ?? Carbon::now()->format('Y-m-d');
+        $bolehUbahWaktu = auth()->user()->getRoleNames()->contains('Administrator')
+            || auth()->user()->getRoleNames()->contains('Pimpinan');
+
+        $tanggalPilihan = $bolehUbahWaktu
+            ? ($request->tanggal ?? Carbon::now()->format('Y-m-d'))
+            : Carbon::now()->format('Y-m-d');
 
         foreach ($request->jadwal_ids as $id) {
             KehadiranGuru::updateOrCreate(

@@ -76,8 +76,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cek-kehadiran-terbaru', [JadwalController::class, 'cekKehadiranTerbaru']);
     });
 
-    // Monitoring / Valdasi Kehadiran Guru (Admin & TU)
-    Route::middleware(['can:akses_meja_kontrol'])->group(function () {
+// Monitoring / Valdasi Kehadiran Guru (Admin & TU)
+    Route::middleware(['can:akses_monitoring_kehadiran'])->group(function () {
         Route::get('/monitoring-kehadiran', [MonitoringKehadiranController::class, 'index']);
         Route::get('/monitoring-kehadiran/detail-guru', [MonitoringKehadiranController::class, 'detailGuru']);
         Route::post('/monitoring-kehadiran/simpan', [MonitoringKehadiranController::class, 'update']);

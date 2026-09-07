@@ -143,7 +143,9 @@
             <div class="mt-6 bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col">
                     <div class="flex items-center justify-between mb-1">
                         <h3 class="text-sm font-black text-slate-800 tracking-tight"><i class="fas fa-user-clock mr-2 text-cyan-500"></i>Monitoring Guru Aktif</h3>
+                        @can('akses_monitoring_kehadiran')
                         <a href="/monitoring-kehadiran" class="text-[11px] font-bold text-cyan-600 hover:text-cyan-800 flex-shrink-0">Lihat Semua <i class="fas fa-arrow-right text-[9px]"></i></a>
+                        @endcan
                     </div>
                     <p class="text-[11px] text-slate-500 font-medium mb-3">
                         @if($blokAktif)

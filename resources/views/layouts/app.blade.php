@@ -365,7 +365,7 @@
                     @endphp
 
                     <!-- GRUP: BERANDA & MONITORING -->
-                    @canany(['akses_dashboard', 'akses_meja_kontrol', 'akses_laporan', 'akses_jadwal_saya', 'akses_master_kelas', 'akses_agenda'])
+                    @canany(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_jadwal_saya', 'akses_master_kelas', 'akses_agenda'])
                     <div class="sb-group {{ $gBeranda ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
@@ -390,6 +390,8 @@
                                     <span class="sb-text flex-1 text-left text-sm font-semibold">Meja Kontrol</span>
                                 </a>
                             </div>
+                            @endcan
+                            @can('akses_monitoring_kehadiran')
                             <div class="relative flex items-center group">
                                 <a href="/monitoring-kehadiran" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('monitoring-kehadiran*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-user-check text-xl"></i></div>

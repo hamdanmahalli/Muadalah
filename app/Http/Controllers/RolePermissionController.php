@@ -19,6 +19,7 @@ class RolePermissionController extends Controller
             'Beranda & Monitoring' => [
                 'akses_dashboard',
                 'akses_meja_kontrol',
+                'akses_monitoring_kehadiran',
                 'akses_laporan',
                 'akses_agenda',
             ],
@@ -61,7 +62,8 @@ class RolePermissionController extends Controller
         // Label ramah untuk setiap permission (nama menu di sidebar)
         $labelMenu = [
             'akses_dashboard' => 'Dashboard',
-            'akses_meja_kontrol' => 'Meja Kontrol & Monitoring Kehadiran',
+            'akses_meja_kontrol' => 'Meja Kontrol',
+            'akses_monitoring_kehadiran' => 'Monitoring Kehadiran',
             'akses_laporan' => 'Rekap Laporan Kehadiran',
             'akses_agenda' => 'Agenda Kegiatan',
             'akses_master_guru' => 'Master Pengurus/Guru & Jabatan',

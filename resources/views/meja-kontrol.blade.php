@@ -28,6 +28,7 @@
                 </div>
 
                 <!-- Pemilih Tanggal -->
+                @if($bolehUbahWaktu)
                 <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 hover:border-emerald-400 hover:bg-white transition-all duration-300">
                     <label class="text-slate-400 mr-2"><i class="fas fa-calendar-alt text-emerald-600"></i></label>
                     
@@ -48,6 +49,16 @@
                         @endforeach
                     </select>
                 </div>
+                @else
+                <!-- Info Terkunci: tanggal & blok jam aktif (hanya Administrator/Pimpinan yang dapat mengubah) -->
+                <div class="flex flex-wrap items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
+                    <i class="fas fa-lock text-slate-400"></i>
+                    <span class="text-sm font-bold text-emerald-700">{{ \Carbon\Carbon::parse($tanggalPilihan)->translatedFormat('d F Y') }}</span>
+                    <span class="text-slate-300">|</span>
+                    <i class="fas fa-clock text-indigo-600"></i>
+                    <span class="text-sm font-bold text-indigo-700">{{ $infoJam }}</span>
+                </div>
+                @endif
             </form>
 
             <!-- Teks WhatsApp Broadcast -->
@@ -614,8 +625,9 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            if (typeof flatpickr !== 'undefined') {
-                flatpickr("#kalender-dinamis", {
+            let elKalender = document.getElementById('kalender-dinamis');
+            if (typeof flatpickr !== 'undefined' && elKalender) {
+                flatpickr(elKalender, {
                     dateFormat: "Y-m-d", 
                     altInput: true,      
                     altFormat: "d-m-Y",  
@@ -624,7 +636,7 @@
                         instance.element.closest('form').submit();
                     }
                 });
-            } else {
+            } else if (elKalender) {
                 console.warn("Library kalender belum termuat secara sempurna.");
             }
         });
