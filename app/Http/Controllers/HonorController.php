@@ -176,9 +176,27 @@ class HonorController extends Controller
     public function finalisasi($id)
     {
         $periodeHonor = HonorPeriode::findOrFail($id);
+
+        if ($periodeHonor->details()->count() === 0) {
+            return redirect()->back()->with('error', 'Tidak bisa difinalkan: belum ada data honor untuk periode ini. Hitung dulu rekapnya.');
+        }
+
         $periodeHonor->update(['status' => 'final']);
 
-        return redirect()->back()->with('sukses', 'Honor periode ini sudah difinalkan.');
+        return redirect()->back()->with('sukses', 'Honor periode ini sudah difinalkan. Barcode penerimaan kini aktif.');
+    }
+
+    public function buka($id)
+    {
+        $periodeHonor = HonorPeriode::findOrFail($id);
+
+        if ($periodeHonor->status !== 'final') {
+            return redirect()->back()->with('error', 'Hanya periode berstatus Final yang bisa dibuka kembali.');
+        }
+
+        $periodeHonor->update(['status' => 'draft']);
+
+        return redirect()->back()->with('sukses', 'Periode dibuka kembali menjadi Draft. Hitung ulang bila perlu, lalu finalkan lagi.');
     }
 
     public function scanPenerimaan()
@@ -210,7 +228,11 @@ class HonorController extends Controller
             return response()->json(['success' => false, 'pesan' => 'QR bukan token honor guru.'], 422);
         }
 
-        $detail = $this->service->prosesScan($request->qr_data, 'Scan QR');
+        try {
+            $detail = $this->service->prosesScan($request->qr_data, 'Scan QR');
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'pesan' => $e->getMessage()], 409);
+        }
 
         if (!$detail) {
             return response()->json(['success' => false, 'pesan' => 'Token honor tidak ditemukan.'], 404);

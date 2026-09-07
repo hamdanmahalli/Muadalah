@@ -29,6 +29,7 @@ class GuruHonorController extends Controller
 
         $honors = HonorDetail::with(['periode.konfigurasi'])
             ->where('guru_id', $guru->id)
+            ->whereHas('periode', fn($q) => $q->where('status', 'final'))
             ->whereHas('periode.konfigurasi')
             ->orderByDesc('created_at')
             ->get();
@@ -48,7 +49,11 @@ class GuruHonorController extends Controller
             return response()->json(['success' => false, 'pesan' => 'QR bukan token honor guru.'], 422);
         }
 
-        $detail = $this->service->prosesScan($request->qr_data, 'Scan QR Guru');
+        try {
+            $detail = $this->service->prosesScan($request->qr_data, 'Scan QR Guru');
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'pesan' => $e->getMessage()], 409);
+        }
 
         if (!$detail) {
             return response()->json(['success' => false, 'pesan' => 'Token honor tidak ditemukan.'], 404);

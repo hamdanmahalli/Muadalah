@@ -29,6 +29,16 @@ class HonorService
             throw new \Exception('Konfigurasi honor untuk bulan ' . $bulan . ' tahun ' . $tahun . ' belum dibuat.');
         }
 
+        $sudahFinal = HonorPeriode::where('honor_konfigurasi_id', $config->id)
+            ->where('bulan', $bulan)
+            ->where('tahun', $tahun)
+            ->where('status', '!=', 'draft')
+            ->exists();
+
+        if ($sudahFinal) {
+            throw new \Exception('Periode ini sudah difinalkan. Buka kembali dulu untuk menghitung ulang.');
+        }
+
         $periodeHonor = HonorPeriode::updateOrCreate(
             [
                 'honor_konfigurasi_id' => $config->id,
@@ -275,6 +285,11 @@ class HonorService
 
         if (!$detail) {
             return null;
+        }
+
+        $periodeStatus = $detail->periode->status ?? 'draft';
+        if ($periodeStatus !== 'final') {
+            throw new \RuntimeException('Honor belum difinalkan, penerimaan belum bisa dipindai.');
         }
 
         if ($detail->is_diterima) {

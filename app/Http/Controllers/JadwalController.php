@@ -488,6 +488,7 @@ class JadwalController extends Controller
         if ($guru) {
             $honorAll = HonorDetail::with(['periode.konfigurasi'])
                 ->where('guru_id', $guru->id)
+                ->whereHas('periode', fn($q) => $q->where('status', 'final'))
                 ->whereHas('periode.konfigurasi')
                 ->orderByDesc('created_at')
                 ->get();

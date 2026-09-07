@@ -252,6 +252,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/honor/hitung', [\App\Http\Controllers\HonorController::class, 'hitung'])->name('honor.hitung');
         Route::get('/honor/rekap/{id}', [\App\Http\Controllers\HonorController::class, 'rekap'])->name('honor.rekap');
         Route::post('/honor/final/{id}', [\App\Http\Controllers\HonorController::class, 'finalisasi'])->name('honor.final');
+        Route::post('/honor/buka/{id}', [\App\Http\Controllers\HonorController::class, 'buka'])->name('honor.buka');
         Route::get('/honor/scan-penerimaan', [\App\Http\Controllers\HonorController::class, 'scanPenerimaan'])->name('honor.scan');
         Route::post('/honor/proses-scan', [\App\Http\Controllers\HonorController::class, 'prosesScan'])->name('honor.proses-scan');
     });
