@@ -19,7 +19,7 @@ class DashboardService
 {
     protected $namaHariSingkat = [
         'Monday' => 'Sen', 'Tuesday' => 'Sel', 'Wednesday' => 'Rab',
-        'Thursday' => 'Kam', 'Friday' => 'Jum', 'Saturday' => 'Sab', 'Sunday' => 'Min',
+        'Thursday' => 'Kam', 'Friday' => 'Jum', 'Saturday' => 'Sab', 'Sunday' => 'Ahad',
     ];
 
     /**
@@ -51,7 +51,7 @@ class DashboardService
         $totalGuru = Guru::count();
 
         // ===== GRAFIK KEHADIRAN 7 HARI =====
-        $startMinggu = $waktuSekarang->copy()->startOfWeek();
+        $startMinggu = $waktuSekarang->copy()->startOfWeek(Carbon::SATURDAY);
         $labelsGrafik = [];
         $dataHadirGrafik = [];
         $dataIzinGrafik = [];

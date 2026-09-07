@@ -193,9 +193,9 @@ class KehadiranScanService
             return ['status' => 'error', 'pesan' => 'Waktu absen tertutup! Tidak ada KBM yang sedang berlangsung di kelas ini pada pukul ' . Carbon::now()->format('H:i')];
         }
 
-        $jadwalAktif = array_values(array_filter($semuaJadwalRuanganIni, function ($jadwal) use ($blokJamKe) {
-            return in_array((int) $jadwal->jam_ke, $blokJamKe, true);
-        }));
+        $jadwalAktif = $semuaJadwalRuanganIni
+            ->filter(fn ($jadwal) => in_array((int) $jadwal->jam_ke, $blokJamKe, true))
+            ->values()->all();
 
         if (empty($jadwalAktif)) {
             return ['status' => 'error', 'pesan' => 'Waktu absen tertutup! Tidak ada KBM yang sedang berlangsung di kelas ini pada pukul ' . Carbon::now()->format('H:i')];

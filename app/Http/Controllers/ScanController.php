@@ -27,9 +27,9 @@ class ScanController extends Controller
         try {
             $result = $this->scan->proses($request->qr_data);
             return response()->json($result);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Proses scan gagal: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'pesan' => 'Terjadi kesalahan sistem saat memproses scan.']);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Proses scan gagal: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return response()->json(['status' => 'error', 'pesan' => 'Terjadi kesalahan sistem saat memproses scan.'], 200);
         }
     }
 

@@ -4,7 +4,7 @@
     "start_url": "/dashboard-guru",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#4f46e5",
+    "theme_color": "#065f46",
     "orientation": "portrait-primary",
     "icons": [
         {

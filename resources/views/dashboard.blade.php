@@ -162,14 +162,6 @@
                         <span class="text-[11px] font-bold {{ collect($monitorGuruAktif)->where('status','Alpa')->count() > 0 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500' }} px-3 py-1 rounded-full">{{ collect($monitorGuruAktif)->where('status','Alpa')->count() }} alpa</span>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4 px-1 text-[10px] font-bold text-slate-500">
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Hadir</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Izin</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Sakit</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span> Menunggu</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Alpa</span>
-                    </div>
-
                     <div class="flex-1 space-y-2 lg:overflow-y-auto lg:max-h-[430px]">
                         @forelse($monitorGuruAktif as $g)
                         @php
@@ -181,24 +173,13 @@
                                 'Alpa' => 'bg-red-100 text-red-700',
                                 'Menunggu' => 'bg-yellow-100 text-yellow-700',
                             ][$st] ?? 'bg-slate-100 text-slate-600';
-                            $warnaAvatar = [
-                                'Hadir' => 'from-emerald-400 to-teal-500',
-                                'Izin' => 'from-amber-400 to-orange-500',
-                                'Sakit' => 'from-purple-400 to-indigo-500',
-                                'Alpa' => 'from-red-400 to-rose-500',
-                                'Menunggu' => 'from-yellow-400 to-amber-500',
-                            ][$st] ?? 'from-slate-400 to-slate-600';
                         @endphp
                         <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50/70 hover:bg-slate-100 transition">
-                            <div class="w-9 h-9 rounded-full bg-gradient-to-br {{ $warnaAvatar }} flex items-center justify-center text-white text-xs font-black flex-shrink-0">
-                                {{ strtoupper(substr($g['nama'], 0, 1)) }}
-                            </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-slate-800 truncate" title="{{ $g['nama'] }}">{{ $g['nama'] }}</p>
                                 <p class="text-[11px] text-slate-500 font-medium truncate" title="{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_tampil'] ?? $g['jam_ke'] }}">{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_tampil'] ?? $g['jam_ke'] }}</p>
                             </div>
                             <span class="text-[10px] font-bold px-2 py-1 rounded-full {{ $warnaStatus }} flex-shrink-0">{{ $st }}</span>
-                            <a href="/master-guru{{ $g['nig'] ? '?cari='.$g['nig'] : '' }}" class="text-[10px] font-bold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 px-2.5 py-1 rounded-full flex-shrink-0 transition">Profil</a>
                         </div>
                         @empty
                         <div class="text-center py-8">

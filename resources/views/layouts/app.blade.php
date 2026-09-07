@@ -170,7 +170,7 @@
         
         }
 
-        /* ============ SPACING & TIPOGRAFI MENU ============ */
+/* ============ SPACING & TIPOGRAFI MENU ============ */
         .sb-item { font-weight: 500; color: #9ca3af; }
         .sb-item.sb-active { font-weight: 700; color: #fff; }
         .sb-sidebar:hover .sb-item,
@@ -179,7 +179,10 @@
         .sb-sidebar:hover .sb-sub .sb-item { margin: 2px 0; }
 
         /* ============ ITEM MENU & SUB MENU ============ */
-        .sb-group-toggle, .sb-item { width: 95%; border-radius: 0 9999px 9999px 0; } 
+        .sb-group-toggle, .sb-item { width: 95%; border-radius: 0; }
+
+        /* SEMUA SIKU: buang lengkungan di setiap pojok dalam sidebar */
+        .sb-sidebar, .sb-sidebar * { border-radius: 0 !important; }
 
         /* PENGATURAN SUB-MENU (Lebih kecil dari menu utama) */
         .sb-item {
@@ -205,18 +208,18 @@
         
         /* WARNA SUB-MENU SAAT DIPILIH (AKTIF) */
         .sb-item.sb-active {
-            background: rgba(16,185,129,0.08); /* Latar belakang hijau transparan (sama seperti hover) */
-            box-shadow: none; /* Menghapus efek bayangan */
+            background: rgba(16, 185, 129, 0.08); /* Latar belakang hijau transparan */
+            box-shadow: none;
         }
         
         .sb-item.sb-active .sb-text,
         .sb-item.sb-active .sb-icon i {
-            color: #10b981 !important; /* Warna teks & icon berubah jadi hijau emerald */
-            font-weight: 700; /* Memberi efek tebal agar tetap terlihat bahwa ini menu aktif */
+            color: #10b981 !important; /* Teks & icon jadi emerald */
+            font-weight: 700;
         }
         
         /* Hover saat tidak aktif */
-        .sb-item.sb-inactive:hover { background: rgba(16,185,129,0.08); color: #10b981; }
+        .sb-item.sb-inactive:hover { background: rgba(16, 185, 129, 0.08); color: #10b981; }
         .sb-item.sb-inactive:hover .sb-icon,
         .sb-item.sb-inactive:hover .sb-text { color: #10b981 !important; }
 
@@ -237,7 +240,7 @@
         }
         
         /* Hover Menu Utama */
-        .sb-group-toggle:hover { background: rgba(16,185,129,0.08); color: #10b981; }
+        .sb-group-toggle:hover { background: rgba(16, 185, 129, 0.08); color: #10b981; }
         .sb-group-toggle:hover .sb-gicon i,
         .sb-group-toggle:hover .sb-glabel,
         .sb-group-toggle:hover .sb-chev { color: #10b981 !important; }
@@ -285,7 +288,7 @@
     <!-- ================= PWA SETUP ================= -->
     <!-- Memanggil KTP Aplikasi -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#065f46">
     <!-- Ikon khusus untuk perangkat Apple / iOS -->
     <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
 
@@ -306,10 +309,10 @@
     </script>
     <!-- ============================================= -->
 </head>
-        <body data-turbo="false" class="bg-[#f4f7f6] flex h-screen overflow-hidden text-sm antialiased p-0 md:p-6">
+        <body data-turbo="false" class="bg-[#f4f7f6] flex h-screen overflow-hidden text-sm antialiased p-0">
 
-            <!-- CONTAINER-SHELL: frame bulat 2.5rem + pemotong otomatis (overflow:hidden) -->
-            <div class="sb-shell flex flex-1 overflow-hidden rounded-[2.5rem] shadow-2xl bg-white border border-gray-100">
+            <!-- CONTAINER-SHELL: full-bleed, tanpa lengkungan & tanpa frame -->
+            <div class="sb-shell flex flex-1 overflow-hidden bg-white">
 
             <!-- OFFLINE NOTIF: Mode Ofline -->
             <div id="offline-banner" role="alert" aria-label="Mode Ofline">
@@ -323,7 +326,7 @@
             <!-- NOTIFIKASI REUSABLE (atas, auto-hilang) -->
             <div id="notif-stack" role="status" aria-live="polite"></div>
 
-            <aside id="sidebar" class="sb-sidebar fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-50 flex flex-col shadow-2xl md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 overflow-hidden transition-[width,transform] duration-300 ease-in-out">
+            <aside id="sidebar" class="sb-sidebar fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 flex flex-col shadow-md md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 overflow-hidden transition-[width,transform] duration-300 ease-in-out">
                 @php
                     $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
                     $teksPeriode = $periodeAktif ? 'TA. ' . $periodeAktif->tahun_ajaran . ' (' . $periodeAktif->semester . ')' : '⚠ Periode Belum Diatur';
@@ -366,9 +369,9 @@
                     <div class="sb-group {{ $gBeranda ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
-                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-th-large text-xl text-slate-500"></i></span>
-                                <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Beranda &amp; Monitoring</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-th-large text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Beranda &amp; Monitoring</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -376,7 +379,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/dashboard-utama" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('/') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-desktop text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Dashboard</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Dashboard</span>
                                 </a>
                             </div>
                             @endcan
@@ -384,13 +387,13 @@
                             <div class="relative flex items-center group">
                                 <a href="/meja-kontrol" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('meja-kontrol') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-tv text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Meja Kontrol</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Meja Kontrol</span>
                                 </a>
                             </div>
                             <div class="relative flex items-center group">
                                 <a href="/monitoring-kehadiran" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('monitoring-kehadiran*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-user-check text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Monitoring Kehadiran</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Monitoring Kehadiran</span>
                                 </a>
                             </div>
                             @endcan
@@ -398,7 +401,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/laporan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('laporan') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-print text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Rekap Laporan</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Rekap Laporan</span>
                                 </a>
                             </div>
                             @endcan
@@ -406,7 +409,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/pabrik-barcode" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('pabrik-barcode') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-barcode text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Cetak Barcode</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Cetak Barcode</span>
                                 </a>
                             </div>
                             @endcanany
@@ -414,7 +417,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/agenda-kegiatan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('agenda-kegiatan*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-alt text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Agenda Kegiatan</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Agenda Kegiatan</span>
                                 </a>
                             </div>
                             @endcan
@@ -427,9 +430,9 @@
                     <div class="sb-group {{ $gMaster ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
-                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-database text-xl text-slate-500"></i></span>
-                                <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Master Data</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-database text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Master Data</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -437,7 +440,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-guru" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-guru*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-chalkboard-teacher text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Master Pengurus/Guru</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Master Pengurus/Guru</span>
                                 </a>
                             </div>
                             @endcan
@@ -445,7 +448,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-jabatan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-jabatan*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-briefcase text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Master Jabatan</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Master Jabatan</span>
                                 </a>
                             </div>
                             @endcan
@@ -453,7 +456,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-kelas" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-kelas*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-school text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Master Kelas</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Master Kelas</span>
                                 </a>
                             </div>
                             @endcan
@@ -461,7 +464,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-pelajaran" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-book-open text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Master Pelajaran</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Master Pelajaran</span>
                                 </a>
                             </div>
                             @endcan
@@ -469,7 +472,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/batas-pelajaran" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('batas-pelajaran*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-layer-group text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Batas Pelajaran</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Batas Pelajaran</span>
                                 </a>
                             </div>
                             @endcan
@@ -477,7 +480,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-siswa" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-siswa*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-user-graduate text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Master Siswa</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Master Siswa</span>
                                 </a>
                             </div>
                             @endcan
@@ -485,7 +488,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-periode" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-periode*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-check text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Master Periode</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Master Periode</span>
                                 </a>
                             </div>
                             @endcan
@@ -498,9 +501,9 @@
                     <div class="sb-group {{ $gJadwal ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
-                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-alt text-xl text-slate-500"></i></span>
-                                <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Jadwal &amp; Kaldik</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-alt text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Jadwal &amp; Kaldik</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -508,7 +511,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-hari-operasional" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-hari-operasional*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-week text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Hari Operasional</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Hari Operasional</span>
                                 </a>
                             </div>
                             @endcan
@@ -516,7 +519,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/agenda-kaldik" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('agenda-kaldik*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-times text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Kalender Pendidikan</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Kalender Pendidikan</span>
                                 </a>
                             </div>
                             @endcan
@@ -524,7 +527,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/pengumuman" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('pengumuman*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-bullhorn text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Pengumuman</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Pengumuman</span>
                                 </a>
                             </div>
                             @endcan
@@ -532,7 +535,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-plot-jadwal" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-plot-jadwal*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-sitemap text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Target Mengajar</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Target Mengajar</span>
                                 </a>
                             </div>
                             @endcan
@@ -540,7 +543,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-jadwal-harian" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-jadwal-harian*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-alt text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Jadwal Harian</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Jadwal Harian</span>
                                 </a>
                             </div>
                             @endcan
@@ -548,7 +551,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/riwayat-mutasi" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('riwayat-mutasi*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-history text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Riwayat Mutasi Jadwal</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Riwayat Mutasi Jadwal</span>
                                 </a>
                             </div>
                             @endcan
@@ -561,9 +564,9 @@
                     <div class="sb-group {{ $gGuru ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
-                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-chalkboard-teacher text-xl text-slate-500"></i></span>
-                                <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Guru</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-chalkboard-teacher text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Guru</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -571,7 +574,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/dashboard-guru" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('dashboard-guru') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-chalkboard-teacher text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Beranda Guru</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Beranda Guru</span>
                                 </a>
                             </div>
                             @endcan
@@ -579,7 +582,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/jadwal-saya" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('jadwal-saya') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calendar-check text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Jadwal Saya</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Jadwal Saya</span>
                                 </a>
                             </div>
                             @endcan
@@ -587,7 +590,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/scan-kelas" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('scan-kelas') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-qrcode text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Scan Hadir</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Scan Hadir</span>
                                 </a>
                             </div>
                             @endcan
@@ -595,7 +598,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/siswa-saya" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('siswa-saya*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-user-friends text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Siswa Saya (Wali)</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Siswa Saya (Wali)</span>
                                 </a>
                             </div>
                             @endcan
@@ -608,9 +611,9 @@
                     <div class="sb-group {{ $gSiswa ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
-                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-user-graduate text-xl text-slate-500"></i></span>
-                                <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Siswa</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-user-graduate text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Siswa</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -618,7 +621,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/penempatan-siswa" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('penempatan-siswa*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-people-arrows text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Penempatan Siswa</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Penempatan Siswa</span>
                                 </a>
                             </div>
                             @endcan
@@ -626,7 +629,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/absen-siswa" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('absen-siswa*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-clipboard-check text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Absensi Siswa</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Absensi Siswa</span>
                                 </a>
                             </div>
                             @endcan
@@ -634,7 +637,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/input-nilai" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('input-nilai*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-clipboard-list text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Input Nilai</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Input Nilai</span>
                                 </a>
                             </div>
                             @endcan
@@ -642,13 +645,13 @@
                             <div class="relative flex items-center group">
                                 <a href="/raport" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('raport*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-file-alt text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Raport</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Raport</span>
                                 </a>
                             </div>
                             <div class="relative flex items-center group">
                                 <a href="/laporan-siswa" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('laporan-siswa*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-print text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Laporan Siswa</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Laporan Siswa</span>
                                 </a>
                             </div>
                             @endcan
@@ -656,7 +659,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/tagihan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('tagihan*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-file-invoice-dollar text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Tagihan &amp; Pembayaran</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Tagihan &amp; Pembayaran</span>
                                 </a>
                             </div>
                             @endcan
@@ -669,9 +672,9 @@
                     <div class="sb-group {{ $gSetup ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
-                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-cog text-xl text-slate-500"></i></span>
-                                <span class="sb-glabel flex-1 text-left text-sm font-bold text-slate-500">Pengaturan Sistem</span>
-                                <i class="fas fa-chevron-down sb-chev text-xs text-slate-400 ml-auto flex-shrink-0"></i>
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-cog text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Pengaturan Sistem</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
                             </button>
                         </div>
                         <div class="sb-sub">
@@ -679,7 +682,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/setup-user" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('setup-user') || request()->is('user*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-users-cog text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Setup User</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Setup User</span>
                                 </a>
                             </div>
                             @endcan
@@ -687,7 +690,7 @@
                             <div class="relative flex items-center group">
                                 <a href="/manajemen-akses" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('manajemen-akses') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-key text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Hak Akses</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Hak Akses</span>
                                 </a>
                             </div>
                             @endcan
@@ -695,21 +698,21 @@
                             <div class="relative flex items-center group">
                                 <a href="/master-import" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-import*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-file-excel text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Pusat Import</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Pusat Import</span>
                                 </a>
                             </div>
                             @endcan
                             <div class="relative flex items-center group">
                                 <a href="/backup-restore" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('backup-restore*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-database text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Manajemen Database</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Manajemen Database</span>
                                 </a>
                             </div>
                             @role('Administrator')
                             <div class="relative flex items-center group">
                                 <a href="/panduan-aplikasi" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('panduan-aplikasi*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-book-open text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold text-slate-500">Panduan Aplikasi</span>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Panduan Aplikasi</span>
                                 </a>
                             </div>
                             @endrole
@@ -719,7 +722,7 @@
 
                     <!-- LOGO CARI: ikon saja, di atas user -->
                     <div class="sb-search-logo px-6 pt-1 pb-2 flex justify-center">
-                        <button type="button" class="w-9 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-[#00c0c7] hover:bg-[#00c0c7]/10 transition cursor-pointer">
+                        <button type="button" class="w-9 h-8 flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 transition cursor-pointer">
                             <i class="fas fa-search text-xl"></i>
                         </button>
                     </div>
@@ -730,13 +733,13 @@
                 <div class="sb-footer shrink-0 p-3 border-t border-slate-100">
                     
                     <!-- USER: klik -> buka dropdown (Ganti Password + Logout) -->
-                    <button id="user-trigger" onclick="toggleUserMenu(this)" type="button" class="w-full flex items-center gap-3 p-2 rounded-2xl hover:bg-slate-50 transition cursor-pointer">
-                        <!-- Lingkaran Avatar tetap seperti semula -->
-                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-[#00c0c7] to-[#00a8b8] flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0">
+                    <button id="user-trigger" onclick="toggleUserMenu(this)" type="button" class="w-full flex items-center gap-3 p-2 hover:bg-emerald-50 transition cursor-pointer">
+                        <!-- Avatar tetap bulat & aksen emerald -->
+                        <div class="h-10 w-10 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0">
                             <i class="fas fa-user text-sm"></i>
                         </div>
                         <div class="sb-footer-txt flex-1 text-left min-w-0 overflow-hidden">
-                            <p class="text-sm font-bold text-slate-500 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
+                            <p class="text-sm font-bold text-slate-600 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
                             <p class="text-[11px] font-semibold text-slate-400 truncate">{{ auth()->user()->role ?? 'Role' }}</p>
                         </div>
                         <i class="sb-footer-chev fas fa-chevron-down text-xs text-slate-400"></i>
@@ -744,18 +747,18 @@
                 </div>
 
                 <!-- DROPDOWN USER (fixed overlay: Ganti Password + Logout) -->
-                <div id="user-dropdown" class="hidden fixed z-[80] w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex items-center space-x-3 bg-gradient-to-br from-[#00c0c7]/10 to-[#00a8b8]/10">
-                        <div class="h-11 w-11 rounded-full bg-gradient-to-br from-[#00c0c7] to-[#00a8b8] flex items-center justify-center text-white flex-shrink-0 shadow-md">
+                <div id="user-dropdown" class="hidden fixed z-[80] w-64 bg-white shadow-2xl border border-slate-100 overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center space-x-3 bg-gradient-to-br from-emerald-500/10 to-emerald-600/10">
+                        <div class="h-11 w-11 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white flex-shrink-0 shadow-md">
                             <i class="fas fa-user"></i>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-sm font-black text-slate-500 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
+                            <p class="text-sm font-black text-slate-700 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
                             <p class="text-xs text-slate-500 font-semibold truncate">{{ auth()->user()->role ?? 'Role' }}</p>
                         </div>
                     </div>
                     <div class="p-2">
-                        <button type="button" onclick="bukaModalGantiPassword()" class="w-full flex items-center px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-[#00c0c7]/10 hover:text-[#0e9aa0] rounded-lg transition text-left cursor-pointer">
+                        <button type="button" onclick="bukaModalGantiPassword()" class="w-full flex items-center px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition text-left cursor-pointer">
                             <i class="fas fa-key w-6 text-slate-400"></i> Ganti Password
                         </button>
                     </div>
