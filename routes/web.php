@@ -197,8 +197,8 @@ Route::middleware(['auth'])->group(function () {
     // ----------------------------------------------------------
     // ZONA PUSAT IMPORT DATA (EXCEL)
     // ----------------------------------------------------------
-    // Untuk keamanan, rute ini kita lindungi dengan hak akses admin data master
-    Route::middleware(['can:akses_master_guru'])->group(function () {
+// Untuk keamanan, rute ini dilindungi hak akses akses_import_excel (diatur via Hak Akses)
+    Route::middleware(['can:akses_import_excel'])->group(function () {
         Route::get('/master-import', [MasterImportController::class, 'index'])->name('master.import');
         Route::post('/master-import/kelas', [MasterImportController::class, 'importKelas']);
         Route::post('/master-import/pelajaran', [MasterImportController::class, 'importPelajaran']);
@@ -268,8 +268,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/riwayat-mutasi/kelola-tanggal', [\App\Http\Controllers\RiwayatMutasiController::class, 'simpanTanggal']);
     });
 
-    // Backup/dan Restore hanya untuk Administrator (karena bersifat total & destruktif)
-    Route::middleware(['role:Administrator'])->group(function () {
+    // Backup dan Restore (total & destruktif) — dikunci akses_backup_restore via Hak Akses
+    Route::middleware(['can:akses_backup_restore'])->group(function () {
         Route::get('/backup-restore', [DatabaseManagerController::class, 'index']);
         Route::post('/backup-restore/export', [DatabaseManagerController::class, 'exportSql']);
         Route::post('/backup-restore/import', [DatabaseManagerController::class, 'importSql']);

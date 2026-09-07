@@ -407,14 +407,14 @@
                                 </a>
                             </div>
                             @endcan
-                            @canany(['akses_jadwal_saya', 'akses_master_kelas'])
+                            @can('akses_jadwal_saya')
                             <div class="relative flex items-center group">
                                 <a href="/pabrik-barcode" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('pabrik-barcode') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-barcode text-xl"></i></div>
                                     <span class="sb-text flex-1 text-left text-sm font-semibold">Cetak Barcode</span>
                                 </a>
                             </div>
-                            @endcanany
+                            @endcan
                             @can('akses_agenda')
                             <div class="relative flex items-center group">
                                 <a href="/agenda-kegiatan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('agenda-kegiatan*') ? 'sb-active' : 'sb-inactive' }}">
@@ -669,7 +669,7 @@
                     </div>
                     @endcanany
 
-                    @canany(['akses_manajemen_user', 'akses_manajemen_akses', 'akses_master_guru'])
+                    @canany(['akses_manajemen_user', 'akses_manajemen_akses', 'akses_master_guru', 'akses_import_excel', 'akses_backup_restore'])
                     <!-- GRUP: PENGATURAN SISTEM -->
                     <div class="sb-group {{ $gSetup ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
@@ -696,7 +696,7 @@
                                 </a>
                             </div>
                             @endcan
-                            @can('akses_master_guru')
+                            @can('akses_import_excel')
                             <div class="relative flex items-center group">
                                 <a href="/master-import" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-import*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-file-excel text-xl"></i></div>
@@ -704,12 +704,14 @@
                                 </a>
                             </div>
                             @endcan
+                            @can('akses_backup_restore')
                             <div class="relative flex items-center group">
                                 <a href="/backup-restore" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('backup-restore*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-database text-xl"></i></div>
                                     <span class="sb-text flex-1 text-left text-sm font-semibold">Manajemen Database</span>
                                 </a>
                             </div>
+                            @endcan
                             @role('Administrator')
                             <div class="relative flex items-center group">
                                 <a href="/panduan-aplikasi" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('panduan-aplikasi*') ? 'sb-active' : 'sb-inactive' }}">

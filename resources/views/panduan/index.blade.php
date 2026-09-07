@@ -184,7 +184,7 @@
             <h3 class="pg-h3">Batas Pelajaran / Target Kurikulum (akses_master_pelajaran)</h3>
             <p class="pg-p">Menentukan target kemajuan kurikulum per mapel per periode: <em>mulai_dari</em>, batas UTS/UAS ganjil &amp; genap, per tingkat. Dipakai guru untuk melihat target capaian pada <em>Beranda Guru</em>.</p>
 
-            <h3 class="pg-h3">Pusat Import (akses_master_guru)</h3>
+            <h3 class="pg-h3">Pusat Import (akses_import_excel)</h3>
             <p class="pg-p">Import massal dari Excel: Kelas, Pelajaran, Guru, Plot Jadwal, Jadwal Harian. Berguna untuk migrasi data awal (templat — isi sesuai kolom yang diminta). <strong>Catatan:</strong> import plot/jadwal digunakan untuk pengisian massal; perubahan manual via menu tetap direkomendasikan untuk akurasi.</p>
         </div>
 
@@ -253,7 +253,7 @@
             <h3 class="pg-h3">Hak Akses (akses_manajemen_akses)</h3>
             <p class="pg-p">Matriks peran × kunci akses. Admin dapat menambah/menghapus permission dari tiap peran tanpa ubah kode.</p>
 
-            <h3 class="pg-h3">Manajemen Database</h3>
+            <h3 class="pg-h3">Manajemen Database (akses_backup_restore)</h3>
             <p class="pg-p">Ekspor (backup) seluruh database ke file SQL dan impor (restore) dari file SQL. Sangat disarankan backup berkala sebelum perubahan besar.</p>
         </div>
 
