@@ -72,7 +72,7 @@
                         </td>
                         <td class="py-3.5 px-4 text-center">
                             @if($item->gambar)
-                                <img src="{{ asset('storage/' . $item->gambar) }}" alt="BG" class="h-10 w-16 object-cover rounded-lg border border-gray-200">
+                                <img src="{{ asset('uploads/' . $item->gambar) }}" alt="BG" class="h-10 w-16 object-cover rounded-lg border border-gray-200">
                             @else
                                 <span class="text-gray-400 text-[11px]">-</span>
                             @endif
@@ -290,7 +290,7 @@
         var preview = document.getElementById('edit_gambar_preview');
         if (preview) {
             if (btn.dataset.gambar) {
-                preview.innerHTML = '<img src="/storage/' + btn.dataset.gambar + '" alt="BG" class="h-16 w-28 object-cover rounded-lg border border-gray-200">';
+                preview.innerHTML = '<img src="/uploads/' + btn.dataset.gambar + '" alt="BG" class="h-16 w-28 object-cover rounded-lg border border-gray-200">';
             } else {
                 preview.innerHTML = '';
             }

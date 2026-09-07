@@ -25,9 +25,9 @@ class PengumumanController extends Controller
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
         ]);
 
-        $gambar = null;
+$gambar = null;
         if ($request->hasFile('gambar')) {
-            $gambar = $request->file('gambar')->store('pengumuman', 'public');
+            $gambar = $request->file('gambar')->store('pengumuman', 'public_uploads');
         }
 
         Pengumuman::create([
@@ -59,11 +59,11 @@ class PengumumanController extends Controller
         $item = Pengumuman::findOrFail($id);
 
         $gambar = $item->gambar;
-        if ($request->hasFile('gambar')) {
-            if ($item->gambar && \Illuminate\Support\Facades\Storage::disk('public')->exists($item->gambar)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($item->gambar);
+if ($request->hasFile('gambar')) {
+            if ($item->gambar && \Illuminate\Support\Facades\Storage::disk('public_uploads')->exists($item->gambar)) {
+                \Illuminate\Support\Facades\Storage::disk('public_uploads')->delete($item->gambar);
             }
-            $gambar = $request->file('gambar')->store('pengumuman', 'public');
+            $gambar = $request->file('gambar')->store('pengumuman', 'public_uploads');
         }
 
         $item->update([

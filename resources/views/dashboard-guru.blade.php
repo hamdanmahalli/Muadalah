@@ -92,7 +92,7 @@
             @foreach($pengumumans as $peng)
             <div class="snap-center shrink-0 w-full rounded-3xl p-6 shadow-[0_22px_45px_-18px_rgba(15,23,42,0.5)] relative overflow-hidden bg-gradient-to-br {{ $warnaPengumuman[$peng->warna] ?? $warnaPengumuman['emerald'] }}">
                 @if($peng->gambar)
-                <div class="absolute inset-0 bg-cover bg-center pointer-events-none" style="background-image:url('{{ asset('storage/' . $peng->gambar) }}');"></div>
+                <div class="absolute inset-0 bg-cover bg-center pointer-events-none" style="background-image:url('{{ asset('uploads/' . $peng->gambar) }}');"></div>
                 @else
                 <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 200 200%27%3E%3Cg fill=%27none%27 stroke=%27white%27 stroke-width=%271.5%27%3E%3Cpath d=%27M100 10 L190 190 H10 Z%27/%3E%3Cpath d=%27M100 45 L155 190 H45 Z%27/%3E%3Cpath d=%27M100 80 L120 190 H80 Z%27/%3E%3Ccircle cx=%27100%27 cy=%27100%27 r=%2770%27/%3E%3Ccircle cx=%27100%27 cy=%27100%27 r=%2750%27/%3E%3Ccircle cx=%27100%27 cy=%27100%27 r=%2730%27/%3E%3C/g%3E%3C/svg%3E');background-size:200px 200px;background-repeat:repeat;background-position:center;"></div>
                 <div class="absolute -right-10 -top-12 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
