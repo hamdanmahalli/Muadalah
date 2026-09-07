@@ -523,7 +523,12 @@ class JadwalController extends Controller
             return redirect('/dashboard-guru')->with('pesan', 'Akun Anda belum terhubung dengan Data Master Guru.');
         }
 
-        return view('guru.profil-lengkap', compact('guru'));
+        $guru->load(['jabatans', 'dokumens']);
+
+        $editMode = (bool) $guru->boleh_edit_profil;
+        $isAdmin = $user->can('akses_master_guru');
+
+        return view('guru.kelengkapan', compact('guru', 'editMode', 'isAdmin'));
     }
 
     public function updateProfil(Request $request)
@@ -535,14 +540,26 @@ class JadwalController extends Controller
             return back()->with('error', 'Data Guru tidak ditemukan.');
         }
 
-        $data = $request->only([
-            'nama_guru', 'no_hp', 'gender', 'alamat', 'status', 'alamat_asal',
-            'tempat_lahir', 'tanggal_lahir', 'pendidikan', 'nama_ayah', 'nama_ibu',
-            'alamat_ortu', 'foto', 'email_pribadi',
-        ]);
+        if (!$guru->boleh_edit_profil && !$user->can('akses_master_guru')) {
+            return back()->with('error', 'Pengeditan profil belum diizinkan. Silakan hubungi Administrator/Pimpinan.');
+        }
 
-        $guru->update($data);
+        // Guru tidak boleh mengubah status keaktifan ataupun jabatan
+        $fields = [
+            'nama_guru', 'nip', 'no_hp', 'gender', 'alamat',
+            'tempat_lahir', 'tanggal_lahir', 'pendidikan_terakhir',
+            'jarak_km', 'nik', 'nik_kk', 'agama', 'kewarganegaraan', 'rt', 'rw',
+            'kelurahan', 'kecamatan', 'kabupaten_kota', 'kode_pos', 'nuptk', 'nrg',
+            'status_kepegawaian', 'golongan_ruang', 'program_studi', 'perguruan_tinggi',
+            'tahun_lulus', 'status_sertifikasi', 'no_sertifikat_pendidik', 'tahun_sertifikasi',
+            'tmt_kerja', 'no_sk_pengangkatan', 'tgl_sk_pengangkatan', 'no_sk_pembagian_tugas',
+            'npwp', 'nama_bank', 'no_rekening', 'atas_nama_rekening',
+            'bpjs_ketenagakerjaan', 'bpjs_kesehatan', 'status_menikah', 'nama_pasangan',
+            'jumlah_anak',
+        ];
 
-        return back()->with('status', 'Biodata profil berhasil diperbarui!');
+        app(\App\Services\GuruKelengkapanService::class)->simpan($guru, $request->all(), $fields);
+
+        return back()->with('status', 'Profil & kelengkapan data berhasil diperbarui!');
     }
 }

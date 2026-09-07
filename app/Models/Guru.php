@@ -57,6 +57,7 @@ class Guru extends Model
         'status_menikah',
         'nama_pasangan',
         'jumlah_anak',
+        'boleh_edit_profil',
     ];
 
     protected $casts = [
@@ -66,6 +67,7 @@ class Guru extends Model
         'tgl_sk_pengangkatan'    => 'date',
         'status_sertifikasi'     => 'boolean',
         'jumlah_anak'            => 'integer',
+        'boleh_edit_profil'      => 'boolean',
     ];
 
     // Kelas yang diampu sebagai wali kelas

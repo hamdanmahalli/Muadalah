@@ -11,11 +11,15 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\GuruExport;
 use App\Imports\GuruImport;
 use App\Services\GuruService;
+use App\Services\GuruKelengkapanService;
+use App\Services\AuthenticatedGuruService;
 
 class GuruController extends Controller
 {
     public function __construct(
-        protected GuruService $guruService
+        protected GuruService $guruService,
+        protected GuruKelengkapanService $kelengkapanService,
+        protected AuthenticatedGuruService $guruContext,
     ) {}
 
     public function index(Request $request)
@@ -110,8 +114,67 @@ class GuruController extends Controller
     }
 
     // ========================================================
-    // KELENGKAPAN DATA PEMERINTAH & HONOR (per guru)
+    // KELENGKAPAN DATA GURU (data dasar + kelengkapan + dokumen)
+    // diakses Admin/TU dari Master Guru, dan guru dari menu Profil
     // ========================================================
+
+    private function bolehKelola(Guru $guru): bool
+    {
+        $user = auth()->user();
+        if ($user->can('akses_master_guru')) {
+            return true;
+        }
+        if ($user->hasAnyRole(['Administrator', 'Pimpinan'])) {
+            return true;
+        }
+
+        $saya = $this->guruContext->fromUser($user);
+        return $saya && $saya->id === $guru->id && (bool) $guru->boleh_edit_profil;
+    }
+
+    private function bolehTampil(Guru $guru): bool
+    {
+        $user = auth()->user();
+        if ($user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan'])) {
+            return true;
+        }
+
+        $saya = $this->guruContext->fromUser($user);
+        return $saya && $saya->id === $guru->id;
+    }
+
+    // Halaman gabungan: data dasar master guru + kelengkapan + dokumen
+    public function kelengkapan($id)
+    {
+        $guru = Guru::with(['jabatans', 'dokumens'])->findOrFail($id);
+
+        if (!$this->bolehTampil($guru)) {
+            abort(403, 'Anda tidak berhak membuka data kelengkapan guru ini.');
+        }
+
+        $user = auth()->user();
+
+        $editMode    = (bool) $guru->boleh_edit_profil;
+        $isAdmin     = $user->can('akses_master_guru');
+        $bolehToggle = $user->hasAnyRole(['Administrator', 'Pimpinan']);
+        $editable    = $this->bolehKelola($guru);
+        $jabatans    = Jabatan::orderBy('nama_jabatan', 'asc')->get();
+
+        return view('admin.guru-kelengkapan', compact('guru', 'editMode', 'isAdmin', 'bolehToggle', 'editable', 'jabatans'));
+    }
+
+    // Tombol "Aktifkan Edit" / "Nonaktifkan Edit" (khusus Administrator/Pimpinan)
+    public function toggleEditKelengkapan($id)
+    {
+        $user = auth()->user();
+        abort_unless($user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan']), 403);
+
+        $guru = Guru::findOrFail($id);
+        $guru->update(['boleh_edit_profil' => !$guru->boleh_edit_profil]);
+
+        $status = $guru->boleh_edit_profil ? 'Pengeditan DIAKTIFKAN untuk ' . $guru->nama_guru . '.' : 'Pengeditan DINONAKTIFKAN untuk ' . $guru->nama_guru . '.';
+        return redirect()->back()->with('sukses', $status);
+    }
 
     public function detail($id)
     {
@@ -126,60 +189,38 @@ class GuruController extends Controller
         return response()->json($data);
     }
 
+    private const BIDANG_DASAR_ADMIN = [
+        'nama_guru', 'nip', 'no_hp', 'gender', 'alamat', 'status',
+        'tempat_lahir', 'tanggal_lahir', 'pendidikan_terakhir',
+    ];
+
+    private const BIDANG_KELENGKAPAN = [
+        'jarak_km', 'nik', 'nik_kk', 'agama', 'kewarganegaraan', 'rt', 'rw',
+        'kelurahan', 'kecamatan', 'kabupaten_kota', 'kode_pos', 'nuptk', 'nrg',
+        'status_kepegawaian', 'golongan_ruang', 'program_studi', 'perguruan_tinggi',
+        'tahun_lulus', 'status_sertifikasi', 'no_sertifikat_pendidik', 'tahun_sertifikasi',
+        'tmt_kerja', 'no_sk_pengangkatan', 'tgl_sk_pengangkatan', 'no_sk_pembagian_tugas',
+        'npwp', 'nama_bank', 'no_rekening', 'atas_nama_rekening',
+        'bpjs_ketenagakerjaan', 'bpjs_kesehatan', 'status_menikah', 'nama_pasangan',
+        'jumlah_anak',
+    ];
+
     public function simpanKelengkapan(Request $request, $id)
     {
         $guru = Guru::findOrFail($id);
 
-        $validated = $request->validate([
-            'jarak_km'              => 'nullable|numeric|min:0|max:9999.99',
-            'nik'                   => 'nullable|string|max:16',
-            'nik_kk'                => 'nullable|string|max:16',
-            'agama'                 => 'nullable|string|max:50',
-            'kewarganegaraan'       => 'nullable|string|max:50',
-            'rt'                    => 'nullable|string|max:10',
-            'rw'                    => 'nullable|string|max:10',
-            'kelurahan'             => 'nullable|string|max:100',
-            'kecamatan'             => 'nullable|string|max:100',
-            'kabupaten_kota'        => 'nullable|string|max:100',
-            'kode_pos'              => 'nullable|string|max:5',
-            'nuptk'                 => 'nullable|string|max:30',
-            'nrg'                   => 'nullable|string|max:30',
-            'status_kepegawaian'    => 'nullable|string|max:50',
-            'golongan_ruang'        => 'nullable|string|max:20',
-            'program_studi'         => 'nullable|string|max:100',
-            'perguruan_tinggi'      => 'nullable|string|max:150',
-            'tahun_lulus'           => 'nullable|digits:4',
-            'status_sertifikasi'    => 'nullable|boolean',
-            'no_sertifikat_pendidik'=> 'nullable|string|max:50',
-            'tahun_sertifikasi'     => 'nullable|digits:4',
-            'tmt_kerja'             => 'nullable|date',
-            'no_sk_pengangkatan'    => 'nullable|string|max:100',
-            'tgl_sk_pengangkatan'   => 'nullable|date',
-            'no_sk_pembagian_tugas' => 'nullable|string|max:100',
-            'npwp'                  => 'nullable|string|max:30',
-            'nama_bank'             => 'nullable|string|max:50',
-            'no_rekening'           => 'nullable|string|max:30',
-            'atas_nama_rekening'    => 'nullable|string|max:150',
-            'bpjs_ketenagakerjaan'  => 'nullable|string|max:30',
-            'bpjs_kesehatan'        => 'nullable|string|max:30',
-            'status_menikah'        => 'nullable|string|max:20',
-            'nama_pasangan'         => 'nullable|string|max:150',
-            'jumlah_anak'           => 'nullable|integer|min:0|max:99',
-        ]);
-
-        // Normalisasi: string kosong → null (agar DB rapi)
-        foreach ($validated as $key => $value) {
-            if (is_string($value) && trim($value) === '') {
-                $validated[$key] = null;
-            }
+        if (!$this->bolehKelola($guru)) {
+            abort(403, 'Anda tidak berhak menyimpan data kelengkapan guru ini.');
         }
 
-        $validated['status_sertifikasi'] = (bool) ($request->status_sertifikasi ?? false);
-        $validated['kewarganegaraan']    = $validated['kewarganegaraan'] ?: 'WNI';
-        $validated['jumlah_anak']        = $validated['jumlah_anak'] ?? 0;
-        $validated['jarak_km']           = $validated['jarak_km'] ?? null;
+        $isAdmin = auth()->user()->can('akses_master_guru');
 
-        $guru->update($validated);
+        $this->kelengkapanService->simpan(
+            $guru,
+            $request->all(),
+            array_merge(self::BIDANG_DASAR_ADMIN, self::BIDANG_KELENGKAPAN),
+            syncJabatan: $isAdmin
+        );
 
         return redirect()->back()->with('sukses', 'Data kelengkapan ' . $guru->nama_guru . ' berhasil disimpan!');
     }
@@ -187,6 +228,22 @@ class GuruController extends Controller
     public function uploadDokumen(Request $request, $id)
     {
         $guru = Guru::findOrFail($id);
+        return $this->simpanUploadDokumen($request, $guru);
+    }
+
+    // Unggah dokumen oleh guru dari halaman Profil (data milik sendiri)
+    public function uploadDokumenProfil(Request $request)
+    {
+        $guru = $this->guruContext->fromUser(auth()->user());
+        abort_unless($guru, 404);
+        return $this->simpanUploadDokumen($request, $guru);
+    }
+
+    private function simpanUploadDokumen(Request $request, Guru $guru)
+    {
+        if (!$this->bolehKelola($guru)) {
+            abort(403, 'Anda tidak berhak mengunggah dokumen guru ini.');
+        }
 
         $request->validate([
             'jenis'      => 'required|string|max:50',
@@ -210,6 +267,10 @@ class GuruController extends Controller
     public function hapusDokumen($id)
     {
         $dok = GuruDokumen::findOrFail($id);
+
+        if (!$this->bolehKelola($dok->guru)) {
+            abort(403, 'Anda tidak berhak menghapus dokumen ini.');
+        }
 
         if (Storage::disk('public_uploads')->exists($dok->file_path)) {
             Storage::disk('public_uploads')->delete($dok->file_path);

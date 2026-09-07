@@ -114,11 +114,14 @@ Route::middleware(['auth'])->group(function () {
     // ZONA MASTER DATA DASAR
     // ----------------------------------------------------------
     Route::resource('master-guru', GuruController::class)->middleware('can:akses_master_guru');
-    // Kelengkapan data guru (data pemerintah + upload dokumen)
+    // Kelengkapan data guru (data dasar + kelengkapan + dokumen).
+    // Izin dilihat di dalam controller: akses_master_guru || Administrator/Pimpinan.
+    Route::get('/master-guru/{id}/kelengkapan', [GuruController::class, 'kelengkapan']);
+    Route::post('/master-guru/{id}/kelengkapan/toggle', [GuruController::class, 'toggleEditKelengkapan']);
+    Route::post('/master-guru/{id}/kelengkapan', [GuruController::class, 'simpanKelengkapan']);
+    Route::post('/master-guru/{id}/dokumen', [GuruController::class, 'uploadDokumen']);
+    Route::post('/master-guru-dokumen/{id}/hapus', [GuruController::class, 'hapusDokumen']);
     Route::get('/master-guru/{id}/detail', [GuruController::class, 'detail'])->middleware('can:akses_master_guru');
-    Route::post('/master-guru/{id}/kelengkapan', [GuruController::class, 'simpanKelengkapan'])->middleware('can:akses_master_guru');
-    Route::post('/master-guru/{id}/dokumen', [GuruController::class, 'uploadDokumen'])->middleware('can:akses_master_guru');
-    Route::post('/master-guru-dokumen/{id}/hapus', [GuruController::class, 'hapusDokumen'])->middleware('can:akses_master_guru');
     Route::resource('master-jabatan', JabatanController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('can:akses_master_guru');
     Route::resource('master-pelajaran', PelajaranController::class)->middleware('can:akses_master_pelajaran');
     Route::resource('master-kelas', KelasController::class)->middleware('can:akses_master_kelas');
@@ -327,9 +330,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profil-guru', [JadwalController::class, 'profilLengkap'])->name('guru.profil');
         // Rute untuk Menu Sistem Guru
         Route::get('/menu', [JadwalController::class, 'menu'])->name('guru.menu');
-        // Halaman Profil Lengkap & Edit Biodata Guru
+// Halaman Profil Lengkap & Edit Biodata Guru
         Route::get('/profil', [JadwalController::class, 'profilLengkap'])->name('guru.profil.lengkap');
         Route::put('/profil/update', [JadwalController::class, 'updateProfil'])->name('guru.profil.update');
+        // Unggah / hapus dokumen kelengkapan dari halaman Profil (guru sendiri)
+        Route::post('/profil/dokumen', [GuruController::class, 'uploadDokumenProfil'])->name('guru.profil.dokumen');
+        Route::post('/profil/dokumen/{id}/hapus', [GuruController::class, 'hapusDokumen'])->name('guru.profil.dokumen.hapus');
 
         // Notifikasi
         Route::get('/notifikasi/pengaturan', [NotifikasiController::class, 'pengaturan'])->name('guru.notifikasi');
