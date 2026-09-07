@@ -160,6 +160,7 @@
                         <span class="text-[11px] font-bold bg-purple-50 text-purple-700 px-3 py-1 rounded-full">{{ collect($monitorGuruAktif)->where('status','Sakit')->count() }} sakit</span>
                         <span class="text-[11px] font-bold bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full">{{ collect($monitorGuruAktif)->where('status','Menunggu')->count() }} menunggu</span>
                         <span class="text-[11px] font-bold {{ collect($monitorGuruAktif)->where('status','Alpa')->count() > 0 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500' }} px-3 py-1 rounded-full">{{ collect($monitorGuruAktif)->where('status','Alpa')->count() }} alpa</span>
+                        <span class="text-[11px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full">{{ count($monitorGuruAktif) - collect($monitorGuruAktif)->where('status','Menunggu')->count() }} dari {{ count($monitorGuruAktif) }} tercatat</span>
                     </div>
 
                     <div class="flex-1 space-y-2 lg:overflow-y-auto lg:max-h-[430px]">
@@ -173,13 +174,20 @@
                                 'Alpa' => 'bg-red-100 text-red-700',
                                 'Menunggu' => 'bg-yellow-100 text-yellow-700',
                             ][$st] ?? 'bg-slate-100 text-slate-600';
+                            $ikonStatus = [
+                                'Hadir' => 'fa-check-circle',
+                                'Izin' => 'fa-file-alt',
+                                'Sakit' => 'fa-thermometer-half',
+                                'Alpa' => 'fa-user-times',
+                                'Menunggu' => 'fa-hourglass-half',
+                            ][$st] ?? 'fa-circle';
                         @endphp
                         <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50/70 hover:bg-slate-100 transition">
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-slate-800 truncate" title="{{ $g['nama'] }}">{{ $g['nama'] }}</p>
                                 <p class="text-[11px] text-slate-500 font-medium truncate" title="{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_tampil'] ?? $g['jam_ke'] }}">{{ $g['kelas'] }} · Jam Ke-{{ $g['jam_tampil'] ?? $g['jam_ke'] }}</p>
                             </div>
-                            <span class="text-[10px] font-bold px-2 py-1 rounded-full {{ $warnaStatus }} flex-shrink-0">{{ $st }}</span>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-full {{ $warnaStatus }} flex-shrink-0"><i class="fas {{ $ikonStatus }} mr-1"></i>{{ $st }}</span>
                         </div>
                         @empty
                         <div class="text-center py-8">

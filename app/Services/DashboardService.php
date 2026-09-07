@@ -61,6 +61,7 @@ class DashboardService
 
         for ($i = 0; $i < 7; $i++) {
             $tanggal = $startMinggu->copy()->addDays($i);
+            if ($tanggal->isFriday()) continue; // Jumat tidak ditampilkan
             $tanggalStr = $tanggal->format('Y-m-d');
             $labelsGrafik[] = $this->namaHariSingkat[$tanggal->format('l')] ?? $tanggal->format('D');
 
@@ -78,7 +79,7 @@ class DashboardService
 
         // ===== DELTA & SPARK =====
         $rataRataHadir7 = count($dataHadirGrafik) > 0 ? (array_sum($dataHadirGrafik) / count($dataHadirGrafik)) : 0;
-        $rataRataIzinKosong7 = (count($dataIzinGrafik) + count($dataKosongGrafik)) > 0 ? ((array_sum($dataIzinGrafik) + array_sum($dataKosongGrafik)) / 7) : 0;
+        $rataRataIzinKosong7 = (count($dataIzinGrafik) + count($dataKosongGrafik)) > 0 ? ((array_sum($dataIzinGrafik) + array_sum($dataKosongGrafik)) / max(1, count($dataIzinGrafik))) : 0;
         $rataRataJadwal7 = count($sparkJadwal) > 0 ? (array_sum($sparkJadwal) / count($sparkJadwal)) : 0;
 
         $deltaTotalJadwal = $rataRataJadwal7 > 0 ? round((($totalJadwal - $rataRataJadwal7) / $rataRataJadwal7) * 100, 1) : 0;
@@ -206,8 +207,18 @@ class DashboardService
             }
         }
 
-        // Bila belum ada blok yang sedang berlangsung, jadikan blok pertama.
-        $blokAktif = $blokAktif ?? ($daftarBlok[0] ?? null);
+        // Bila belum ada blok yang sedang berlangsung (mis. istirahat / selesai),
+        // gunakan blok TERAKHIR yang jamnya sudah dilewati, bukan blok pertama,
+        // agar data yang tampil tetap relevan (mis. lewat jam 15.00 → blok 9-10;
+        // istirahat 09.30 → blok 3-4). Bila sebelum jam pertama, gunakan blok pertama.
+        if ($blokAktif === null) {
+            foreach ($daftarBlok as $b) {
+                if ($waktuSekarang->gte(Carbon::parse($b['jam_mulai']))) {
+                    $blokAktif = $b;
+                }
+            }
+            $blokAktif = $blokAktif ?? ($daftarBlok[0] ?? null);
+        }
         if ($blokAktif === null) {
             return ['guru' => [], 'blok' => null];
         }
@@ -262,9 +273,16 @@ class DashboardService
             ];
         }
 
-        // urutkan: yang bermasalah/menunggu di atas, lalu hadir
-        usort($guru, fn ($a, $b) =>
-            strcmp($a['status'] === 'Hadir' ? 'z' : 'a', $b['status'] === 'Hadir' ? 'z' : 'a'));
+        // urutkan berdasar prioritas (Alpa > Menunggu > Sakit > Izin > Hadir),
+        // lalu urutkan per jam_ke untuk lebih mudah dipindai.
+        $prioritas = ['Alpa' => 0, 'Menunggu' => 1, 'Sakit' => 2, 'Izin' => 3, 'Hadir' => 4];
+        usort($guru, function ($a, $b) use ($prioritas) {
+            $pa = $prioritas[$a['status']] ?? 5;
+            $pb = $prioritas[$b['status']] ?? 5;
+            return $pa === $pb
+                ? (($a['jam_ke'] ?? 0) <=> ($b['jam_ke'] ?? 0))
+                : ($pa <=> $pb);
+        });
 
         return ['guru' => $guru, 'blok' => $blokAktif];
     }
