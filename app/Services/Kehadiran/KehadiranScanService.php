@@ -154,26 +154,59 @@ class KehadiranScanService
             })
             ->get();
 
-        // Kecerdasan blok jam: filter jadwal yang aktif "saat detik ini"
-        $masterJams = MasterJam::all()->keyBy('jam_ke');
-        $jadwalAktif = [];
-        $jamKeDitemukan = [];
+        // Kecerdasan blok jam: tentukan blok (pasangan MasterJam, mis. 1-2, 3-4)
+        // yang sedang berlangsung, lalu catat SELURUH jadwal kelas pada blok itu
+        // agar rekap menampilkan "Jam 1-2" (bukan jam terpisah).
+        $masterJams = MasterJam::orderBy('jam_ke')->get();
+        $pasanganBlok = [];
+        for ($i = 0; $i < count($masterJams); $i += 2) {
+            $m1 = $masterJams[$i];
+            $m2 = $masterJams[$i + 1] ?? $m1;
+            $pasanganBlok[] = [
+                'jam'       => [(int) $m1->jam_ke, (int) $m2->jam_ke],
+                'bawahAsli' => Carbon::parse($m1->jam_mulai)->format('H:i:s'),
+                'atasAsli'  => Carbon::parse($m2->jam_selesai)->format('H:i:s'),
+            ];
+        }
 
-        foreach ($semuaJadwalRuanganIni as $j) {
-            $masterJam = $masterJams[$j->jam_ke] ?? null;
-            if ($masterJam) {
-                $batasBawah = Carbon::parse($masterJam->jam_mulai)->subMinutes(15)->format('H:i:s');
-                $batasAtas = Carbon::parse($masterJam->jam_selesai)->addMinutes(15)->format('H:i:s');
-                if ($waktuSekarang >= $batasBawah && $waktuSekarang <= $batasAtas) {
-                    $jadwalAktif[] = $j;
-                    $jamKeDitemukan[] = $j->jam_ke;
+        $blokJamKe = null;
+        // Pass 1: blok yang rentang aslinya mencakup waktu sekarang
+        foreach ($pasanganBlok as $blok) {
+            if ($waktuSekarang >= $blok['bawahAsli'] && $waktuSekarang <= $blok['atasAsli']) {
+                $blokJamKe = $blok['jam'];
+                break;
+            }
+        }
+        // Pass 2: fallback dengan toleransi ±15 menit
+        if ($blokJamKe === null) {
+            foreach ($pasanganBlok as $blok) {
+                $bawahLuar = Carbon::parse($blok['bawahAsli'])->subMinutes(15)->format('H:i:s');
+                $atasLuar  = Carbon::parse($blok['atasAsli'])->addMinutes(15)->format('H:i:s');
+                if ($waktuSekarang >= $bawahLuar && $waktuSekarang <= $atasLuar) {
+                    $blokJamKe = $blok['jam'];
+                    break;
                 }
             }
         }
 
+        if ($blokJamKe === null) {
+            return ['status' => 'error', 'pesan' => 'Waktu absen tertutup! Tidak ada KBM yang sedang berlangsung di kelas ini pada pukul ' . Carbon::now()->format('H:i')];
+        }
+
+        $jadwalAktif = array_values(array_filter($semuaJadwalRuanganIni, function ($jadwal) use ($blokJamKe) {
+            return in_array((int) $jadwal->jam_ke, $blokJamKe, true);
+        }));
+
         if (empty($jadwalAktif)) {
             return ['status' => 'error', 'pesan' => 'Waktu absen tertutup! Tidak ada KBM yang sedang berlangsung di kelas ini pada pukul ' . Carbon::now()->format('H:i')];
         }
+
+        // Jam yang ditemukan untuk pesan sukses / data piket (mis. "1-2")
+        $jamKeDitemukan = array_values(array_unique(array_map('intval', array_column($jadwalAktif, 'jam_ke'))));
+        usort($jamKeDitemukan, fn ($a, $b) => $a <=> $b);
+        $teksJamDitemukan = (count($jamKeDitemukan) === 2)
+            ? $jamKeDitemukan[0] . '-' . $jamKeDitemukan[1]
+            : implode(',', $jamKeDitemukan);
 
         // Percabangan: jadwal SAYA atau jadwal ORANG LAIN? (Piket)
         $jadwalMilikSaya = array_filter($jadwalAktif, function ($j) use ($guruSAYA) {
@@ -200,8 +233,14 @@ class KehadiranScanService
                 }
             }
 
+            $jamSaya = array_values(array_unique(array_map('intval', array_column($jadwalMilikSaya, 'jam_ke'))));
+            usort($jamSaya, fn ($a, $b) => $a <=> $b);
+            $teksJamSaya = (count($jamSaya) === 2)
+                ? $jamSaya[0] . '-' . $jamSaya[1]
+                : implode(',', $jamSaya);
+
             if ($jumlahDisimpan > 0) {
-                return ['status' => 'success', 'pesan' => 'Hadir (Jam Ke: ' . implode(',', $jamKeDitemukan) . ') berhasil dicatat!'];
+                return ['status' => 'success', 'pesan' => 'Hadir (Jam Ke: ' . $teksJamSaya . ') berhasil dicatat!'];
             }
             return ['status' => 'success', 'pesan' => 'Kehadiran Anda di jam ini sudah tercatat sebelumnya.'];
         }
@@ -221,7 +260,7 @@ class KehadiranScanService
             'data' => [
                 'jadwal_ids' => $jadwalIds,
                 'nama_asli' => $namaGuruAsli,
-                'jam_ke' => implode(',', $jamKeDitemukan),
+                'jam_ke' => $teksJamDitemukan,
             ],
         ];
     }
