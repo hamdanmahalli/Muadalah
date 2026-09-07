@@ -114,6 +114,11 @@ Route::middleware(['auth'])->group(function () {
     // ZONA MASTER DATA DASAR
     // ----------------------------------------------------------
     Route::resource('master-guru', GuruController::class)->middleware('can:akses_master_guru');
+    // Kelengkapan data guru (data pemerintah + upload dokumen)
+    Route::get('/master-guru/{id}/detail', [GuruController::class, 'detail'])->middleware('can:akses_master_guru');
+    Route::post('/master-guru/{id}/kelengkapan', [GuruController::class, 'simpanKelengkapan'])->middleware('can:akses_master_guru');
+    Route::post('/master-guru/{id}/dokumen', [GuruController::class, 'uploadDokumen'])->middleware('can:akses_master_guru');
+    Route::post('/master-guru-dokumen/{id}/hapus', [GuruController::class, 'hapusDokumen'])->middleware('can:akses_master_guru');
     Route::resource('master-jabatan', JabatanController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('can:akses_master_guru');
     Route::resource('master-pelajaran', PelajaranController::class)->middleware('can:akses_master_pelajaran');
     Route::resource('master-kelas', KelasController::class)->middleware('can:akses_master_kelas');

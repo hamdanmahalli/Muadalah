@@ -111,7 +111,10 @@ class HonorService
 
             $tunjanganStruktural = $this->hitungStruktural($config, $guru);
             $tunjanganWaliKelas = $this->hitungWaliKelas($guru, $config->tarif_wali_kelas);
-            $transport = $guruConfig->dari_luar ? $config->tarif_transport : 0;
+            $hariMasuk = $this->hitungJumlahHariMasuk($guru, $tglMulai, $tglSelesai);
+            $transport = ($guru->jarak_km > 0 && $hariMasuk > 0)
+                ? (int) round($guru->jarak_km * $config->tarif_transport * $hariMasuk)
+                : 0;
 
             $total = $honorPokok + $honorPiket + $tunjanganStruktural + $tunjanganWaliKelas + $transport;
 
@@ -251,6 +254,28 @@ class HonorService
         }
 
         return $isBatasSelesai ? '2099-12-31' : '2000-01-01';
+    }
+
+    private function hitungJumlahHariMasuk(Guru $guru, $tglMulai, $tglSelesai): int
+    {
+        $hadirDates = DB::table('kehadiran_gurus')
+            ->join('jadwal_harians', 'kehadiran_gurus.jadwal_id', '=', 'jadwal_harians.id')
+            ->where('jadwal_harians.guru_id', $guru->id)
+            ->where('kehadiran_gurus.status', 'Hadir')
+            ->whereBetween('kehadiran_gurus.tanggal', [$tglMulai, $tglSelesai])
+            ->distinct()
+            ->pluck('kehadiran_gurus.tanggal');
+
+        $piketDates = KehadiranGuru::where('nig_pengganti', $guru->nig)
+            ->whereBetween('tanggal', [$tglMulai, $tglSelesai])
+            ->distinct()
+            ->pluck('tanggal');
+
+        return $hadirDates
+            ->merge($piketDates)
+            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->unique()
+            ->count();
     }
 
     private function getKeterangan($persentase): string

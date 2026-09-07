@@ -106,7 +106,7 @@
                     'tarif_jam_normal' => ['label' => 'Honor / Jam (Tetap)', 'val' => $d?->tarif_jam_normal ?? 5000],
                     'tarif_jam_magang' => ['label' => 'Honor / Jam (Magang)', 'val' => $d?->tarif_jam_magang ?? 4000],
                     'tarif_piket'      => ['label' => 'Piket / Jam', 'val' => $d?->tarif_piket ?? 4000],
-                    'tarif_transport'  => ['label' => 'Transport (Luar)', 'val' => $d?->tarif_transport ?? 20000],
+                    'tarif_transport'  => ['label' => 'Transport / km (Rp)', 'val' => $d?->tarif_transport ?? 5000],
                     'tarif_wali_kelas' => ['label' => 'Wali Kelas / Bln', 'val' => $d?->tarif_wali_kelas ?? 50000],
                 ];
             @endphp
@@ -136,7 +136,7 @@
                         <th class="px-4 py-3 text-left w-8">No</th>
                         <th class="px-4 py-3 text-left">Nama Guru</th>
                         <th class="px-4 py-3 text-left">Status Honor</th>
-                        <th class="px-4 py-3 text-left">Dari Luar</th>
+                        <th class="px-4 py-3 text-center" title="Jarak rumah ke sekolah (diisi di Data Guru)">Jarak (km)</th>
                         <th class="px-4 py-3 text-left">Override Tarif (Rp)</th>
                     </tr>
                 </thead>
@@ -160,9 +160,9 @@
                             </select>
                         </td>
                         <td class="px-4 py-2.5 text-center">
-                            <input type="checkbox" name="guru_dari_luar[{{ $guru->id }}]" value="1"
-                                class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300 cursor-pointer"
-                                {{ ($cfg?->dari_luar ?? false) ? 'checked' : '' }}>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-lg {{ ($guru->jarak_km ?? 0) > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400' }}">
+                                {{ $guru->jarak_km ?? 0 }}
+                            </span>
                         </td>
                         <td class="px-4 py-2.5">
                             <input type="number" name="guru_tarif[{{ $guru->id }}]" value="{{ $cfg?->tarif_override ?? '' }}" min="0" placeholder="Auto" class="w-28 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2 outline-none transition-all font-semibold">

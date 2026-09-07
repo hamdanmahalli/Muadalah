@@ -93,7 +93,6 @@ class HonorController extends Controller
             'tarif_wali_kelas' => 'required|integer|min:0',
             'catatan'          => 'nullable|string',
             'guru_status.*'    => 'nullable|in:Tetap,Magang,Pengabdian',
-            'guru_dari_luar.*' => 'nullable',
             'guru_tarif.*'     => 'nullable|integer|min:0',
             'jabatan_nominal.*'=> 'nullable|integer|min:0',
         ]);
@@ -124,7 +123,7 @@ class HonorController extends Controller
                 ],
                 [
                     'status_honor'   => $status,
-                    'dari_luar'      => isset($request->guru_dari_luar[$guruId]),
+                    'dari_luar'      => false,
                     'tarif_override' => !empty($request->guru_tarif[$guruId]) ? (int) $request->guru_tarif[$guruId] : null,
                 ]
             );
