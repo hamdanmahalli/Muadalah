@@ -27,6 +27,40 @@
 </div>
 @endif
 
+@if(session('error'))
+<div class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl mb-6 flex items-center shadow-sm">
+    <i class="fas fa-circle-xmark text-xl mr-3"></i>
+    <span class="font-bold text-sm">{{ session('error') }}</span>
+</div>
+@endif
+
+{{-- Salin dari bulan sebelumnya (hanya bila periode belum punya config & ada config lama) --}}
+@if(!$config && $lastConfig)
+@php
+    $lastBulan = $bulanIndonesia[$lastConfig->bulan] ?? $lastConfig->bulan;
+@endphp
+<div class="mb-6 bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex items-start gap-3">
+        <div class="w-11 h-11 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fas fa-copy"></i></div>
+        <div>
+            <h3 class="text-sm font-black text-indigo-800">Belum lama? Salin dari konfigurasi sebelumnya</h3>
+            <p class="text-xs font-semibold text-indigo-600 mt-0.5">
+                Tarif dasar, status guru, dari luar, override tarif, dan tunjangan jabatan akan disalin dari
+                <span class="font-black">{{ $lastBulan }} {{ $lastConfig->tahun }}</span>. Bisa kamu sesuaikan setelahnya.
+            </p>
+        </div>
+    </div>
+    <form action="{{ route('honor.konfigurasi.salin') }}" method="POST" onsubmit="return confirm('Salin seluruh konfigurasi dari {{ $lastBulan }} {{ $lastConfig->tahun }} ke periode ini?');" class="shrink-0">
+        @csrf
+        <input type="hidden" name="bulan" value="{{ $bulan }}">
+        <input type="hidden" name="tahun" value="{{ $tahun }}">
+        <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-sm rounded-xl transition-all shadow-[0_4px_15px_-3px_rgba(79,70,229,0.5)]">
+            <i class="fas fa-copy mr-2"></i> Salin dari Bulan Sebelumnya
+        </button>
+    </form>
+</div>
+@endif
+
 {{-- Pilih bulan/tahun --}}
 <div class="mb-6 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="bg-slate-50 border-b border-slate-100 p-4">

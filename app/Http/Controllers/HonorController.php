@@ -61,11 +61,18 @@ class HonorController extends Controller
         $guruConfigsExist = $config?->guruConfigs->keyBy('guru_id') ?? collect();
         $strukturalExist = $config?->strukturalConfigs->keyBy('jabatan_id') ?? collect();
 
+        $lastConfig = HonorKonfigurasi::with(['guruConfigs', 'strukturalConfigs'])
+            ->where('periode_id', $periodeAktif->id)
+            ->where('id', '!=', $config?->id ?? 0)
+            ->orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->first();
+
         $bulanIndonesia = $this->bulanIndonesia();
 
         return view('admin.honor-konfigurasi', compact(
             'periodeAktif', 'bulan', 'tahun', 'config',
-            'gurus', 'jabatans', 'guruConfigsExist', 'strukturalExist', 'bulanIndonesia'
+            'gurus', 'jabatans', 'guruConfigsExist', 'strukturalExist', 'lastConfig', 'bulanIndonesia'
         ));
     }
 
@@ -139,6 +146,81 @@ class HonorController extends Controller
             'bulan' => $validated['bulan'],
             'tahun' => $validated['tahun'],
         ])->with('sukses', 'Konfigurasi honor berhasil disimpan!');
+    }
+
+    public function salinKonfigurasi(Request $request)
+    {
+        $periodeAktif = get_periode_aktif();
+        if (!$periodeAktif) {
+            return redirect()->back()->with('error', 'Tidak ada periode aktif.');
+        }
+
+        $validated = $request->validate([
+            'bulan' => 'required|integer|between:1,12',
+            'tahun' => 'required|integer|min:2000|max:2100',
+        ]);
+
+        $target = HonorKonfigurasi::where('periode_id', $periodeAktif->id)
+            ->where('bulan', $validated['bulan'])
+            ->where('tahun', $validated['tahun'])
+            ->first();
+
+        if ($target) {
+            return redirect()->route('honor.konfigurasi', [
+                'bulan' => $validated['bulan'],
+                'tahun' => $validated['tahun'],
+            ])->with('error', 'Periode ini sudah punya konfigurasi. Salin hanya untuk periode yang masih kosong.');
+        }
+
+        $source = HonorKonfigurasi::with(['guruConfigs', 'strukturalConfigs'])
+            ->where('periode_id', $periodeAktif->id)
+            ->orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->first();
+
+        if (!$source) {
+            return redirect()->route('honor.konfigurasi', [
+                'bulan' => $validated['bulan'],
+                'tahun' => $validated['tahun'],
+            ])->with('error', 'Belum ada konfigurasi bulan sebelumnya untuk disalin.');
+        }
+
+        $config = HonorKonfigurasi::create([
+            'periode_id'        => $periodeAktif->id,
+            'bulan'             => $validated['bulan'],
+            'tahun'             => $validated['tahun'],
+            'tarif_jam_normal'  => $source->tarif_jam_normal,
+            'tarif_jam_magang'  => $source->tarif_jam_magang,
+            'tarif_piket'       => $source->tarif_piket,
+            'tarif_transport'   => $source->tarif_transport,
+            'tarif_wali_kelas'  => $source->tarif_wali_kelas,
+            'catatan'           => $source->catatan,
+        ]);
+
+        foreach ($source->guruConfigs as $gc) {
+            HonorGuruConfig::create([
+                'honor_konfigurasi_id' => $config->id,
+                'guru_id'              => $gc->guru_id,
+                'status_honor'         => $gc->status_honor,
+                'dari_luar'            => $gc->dari_luar,
+                'tarif_override'       => $gc->tarif_override,
+            ]);
+        }
+
+        foreach ($source->strukturalConfigs as $sc) {
+            HonorStrukturalConfig::create([
+                'honor_konfigurasi_id' => $config->id,
+                'jabatan_id'           => $sc->jabatan_id,
+                'nominal'              => $sc->nominal,
+            ]);
+        }
+
+        $bulanNama = $this->bulanIndonesia()[$validated['bulan']] ?? $validated['bulan'];
+
+        return redirect()->route('honor.konfigurasi', [
+            'bulan' => $validated['bulan'],
+            'tahun' => $validated['tahun'],
+        ])->with('sukses', 'Konfigurasi disalin dari bulan ' . $bulanNama . ' ' . $source->tahun . ' ke ' . $bulanNama . ' ' . $validated['tahun'] . '! Silakan periksa lalu sesuaikan bila perlu.');
     }
 
     public function hitung(Request $request)
