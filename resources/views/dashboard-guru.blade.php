@@ -154,7 +154,7 @@
 
             <!-- sisanya terlipat -->
             <div id="menu-tersembunyi" class="col-span-4 grid grid-cols-4 gap-x-3 gap-y-3 mt-4 hidden">
-            <button onclick="window.location.href='/scan-kelas'; return false;" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
+            <button onclick="bukaModal('modal-qr-pribadi')" class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(14,165,233,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-id-badge text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">QR Pribadi</span>
             </button>
@@ -402,13 +402,46 @@
             <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg flex items-center justify-center text-white text-4xl mb-4 ring-4 ring-emerald-50">
                 <i class="fas fa-graduation-cap"></i>
             </div>
-            <h3 class="text-xl font-black text-slate-800">SmartPesantren</h3>
+            <h3 class="text-xl font-black text-slate-800">MUMARIS</h3>
             <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1 mb-4">Versi 2.0.0</p>
             <div class="bg-slate-50 rounded-2xl p-4 text-xs text-slate-500 font-medium mb-6 w-full text-left leading-relaxed border border-slate-100">
-                <p class="mb-2">Sistem Informasi Akademik dan Manajemen Pesantren terpadu.</p>
-                <p class="mt-3 text-center text-[10px] font-bold text-slate-400">&copy; {{ date('Y') }} Sancod Builder.</p>
+                <p class="mb-2">Mu'adalah Maqna'ul Ulum Rekap Informasi Sitem.</p>
+                <p class="mt-3 text-center text-[10px] font-bold text-slate-400">&copy; {{ date('Y') }} Santriknologi.</p>
             </div>
             <button onclick="tutupModal('modal-tentang')" class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl transition shadow-md">Tutup Panel</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL QR PRIBADI -->
+<div id="modal-qr-pribadi" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="bg-qr-pribadi"></div>
+    <div class="flex items-center justify-center min-h-screen px-4 pb-10">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center" id="box-qr-pribadi">
+            <span class="inline-block px-3 py-1.5 bg-sky-50 text-sky-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-sky-100 mb-5">
+                <i class="fas fa-user-tag text-[10px] mr-1.5"></i> QR Pribadi Guru
+            </span>
+
+            @if($guru && isset($qrPribadi) && $qrPribadi)
+            <div class="w-[210px] h-[210px] bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center p-2">
+                <img src="data:image/svg+xml,{{ $qrPribadi }}" alt="QR Pribadi {{ $guru->nama_guru }}" class="w-full h-full object-contain rounded-lg">
+            </div>
+            <div class="text-center mt-5">
+                <p class="text-base font-black text-slate-900">{{ $guru->nama_guru }}</p>
+                <p class="text-xs font-bold text-sky-600 mt-0.5">NIG: {{ $guru->nig }}</p>
+            </div>
+            <p class="text-[11px] font-medium text-slate-400 text-center mt-4 leading-relaxed">
+                Tunjukkan QR ini kepada TU saat absen kegiatan.<br>
+                TU akan memindainya sebagai bukti kehadiran Anda.
+            </p>
+            @else
+            <div class="w-[210px] h-[210px] rounded-2xl bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center">
+                <i class="fas fa-user-slash text-4xl text-slate-300"></i>
+            </div>
+            <p class="text-sm font-bold text-slate-500 mt-4 text-center">Profil guru tidak ditemukan.<br>Hubungi admin untuk data akun Anda.</p>
+            @endif
+
+            <button onclick="tutupModal('modal-qr-pribadi')" class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl transition shadow-md mt-6">Tutup</button>
         </div>
     </div>
 </div>

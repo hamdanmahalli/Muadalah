@@ -480,7 +480,9 @@ class JadwalController extends Controller
                         ->latest()
                         ->get();
 
-        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans'));
+        $qrPribadi = app(\App\Services\Kehadiran\KehadiranScanService::class)->qrPribadi();
+
+        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans', 'qrPribadi'));
     }
 
     // ========================================================

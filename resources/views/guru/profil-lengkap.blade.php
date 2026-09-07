@@ -15,7 +15,7 @@
 
     <!-- HEADER STICKY -->
     <div class="shrink-0 bg-white border-b border-slate-100 px-4 py-4 flex items-center relative z-20">
-        <a href="{{ route('guru.menu') }}" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0">
+        <a href="javascript:history.back()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0">
             <i class="fas fa-arrow-left text-sm"></i>
         </a>
         <div class="flex-1 px-3">

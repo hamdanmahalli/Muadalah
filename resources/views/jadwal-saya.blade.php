@@ -20,7 +20,7 @@
     <!-- HEADER MODERN -->
     <div class="shrink-0 bg-white px-4 pt-4 pb-4 border-b border-slate-100 relative z-20">
         <div class="flex items-center gap-3">
-            <a href="/menu" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center active:scale-95 transition-all hover:bg-slate-200 shrink-0">
+            <a href="javascript:history.back()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center active:scale-95 transition-all hover:bg-slate-200 shrink-0">
                 <i class="fas fa-arrow-left text-sm"></i>
             </a>
             <div class="flex-1 min-w-0">
