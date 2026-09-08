@@ -251,20 +251,36 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ----------------------------------------------------------
-    // ZONA HONOR GURU (Admin)
-    // ----------------------------------------------------------
+    // ZONA HONOR GURU (Admin) — akses pecah per sub-modul:
+    // akses_honor            = melihat beranda Honor Guru
+    // akses_honor_konfigurasi = mengatur tarif konfigurasi
+    // akses_honor_proses      = hitung, rekap, edit nominal draft
+    // akses_honor_final       = finalisasi / buka kembali (HANYA Administrator)
+    // akses_honor_scan        = scan penerimaan honor (Staf Bendahara)
     Route::middleware(['can:akses_honor'])->group(function () {
         Route::get('/honor', [\App\Http\Controllers\HonorController::class, 'index'])->name('honor.index');
+    });
+
+    Route::middleware(['can:akses_honor_konfigurasi'])->group(function () {
         Route::get('/honor/konfigurasi', [\App\Http\Controllers\HonorController::class, 'konfigurasi'])->name('honor.konfigurasi');
         Route::post('/honor/konfigurasi', [\App\Http\Controllers\HonorController::class, 'simpanKonfigurasi'])->name('honor.konfigurasi.simpan');
         Route::post('/honor/konfigurasi/salin', [\App\Http\Controllers\HonorController::class, 'salinKonfigurasi'])->name('honor.konfigurasi.salin');
+    });
+
+    Route::middleware(['can:akses_honor_proses'])->group(function () {
         Route::post('/honor/hitung', [\App\Http\Controllers\HonorController::class, 'hitung'])->name('honor.hitung');
         Route::get('/honor/rekap/{id}', [\App\Http\Controllers\HonorController::class, 'rekap'])->name('honor.rekap');
+        Route::post('/honor/detail/{id}', [\App\Http\Controllers\HonorController::class, 'updateDetail'])->name('honor.detail.update');
+    });
+
+    Route::middleware(['can:akses_honor_final'])->group(function () {
         Route::post('/honor/final/{id}', [\App\Http\Controllers\HonorController::class, 'finalisasi'])->name('honor.final');
         Route::post('/honor/buka/{id}', [\App\Http\Controllers\HonorController::class, 'buka'])->name('honor.buka');
+    });
+
+    Route::middleware(['can:akses_honor_scan'])->group(function () {
         Route::get('/honor/scan-penerimaan', [\App\Http\Controllers\HonorController::class, 'scanPenerimaan'])->name('honor.scan');
         Route::post('/honor/proses-scan', [\App\Http\Controllers\HonorController::class, 'prosesScan'])->name('honor.proses-scan');
-        Route::post('/honor/detail/{id}', [\App\Http\Controllers\HonorController::class, 'updateDetail'])->name('honor.detail.update');
     });
 
 

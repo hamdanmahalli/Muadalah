@@ -23,22 +23,28 @@
             <i class="fas fa-arrow-left mr-2"></i> Kembali
         </a>
         @if($periodeHonor->status === 'draft')
+        @can('akses_honor_final')
         <form action="{{ route('honor.final', $periodeHonor->id) }}" method="POST" onsubmit="return confirm('Finalkan rekap ini? Setelah difinalkan, QR code muncul dan penerimaan bisa dipindai.');">
             @csrf
             <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
                 <i class="fas fa-lock mr-2"></i> Finalkan Rekap
             </button>
         </form>
+        @endcan
         @else
+        @can('akses_honor_final')
         <form action="{{ route('honor.buka', $periodeHonor->id) }}" method="POST" onsubmit="return confirm('Buka kembali rekap ini menjadi Draft? Perhitungan bisa diubah lalu difinalkan lagi.');">
             @csrf
             <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white border border-orange-200 hover:border-orange-600 font-bold text-xs rounded-xl transition-all shadow-sm">
                 <i class="fas fa-lock-open mr-2"></i> Buka Kembali
             </button>
         </form>
+        @endcan
+        @can('akses_honor_scan')
         <a href="{{ route('honor.scan') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-200 hover:border-emerald-600 font-bold text-xs rounded-xl transition-all shadow-sm">
             <i class="fas fa-qrcode mr-2"></i> Scan Penerimaan
         </a>
+        @endcan
         @endif
     </div>
 </div>
@@ -164,7 +170,7 @@
                         @endif
                     </td>
                     <td class="px-3 py-2.5 text-center">
-                        @if($periodeHonor->status === 'draft')
+                        @if($periodeHonor->status === 'draft' && auth()->user()->can('akses_honor_proses'))
                         <button type="button"
                             onclick="bukaModalEdit({{ $d->id }}, '{{ js_q($d->guru->nama_guru) }}', {{ $d->piket_jam }}, {{ $d->realita_jam }}, {{ $d->honor_pokok }}, {{ $d->tunjangan_struktural }}, {{ $d->tunjangan_wali_kelas }}, {{ $d->transport }}, {{ $d->honor_piket }}, {{ $d->total }}, {{ $d->is_diterima ? 'true' : 'false' }})"
                             class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-amber-200 shadow-sm" title="Edit Honor">
@@ -203,7 +209,7 @@
 </div>
 
 {{-- Modal Edit Honor --}}
-@if($periodeHonor->status === 'draft' && $periodeHonor->details->count() > 0)
+@if($periodeHonor->status === 'draft' && $periodeHonor->details->count() > 0 && auth()->user()->can('akses_honor_proses'))
 <div id="modal-edit-honor" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
     <div class="relative mx-auto p-5 border w-11/12 max-w-sm shadow-2xl rounded-2xl bg-white transform transition-all">
         <div class="absolute top-0 right-0 pt-4 pr-4">

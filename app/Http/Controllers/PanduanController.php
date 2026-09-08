@@ -36,7 +36,8 @@ class PanduanController extends Controller
             'Dewan Guru'    => ['akses_dashboard_guru', 'akses_jadwal_saya'],
             'Kepanitiaan'   => ['–'],
             'Wali Kelas'    => ['–'],
-            'Murid'         => ['–'],
+            'Bendahara'     => ['akses_dashboard', 'akses_honor', 'akses_honor_konfigurasi', 'akses_honor_proses'],
+            'Staf Bendahara' => ['akses_dashboard', 'akses_honor', 'akses_honor_scan'],
             'Wali Murid'    => ['–'],
         ];
 

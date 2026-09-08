@@ -48,6 +48,10 @@ class PermissionSeeder extends Seeder
             'akses_batas_pelajaran',
             // === MODUL HONOR GURU ===
             'akses_honor',
+            'akses_honor_konfigurasi',
+            'akses_honor_proses',
+            'akses_honor_final',
+            'akses_honor_scan',
         ];
 
         // Buat Kunci di Database
@@ -55,10 +59,10 @@ class PermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $perm]);
         }
 
-        // Hapus Role Lama (Pembersihan)
+// Hapus Role Lama (Pembersihan)
         Role::whereNotIn('name', [
             'Administrator', 'Pimpinan', 'Tata Usaha', 'Kepanitiaan', 
-            'Wali Kelas', 'Dewan Guru', 'Murid', 'Wali Murid'
+            'Wali Kelas', 'Dewan Guru', 'Bendahara', 'Staf Bendahara', 'Wali Murid'
         ])->delete();
 
         // 3. Mendaftarkan Jabatan Resmi
@@ -68,7 +72,8 @@ class PermissionSeeder extends Seeder
         $roleKepanitiaan = Role::firstOrCreate(['name' => 'Kepanitiaan']);
         $roleWaliKelas   = Role::firstOrCreate(['name' => 'Wali Kelas']);
         $roleDewanGuru   = Role::firstOrCreate(['name' => 'Dewan Guru']);
-        $roleMurid       = Role::firstOrCreate(['name' => 'Murid']);
+        $roleBendahara   = Role::firstOrCreate(['name' => 'Bendahara']);
+        $roleStafBendahara = Role::firstOrCreate(['name' => 'Staf Bendahara']);
         $roleWaliMurid   = Role::firstOrCreate(['name' => 'Wali Murid']);
 
         // 4. Sinkronisasi Kunci Sementara
@@ -82,8 +87,23 @@ class PermissionSeeder extends Seeder
         // Kepanitiaan: menginput skor UTS/UAS
         $roleKepanitiaan->syncPermissions(['akses_input_nilai']);
 
-        // Wali Kelas: dapat melihat data siswa kelasnya (menu Siswa Saya)
+// Wali Kelas: dapat melihat data siswa kelasnya (menu Siswa Saya)
         $roleWaliKelas->syncPermissions(['akses_siswa_saya', 'akses_laporan_siswa']);
+
+        // Bendahara: lihat honor + konfigurasi + proses (final HANYA Administrator)
+        $roleBendahara->syncPermissions([
+            'akses_honor',
+            'akses_honor_konfigurasi',
+            'akses_honor_proses',
+            'akses_dashboard',
+        ]);
+
+        // Staf Bendahara: hanya scan penerimaan honor
+        $roleStafBendahara->syncPermissions([
+            'akses_honor',
+            'akses_honor_scan',
+            'akses_dashboard',
+        ]);
     }
 }
 

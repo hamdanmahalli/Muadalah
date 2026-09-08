@@ -34,6 +34,7 @@
 </div>
 @endif
 
+@can('akses_honor_proses')
 <div class="mb-6 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="bg-slate-50 border-b border-slate-100 p-4">
         <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fas fa-cog text-emerald-500 mr-2"></i>Mulai / Konfigurasi Periode Honor</h3>
@@ -65,12 +66,15 @@
         </p>
     </form>
 </div>
+@endcan
 
+@can('akses_honor_konfigurasi')
 <div class="mb-6 flex justify-end">
     <a href="{{ route('honor.konfigurasi') }}" class="inline-flex items-center justify-center px-5 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 font-bold text-sm rounded-xl transition-all shadow-sm">
         <i class="fas fa-sliders-h mr-2"></i> Atur Konfigurasi Honor
     </a>
 </div>
+@endcan
 
 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center">
@@ -122,10 +126,12 @@
                 </div>
 
                 <div class="shrink-0 w-full sm:w-auto flex flex-col sm:flex-row gap-2 mt-3 sm:mt-0">
+                    @can('akses_honor_proses')
                     <a href="{{ route('honor.rekap', $hp->id) }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 font-bold text-xs rounded-xl transition-all">
                         <i class="fas fa-table mr-2"></i> Rekap
                     </a>
-                    @if($hp->status === 'final')
+                    @endcan
+                    @if($hp->status === 'final' && auth()->user()->can('akses_honor_scan'))
                     <a href="{{ route('honor.scan') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-200 hover:border-emerald-500 font-bold text-xs rounded-xl transition-all">
                         <i class="fas fa-qrcode mr-2"></i> Scan Penerimaan
                     </a>

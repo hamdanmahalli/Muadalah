@@ -105,7 +105,7 @@
         <div id="hak-aske" class="pg-section pg-card">
             <h2 class="pg-h2"><i class="fas fa-user-shield"></i> 3. Hak Akses &amp; Peran</h2>
             <p class="pg-p">Sistem memakai dua lapis pengaman: <strong>Peran (Role)</strong> dan <strong>Kunci Akses (Permission)</strong>. Setiap menu hanya tampil jika user memiliki permission yang sesuai (direktif <code>@@can</code>).</p>
-            <p class="pg-p"><strong>Peran yang tersedia:</strong> Administrator, Pimpinan, Tata Usaha, Kepanitiaan, Wali Kelas, Dewan Guru, Murid, Wali Murid.</p>
+            <p class="pg-p"><strong>Peran yang tersedia:</strong> Administrator, Pimpinan, Tata Usaha, Kepanitiaan, Wali Kelas, Dewan Guru, Bendahara, Staf Bendahara, Wali Murid.</p>
 
             <h3 class="pg-h3">Matriks Kunci Akses per Peran (sesuai PermissionSeeder)</h3>
             <table class="pg-table w-full text-sm text-left border-collapse">
