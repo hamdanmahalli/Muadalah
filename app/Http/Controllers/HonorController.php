@@ -283,6 +283,37 @@ class HonorController extends Controller
         return redirect()->back()->with('sukses', 'Periode dibuka kembali menjadi Draft. Hitung ulang bila perlu, lalu finalkan lagi.');
     }
 
+    public function updateDetail(Request $request, $id)
+    {
+        $detail = HonorDetail::with(['periode', 'guru'])->findOrFail($id);
+
+        if ($detail->periode->status !== 'draft') {
+            $label = match ($detail->periode->status) {
+                'final' => 'Final',
+                'terbayar' => 'Terbayar',
+                default => ucfirst($detail->periode->status),
+            };
+
+            return redirect()->back()->with('error', 'Periode ini sudah ' . $label . '. Buka kembali ke Draft dulu untuk mengubah nominal honor.');
+        }
+
+        $bersihkan = fn ($v) => (int) preg_replace('/[^\d]/', '', (string) $v);
+
+        $nominal = [
+            'honor_pokok' => $bersihkan($request->input('honor_pokok', 0)),
+            'tunjangan_struktural' => $bersihkan($request->input('tunjangan_struktural', 0)),
+            'tunjangan_wali_kelas' => $bersihkan($request->input('tunjangan_wali_kelas', 0)),
+            'transport' => $bersihkan($request->input('transport', 0)),
+            'honor_piket' => $bersihkan($request->input('honor_piket', 0)),
+        ];
+
+        $nominal['total'] = array_sum($nominal);
+
+        $detail->update($nominal);
+
+        return redirect()->back()->with('sukses', 'Nominal honor ' . $detail->guru->nama_guru . ' berhasil diperbarui.');
+    }
+
     public function scanPenerimaan()
     {
         $periodeAktif = get_periode_aktif();
