@@ -12,7 +12,7 @@ class HonorKonfigurasi extends Model
         'bulan',
         'tahun',
         'tarif_jam_normal',
-        'tarif_jam_magang',
+        'tarif_pengabdian',
         'tarif_piket',
         'tarif_transport',
         'tarif_wali_kelas',

@@ -104,7 +104,7 @@
                 $d = $config ?? null;
                 $fields = [
                     'tarif_jam_normal' => ['label' => 'Honor / Jam (Tetap)', 'val' => $d?->tarif_jam_normal ?? 5000],
-                    'tarif_jam_magang' => ['label' => 'Honor / Jam (Magang)', 'val' => $d?->tarif_jam_magang ?? 4000],
+                    'tarif_pengabdian' => ['label' => 'Honor / Jam (Pengabdian)', 'val' => $d?->tarif_pengabdian ?? 4000],
                     'tarif_piket'      => ['label' => 'Piket / Jam', 'val' => $d?->tarif_piket ?? 4000],
                     'tarif_transport'  => ['label' => 'Transport / km (Rp)', 'val' => $d?->tarif_transport ?? 5000],
                     'tarif_wali_kelas' => ['label' => 'Wali Kelas / Bln', 'val' => $d?->tarif_wali_kelas ?? 50000],
@@ -155,7 +155,6 @@
                             <select name="guru_status[{{ $guru->id }}]" class="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2 outline-none transition-all font-semibold cursor-pointer">
                                 <option value="">-- Belum Atur --</option>
                                 <option value="Tetap" {{ ($cfg?->status_honor ?? '') === 'Tetap' ? 'selected' : '' }}>Tetap</option>
-                                <option value="Magang" {{ ($cfg?->status_honor ?? '') === 'Magang' ? 'selected' : '' }}>Magang</option>
                                 <option value="Pengabdian" {{ ($cfg?->status_honor ?? '') === 'Pengabdian' ? 'selected' : '' }}>Pengabdian</option>
                             </select>
                         </td>

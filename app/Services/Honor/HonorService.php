@@ -100,7 +100,7 @@ class HonorService
             $keterangan = $this->getKeterangan($persentase);
 
             $tarifPerJam = $guruConfig->tarif_override
-                ?? ($guruConfig->status_honor === 'Tetap' ? $config->tarif_jam_normal : $config->tarif_jam_magang);
+                ?? ($guruConfig->status_honor === 'Tetap' ? $config->tarif_jam_normal : $config->tarif_pengabdian);
 
             $honorPokok = $realitaJam * $tarifPerJam;
 
