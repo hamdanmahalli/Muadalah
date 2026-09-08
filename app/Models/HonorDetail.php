@@ -47,6 +47,12 @@ class HonorDetail extends Model
         return $this->belongsTo(Guru::class);
     }
 
+    // Nominal 0 => tidak ada uang yang diterima, tidak perlu penerimaan
+    public function getButuhPenerimaanAttribute(): bool
+    {
+        return $this->total > 0;
+    }
+
     protected static function boot()
     {
         parent::boot();

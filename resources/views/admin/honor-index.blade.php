@@ -87,6 +87,7 @@
             @php
                 $totalBayar = $hp->details->sum('total');
                 $sudahDiterima = $hp->details->where('is_diterima', true)->count();
+                $butuhPenerimaan = $hp->details->where('butuh_penerimaan', true)->count();
                 $totalGuru = $hp->details->count();
             @endphp
             <div class="p-5 border-b border-slate-100 hover:bg-slate-50/50 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -116,7 +117,7 @@
                                 <i class="fas fa-users text-emerald-400 mr-1.5"></i> {{ $totalGuru }} Guru
                             </span>
                             <span class="text-[11px] font-bold text-slate-500 flex items-center">
-                                <i class="fas fa-circle-check text-emerald-400 mr-1.5"></i> {{ $sudahDiterima }}/{{ $totalGuru }} Diterima
+                                <i class="fas fa-circle-check text-emerald-400 mr-1.5"></i> {{ $butuhPenerimaan > 0 ? $sudahDiterima . '/' . $butuhPenerimaan : '—' }} Diterima
                             </span>
                             <span class="text-[11px] font-black text-emerald-600 flex items-center">
                                 <i class="fas fa-coins mr-1.5"></i> Rp {{ number_format($totalBayar, 0, ',', '.') }}

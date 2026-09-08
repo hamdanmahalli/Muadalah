@@ -318,6 +318,10 @@ class HonorService
             throw new \RuntimeException('Honor belum difinalkan, penerimaan belum bisa dipindai.');
         }
 
+        if (!$detail->butuh_penerimaan) {
+            throw new \RuntimeException('Nominal honor Rp 0, tidak ada penerimaan.');
+        }
+
         if ($detail->is_diterima) {
             return $detail;
         }

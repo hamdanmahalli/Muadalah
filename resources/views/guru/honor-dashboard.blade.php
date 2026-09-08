@@ -120,6 +120,16 @@
                         </p>
                     </div>
                 </div>
+                @elseif(!$h->butuh_penerimaan)
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-300 text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <i class="fas fa-ban text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-black text-slate-500">TANPA PENERIMAAN</p>
+                        <p class="text-[11px] font-bold text-slate-400/80 mt-0.5">Nominal Rp 0 — tidak ada bisyaroh bulan ini.</p>
+                    </div>
+                </div>
                 @else
                 <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -148,7 +158,7 @@
         @endforelse
 
         <!-- Tombol scan konfirmasi oleh guru sendiri -->
-        @if($honors->where('is_diterima', false)->count() > 0)
+        @if($honors->where('is_diterima', false)->where('butuh_penerimaan', true)->count() > 0)
         <button onclick="bukaModalScan()" class="w-full mb-4 inline-flex items-center justify-center gap-2 px-5 py-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-black rounded-2xl shadow-lg active:scale-95 transition-all">
             <i class="fas fa-camera text-base"></i> Konfirmasi Terima via Scan QR
         </button>

@@ -50,7 +50,7 @@
             </div>
             @if($periodeHonor)
             <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 font-bold text-xs rounded-lg">
-                <i class="fas fa-circle-check"></i> {{ $periodeHonor->details->where('is_diterima', true)->count() }}/{{ $periodeHonor->details->count() }}
+                <i class="fas fa-circle-check"></i> {{ $periodeHonor->details->where('butuh_penerimaan', true)->count() > 0 ? $periodeHonor->details->where('is_diterima', true)->count() . '/' . $periodeHonor->details->where('butuh_penerimaan', true)->count() : '—' }}
             </span>
             @endif
         </div>
@@ -90,13 +90,13 @@
         <h3 class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-3"><i class="fas fa-list-check text-emerald-500 mr-1.5"></i>Status Penerimaan</h3>
         <div class="space-y-1.5">
             @foreach($periodeHonor->details as $d)
-            <div id="status-row-{{ $d->id }}" class="flex items-center gap-3 px-3 py-2 rounded-xl {{ $d->is_diterima ? 'bg-emerald-50 border border-emerald-100' : 'bg-slate-50 border border-slate-100' }}">
+            <div id="status-row-{{ $d->id }}" class="flex items-center gap-3 px-3 py-2 rounded-xl {{ $d->is_diterima ? 'bg-emerald-50 border border-emerald-100' : ($d->butuh_penerimaan ? 'bg-slate-50 border border-slate-100' : 'bg-slate-50 border border-slate-200 opacity-70') }}">
                 <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0 {{ $d->is_diterima ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500' }}">
-                    <i class="fas {{ $d->is_diterima ? 'fa-check' : 'fa-clock' }}"></i>
+                    <i class="fas {{ $d->is_diterima ? 'fa-check' : ($d->butuh_penerimaan ? 'fa-clock' : 'fa-ban') }}"></i>
                 </span>
                 <span class="flex-1 min-w-0 text-xs font-bold {{ $d->is_diterima ? 'text-emerald-800' : 'text-slate-600' }} truncate">{{ $d->guru->nama_guru }}</span>
                 <span class="text-[10px] font-black {{ $d->is_diterima ? 'text-emerald-600' : 'text-slate-400' }}">
-                    {{ $d->is_diterima ? 'Diterima' : 'Rp ' . number_format($d->total, 0, ',', '.') }}
+                    {{ $d->is_diterima ? 'Diterima' : ($d->butuh_penerimaan ? 'Rp ' . number_format($d->total, 0, ',', '.') : 'Nol — tanpa penerimaan') }}
                 </span>
             </div>
             @endforeach

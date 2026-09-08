@@ -71,6 +71,7 @@
 @php
     $grandTotal = $periodeHonor->details->sum('total');
     $sudahDiterima = $periodeHonor->details->where('is_diterima', true)->count();
+    $butuhPenerimaan = $periodeHonor->details->where('butuh_penerimaan', true)->count();
     $totalGuru = $periodeHonor->details->count();
     $warnaStatus = [
         'draft'    => 'bg-amber-100 text-amber-700 border-amber-200',
@@ -105,7 +106,7 @@
             <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center"><i class="fas fa-circle-check"></i></div>
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sudah Diterima</p>
-                <p class="text-xl font-black text-slate-800">{{ $sudahDiterima }}/{{ $totalGuru }}</p>
+                <p class="text-xl font-black text-slate-800">{{ $butuhPenerimaan > 0 ? $sudahDiterima . '/' . $butuhPenerimaan : '—' }}</p>
             </div>
         </div>
     </div>
@@ -167,6 +168,10 @@
                         @if($d->is_diterima)
                             <span class="text-[10px] font-black px-2 py-1 rounded-md bg-emerald-100 text-emerald-700">
                                 <i class="fas fa-circle-check mr-1"></i> Diterima
+                            </span>
+                        @elseif(!$d->butuh_penerimaan)
+                            <span class="text-[10px] font-black px-2 py-1 rounded-md bg-slate-100 text-slate-500">
+                                <i class="fas fa-ban mr-1"></i> Tanpa Penerimaan
                             </span>
                         @else
                             <span class="text-[10px] font-black px-2 py-1 rounded-md bg-slate-100 text-slate-500">
