@@ -181,7 +181,7 @@
     <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i class="fas fa-folder-open text-gray-500 mr-2"></i> Dokumen Kelengkapan</h4>
 
     @if($bolehDokumen)
-        <form method="POST" action="{{ $dokumenAction }}" enctype="multipart/form-data" class="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <form method="POST" action="{{ $dokumenAction }}" enctype="multipart/form-data" class="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-4" data-turbo="false">
             @csrf
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>

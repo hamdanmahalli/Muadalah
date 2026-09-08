@@ -78,7 +78,7 @@
             </div>
         @endif
 
-        <form action="{{ route('guru.profil.update') }}" method="POST" id="form-profil-mobile" enctype="multipart/form-data">
+        <form action="{{ route('guru.profil.update') }}" method="POST" id="form-profil-mobile" enctype="multipart/form-data" data-turbo="false">
             @csrf
             @method('PUT')
 
@@ -136,7 +136,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('guru.profil.update') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('guru.profil.update') }}" enctype="multipart/form-data" data-turbo="false">
         @csrf
         @method('PUT')
 
