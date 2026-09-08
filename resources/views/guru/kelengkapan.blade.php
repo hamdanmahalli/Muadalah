@@ -19,17 +19,18 @@
     $bolehDokumen   = $editable;
 @endphp
 
-{{-- ===== TAMPILAN MOBILE (layar penuh ala aplikasi, hanya tombol kembali) ===== --}}
-<div data-turbo="true" class="md:hidden max-w-md mx-auto h-[100dvh] bg-slate-50 flex flex-col relative font-sans overflow-hidden">
+{{-- SATU LAYOUT RESPONSIF: mobile = layar penuh ala aplikasi (tombol kembali saja),
+     desktop = tampilan default shell lebar. Tanpa duplikasi form. --}}
+<div class="max-w-md md:max-w-none mx-auto h-[100dvh] md:h-auto bg-slate-50 md:bg-transparent flex flex-col md:block font-sans overflow-hidden md:overflow-visible">
 
-    <!-- HEADER STICKY -->
-    <div class="shrink-0 bg-white border-b border-slate-100 px-4 py-4 flex items-center relative z-20">
-        <a href="{{ url()->previous() }}" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0">
+    <!-- HEADER (kembali + judul + badge) -->
+    <div class="shrink-0 md:shrink-none bg-white md:bg-transparent border-b md:border-0 border-slate-100 px-4 md:px-0 py-4 flex items-center gap-3 md:mb-6">
+        <a href="{{ url()->previous() }}" class="w-10 h-10 rounded-full md:rounded-xl bg-slate-100 md:bg-white text-slate-600 border md:border-gray-100 md:shadow-sm flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0" title="Kembali">
             <i class="fas fa-arrow-left text-sm"></i>
         </a>
-        <div class="flex-1 px-3">
-            <h2 class="text-base font-black text-slate-900 tracking-tight">Biodata Guru</h2>
-            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Profil &amp; Kelengkapan Data</p>
+        <div class="min-w-0 flex-1">
+            <h2 class="text-base font-black text-slate-900 tracking-tight truncate">Biodata Guru</h2>
+            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Profil &amp; Kelengkapan Data &bull; {{ $guru->nama_guru }}</p>
         </div>
         @if($isAdmin || $editMode)
             <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wide {{ $editable ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
@@ -38,8 +39,8 @@
         @endif
     </div>
 
-    <!-- AREA KONTEN FORM -->
-    <div class="flex-1 overflow-y-auto bg-slate-50 relative z-10 pb-28 pt-5 scrollbar-none px-5">
+    <!-- AREA KONTEN -->
+    <div class="flex-1 overflow-y-auto md:overflow-visible md:flex-none scrollbar-none px-5 md:px-0 pb-28 md:pb-0 pt-5 md:pt-0">
 
         @if(session('status'))
             <div class="mb-5 bg-emerald-50 text-emerald-700 p-4 rounded-2xl text-xs font-bold flex items-center border border-emerald-100 shadow-sm animate-[sweep_0.3s_ease-in-out]">
@@ -78,7 +79,8 @@
             </div>
         @endif
 
-        <form action="{{ route('guru.profil.update') }}" method="POST" id="form-profil-mobile" enctype="multipart/form-data" data-turbo="false">
+        {{-- FORM PROFIL UTAMA (tidak mengandung form lain agar tidak nested) --}}
+        <form action="{{ route('guru.profil.update') }}" method="POST" id="form-profil" data-turbo="false">
             @csrf
             @method('PUT')
 
@@ -89,11 +91,9 @@
                 'jabatans' => null,
                 'guruPage' => true,
                 'bolehDokumen' => $bolehDokumen,
-                'dokumenAction' => route('guru.profil.dokumen'),
             ])
 
-            <!-- TOMBOL SIMPAN DI DALAM FORM (selalu tampil, scroll normal) -->
-            <div class="mb-2 rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
+            <div class="mb-4 rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
                 @if($editable)
                     <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.99] text-white font-black text-sm py-4 rounded-2xl transition-all shadow-[0_10px_24px_-8px_rgba(16,185,129,0.5)] flex items-center justify-center group">
                         <i class="fas fa-save mr-2.5 text-lg group-hover:scale-110 transition-transform"></i> Simpan Perubahan Biodata
@@ -104,61 +104,17 @@
                     </div>
                 @endif
             </div>
-
         </form>
-    </div>
 
-</div>
-
-{{-- ===== TAMPILAN DESKTOP (default shell + sidebar, konten lebar) ===== --}}
-<div class="hidden md:block">
-
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Biodata Guru</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ $guru->nama_guru }} &bull; NIG {{ $guru->nig }}</p>
-        </div>
-        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold {{ $editable ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
-            <i class="fas fa-lock-open mr-1.5 text-[10px]"></i> Guru boleh mengubah: {{ $editable ? 'Ya' : 'Tidak' }}
-        </span>
-    </div>
-
-    @if(isset($isAdmin) && $isAdmin)
-        <div class="mb-4 bg-sky-50 border border-sky-200 text-sky-800 p-4 rounded-xl text-sm font-semibold flex items-center">
-            <i class="fas fa-user-shield text-sky-600 mr-2"></i> Anda sedang melihat profil guru ini dari Master Data.
-        </div>
-    @endif
-
-    @if(!$editable)
-        <div class="mb-4 bg-sky-50 border border-sky-200 text-sky-800 p-4 rounded-xl text-sm font-semibold flex items-center">
-            <i class="fas fa-info-circle text-sky-600 mr-2"></i>
-            Data masih terkunci. Administrator/Pimpinan dapat menekan tombol <b>&laquo;Aktifkan Edit&raquo;</b> agar guru bisa mengubah dan menyimpan datanya sendiri.
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('guru.profil.update') }}" enctype="multipart/form-data" data-turbo="false">
-        @csrf
-        @method('PUT')
-
-        @include('partials.guru-kelengkapan-form', [
+        {{-- DOKUMEN: di luar form utama (masing-masing punya form sendiri) --}}
+        @include('partials.guru-kelengkapan-dokumen', [
             'guru' => $guru,
-            'editable' => $editable,
-            'isAdmin' => $isAdmin,
-            'jabatans' => null,
-            'guruPage' => true,
             'bolehDokumen' => $bolehDokumen,
+            'guruPage' => true,
             'dokumenAction' => route('guru.profil.dokumen'),
         ])
 
-        <div class="flex justify-end gap-2">
-            <a href="{{ url()->previous() }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition">Kembali</a>
-            @if($editable)
-                <button type="submit" class="px-6 py-2 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition shadow-md">
-                    <i class="fas fa-save mr-2"></i> Simpan
-                </button>
-            @endif
-        </div>
-    </form>
+    </div>
 
 </div>
 @endsection

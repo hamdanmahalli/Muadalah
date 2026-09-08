@@ -51,8 +51,8 @@
         </div>
     @endif
 
-    {{-- FORM GABUNGAN --}}
-    <form method="POST" action="/master-guru/{{ $guru->id }}/kelengkapan" enctype="multipart/form-data">
+    {{-- FORM PROFIL UTAMA (tanpa form lain di dalamnya agar tidak nested) --}}
+    <form method="POST" action="/master-guru/{{ $guru->id }}/kelengkapan" id="form-kelengkapan-admin">
         @csrf
 
         @include('partials.guru-kelengkapan-form', [
@@ -62,17 +62,23 @@
             'jabatans' => $jabatans,
             'guruPage' => false,
             'bolehDokumen' => $editable,
-            'dokumenAction' => '/master-guru/' . $guru->id . '/dokumen',
         ])
 
-        <div class="flex flex-col sm:flex-row justify-end gap-2 sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 p-3 md:p-4 rounded-t-2xl">
-            <a href="/master-guru" class="flex-1 sm:flex-none justify-center px-4 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition flex items-center active:scale-[0.98]">Kembali</a>
-            @if($editable)
-                <button type="submit" class="flex-1 sm:flex-none justify-center px-6 py-2.5 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition shadow-md flex items-center active:scale-[0.98]">
+        @if($editable)
+            <div class="sticky bottom-0 flex justify-end bg-white/95 backdrop-blur-sm border-t border-gray-100 p-3 md:p-4 rounded-t-2xl">
+                <button type="submit" class="w-full sm:w-auto justify-center px-6 py-2.5 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition shadow-md flex items-center active:scale-[0.98]">
                     <i class="fas fa-save mr-2"></i> Simpan
                 </button>
-            @endif
-        </div>
+            </div>
+        @endif
     </form>
+
+    {{-- DOKUMEN: di luar form utama (masing-masing punya form sendiri) --}}
+    @include('partials.guru-kelengkapan-dokumen', [
+        'guru' => $guru,
+        'bolehDokumen' => $editable,
+        'guruPage' => false,
+        'dokumenAction' => '/master-guru/' . $guru->id . '/dokumen',
+    ])
 
 @endsection
