@@ -21,6 +21,17 @@
             font-family: 'Poppins', sans-serif;
         }
 
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        }
+
+        main {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+        @media (min-width: 768px) {
+            main { padding-bottom: 2rem; }
+        }
+
         /* NAV-CLICK LOADING OVERLAY */
         #nav-loading {
             position: fixed; top: 0; bottom: 0; left: 0; right: 0; z-index: 15;
@@ -309,7 +320,7 @@
     </script>
     <!-- ============================================= -->
 </head>
-        <body data-turbo="false" class="bg-[#f4f7f6] flex h-screen overflow-hidden text-sm antialiased p-0">
+        <body data-turbo="false" class="bg-[#f4f7f6] flex h-[100dvh] overflow-hidden text-sm antialiased p-0">
 
             <!-- CONTAINER-SHELL: full-bleed, tanpa lengkungan & tanpa frame -->
             <div class="sb-shell flex flex-1 overflow-hidden bg-white">
