@@ -95,8 +95,8 @@ class KehadiranSlotService
                 if (strtolower($j->hari) !== strtolower($hariIndo)) {
                     continue;
                 }
-                $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
-                $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                $mulaiAktif = $this->tglAktifMulai($j);
+                $selesaiAktif = $this->tglAktifSelesai($j);
                 if ($tglStr < $mulaiAktif || $tglStr > $selesaiAktif) {
                     continue;
                 }
@@ -166,8 +166,8 @@ class KehadiranSlotService
                 if (strtolower($j->hari) !== strtolower($hariIndo)) {
                     continue;
                 }
-                $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
-                $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                $mulaiAktif = $this->tglAktifMulai($j);
+                $selesaiAktif = $this->tglAktifSelesai($j);
                 if ($tglStr < $mulaiAktif || $tglStr > $selesaiAktif) {
                     continue;
                 }
@@ -250,5 +250,31 @@ class KehadiranSlotService
         }
 
         return ['is_libur' => $isLibur, 'nama_libur' => $namaLibur];
+    }
+
+    /**
+     * Tanggal mulai aktif sebuah jadwal (kolom efektif > created_at).
+     */
+    private function tglAktifMulai($j): string
+    {
+        $nilai = $j->berlaku_mulai ?? $j->tgl_efektif_mulai ?? ($j->created_at ? $j->created_at->format('Y-m-d') : null);
+        $str = trim((string) $nilai);
+        if ($str !== '') {
+            return substr($str, 0, 10);
+        }
+        return '2000-01-01';
+    }
+
+    /**
+     * Tanggal selesai aktif sebuah jadwal (kolom efektif > deleted_at).
+     */
+    private function tglAktifSelesai($j): string
+    {
+        $nilai = $j->berlaku_sampai ?? $j->tgl_efektif_selesai ?? ($j->deleted_at ? $j->deleted_at->format('Y-m-d') : null);
+        $str = trim((string) $nilai);
+        if ($str !== '') {
+            return substr($str, 0, 10);
+        }
+        return '2099-12-31';
     }
 }

@@ -84,6 +84,7 @@ class JadwalHarianController extends Controller
             $plotAktif = PlotJadwal::where('kelas_id', $kelas_id)->get()->keyBy('pelajaran_id');
 
             $data_jadwal = JadwalHarian::with(['pelajaran', 'guru'])
+                            ->aktifPada(\Carbon\Carbon::now()->format('Y-m-d'))
                             ->where('kelas_id', $kelas_id)
                             ->where('tahun_ajaran', $tahunAjaran)
                             ->get();
@@ -98,6 +99,7 @@ class JadwalHarianController extends Controller
         } elseif ($guru_id) {
             $mode = 'guru';
             $data_jadwal = JadwalHarian::with(['pelajaran', 'kelas'])
+                            ->aktifPada(\Carbon\Carbon::now()->format('Y-m-d'))
                             ->where('guru_id', $guru_id)
                             ->where('tahun_ajaran', $tahunAjaran)
                             ->get();
@@ -309,6 +311,7 @@ class JadwalHarianController extends Controller
             'target_hari' => 'required|string',
             'target_jam' => 'required',
             'target_id' => 'nullable',
+            'tanggal_efektif' => 'nullable|date',
         ]);
 
         try {
@@ -320,11 +323,16 @@ class JadwalHarianController extends Controller
                 $targetJam = [(int) $targetJamInput];
             }
 
+            $tanggalEfektif = $request->tanggal_efektif
+                ? \Carbon\Carbon::parse($request->tanggal_efektif)->format('Y-m-d')
+                : \Carbon\Carbon::now()->format('Y-m-d');
+
             $result = $this->dragDrop->pindahBlok(
                 (int) $request->source_id,
                 $request->target_id ? (int) $request->target_id : null,
                 $request->target_hari,
-                $targetJam
+                $targetJam,
+                $tanggalEfektif
             );
 
             return response()->json($result);

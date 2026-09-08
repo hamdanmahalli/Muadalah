@@ -66,6 +66,130 @@ class RiwayatMutasiController extends Controller
         ));
     }
 
+    public function destroy($id)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($id) {
+            $mutasi = MutasiJadwal::find($id);
+            if (!$mutasi) {
+                return redirect()->back()->with('error', 'Riwayat mutasi tidak ditemukan.');
+            }
+
+            $pesan = 'Riwayat mutasi berhasil dihapus.';
+            $tglEfektif = $mutasi->tanggal_efektif ? $mutasi->tanggal_efektif->format('Y-m-d') : null;
+
+            // ===== KEMBALIKAN JADWAL (undo) untuk tipe yang bisa di-rollback =====
+            if (in_array($mutasi->tipe, ['tukar_jam', 'pindah_blok', 'ganti_guru']) && $tglEfektif) {
+                $kemarin = \Carbon\Carbon::parse($tglEfektif)->subDay()->format('Y-m-d');
+                $adaPerubahan = false;
+
+                if ($mutasi->tipe == 'tukar_jam') {
+                    // Swap menyentuh DUA blok (dua sisi, bisa beda pelajaran/guru).
+                    // Balik SEMUA slot yang terkena tanggal efektif pada hari-hari yang terlibat,
+                    // sehingga blok 5-6 dan 7-8 kembali utuh seperti semula.
+                    $rekamLama = JadwalHarian::where('kelas_id', $mutasi->kelas_id)
+                        ->where('pelajaran_id', $mutasi->pelajaran_id)
+                        ->where('guru_id', $mutasi->guru_lama_id)
+                        ->where('berlaku_sampai', $kemarin)
+                        ->orderBy('id')
+                        ->first();
+
+                    $rekamBaru = JadwalHarian::where('kelas_id', $mutasi->kelas_id)
+                        ->where('pelajaran_id', $mutasi->pelajaran_id)
+                        ->where('guru_id', $mutasi->guru_lama_id)
+                        ->where('berlaku_mulai', $tglEfektif)
+                        ->orderBy('id')
+                        ->first();
+
+                    if ($rekamLama && $rekamBaru) {
+                        $hariTerlibat = array_values(array_unique([$rekamLama->hari, $rekamBaru->hari]));
+
+                        // Buka kembali rekaman "sebelum swap" (berlaku_sampai = sehari sebelum efektif)
+                        $yangDibuka = JadwalHarian::where('kelas_id', $mutasi->kelas_id)
+                            ->whereIn('hari', $hariTerlibat)
+                            ->where('berlaku_sampai', $kemarin)
+                            ->get();
+                        foreach ($yangDibuka as $r) {
+                            if ($r->berlaku_sampai == $kemarin) {
+                                $r->berlaku_sampai = null;
+                                $r->save();
+                                $adaPerubahan = true;
+                            }
+                        }
+
+                        // Tutup rekaman "sesudah swap" (berlaku_mulai = tanggal efektif)
+                        $yangDitutup = JadwalHarian::where('kelas_id', $mutasi->kelas_id)
+                            ->whereIn('hari', $hariTerlibat)
+                            ->where('berlaku_mulai', $tglEfektif)
+                            ->get();
+                        foreach ($yangDitutup as $r) {
+                            if ($r->berlaku_mulai == $tglEfektif) {
+                                $r->berlaku_sampai = $kemarin;
+                                $r->save();
+                                $adaPerubahan = true;
+                            }
+                        }
+                    }
+
+                    $pesan = $adaPerubahan
+                        ? 'Riwayat dihapus dan tukar jam dibatalkan (dua blok dikembalikan ke posisi semula terhitung tanggal efekfit).'
+                        : $pesan . ' (Riwayat sudah tidak bisa dibatalkan — kemungkinan tukar lama tanpa tanggal efekfit).';
+                } else {
+                    // pindah_blok / ganti_guru: satu guru & satu pelajaran (blok tetap, jam terjaga)
+                    $queryLama = JadwalHarian::where('kelas_id', $mutasi->kelas_id)
+                        ->where('pelajaran_id', $mutasi->pelajaran_id)
+                        ->where('guru_id', $mutasi->guru_lama_id)
+                        ->where('berlaku_sampai', $kemarin);
+
+                    $queryBaru = JadwalHarian::where('kelas_id', $mutasi->kelas_id)
+                        ->where('pelajaran_id', $mutasi->pelajaran_id)
+                        ->where('guru_id', $mutasi->guru_baru_id)
+                        ->where('berlaku_mulai', $tglEfektif);
+
+                    if ($mutasi->tipe == 'ganti_guru' && $mutasi->hari && $mutasi->jam_ke) {
+                        $queryLama->where('hari', $mutasi->hari)->where('jam_ke', $mutasi->jam_ke);
+                        $queryBaru->where('hari', $mutasi->hari)->where('jam_ke', $mutasi->jam_ke);
+                    }
+
+                    foreach ($queryLama->get() as $r) {
+                        if ($r->berlaku_sampai == $kemarin) {
+                            $r->berlaku_sampai = null;
+                            $r->save();
+                            $adaPerubahan = true;
+                        }
+                    }
+                    foreach ($queryBaru->get() as $r) {
+                        if ($r->berlaku_mulai == $tglEfektif) {
+                            $r->berlaku_sampai = $kemarin;
+                            $r->save();
+                            $adaPerubahan = true;
+                        }
+                    }
+
+                    $pesan = $adaPerubahan
+                        ? 'Riwayat dihapus dan jadwal dikembalikan ke kondisi sebelum mutasi.'
+                        : $pesan . ' (Tidak ada jadwal yang bisa dikembalikan — kemungkinan riwayat lama tanpa tanggal efekfit).';
+                }
+            }
+
+            // Tukar jam mencatat dua baris (sisi guru) — hapus pasangannya agar tidak mengambang
+            if ($mutasi->tipe == 'tukar_jam' && $tglEfektif) {
+                $pasangan = MutasiJadwal::where('tipe', 'tukar_jam')
+                    ->where('kelas_id', $mutasi->kelas_id)
+                    ->whereDate('tanggal_efektif', $tglEfektif)
+                    ->where('id', '!=', $mutasi->id)
+                    ->where('guru_lama_id', '!=', $mutasi->guru_lama_id)
+                    ->first();
+                if ($pasangan) {
+                    $pasangan->delete();
+                }
+            }
+
+            $mutasi->delete();
+
+            return redirect()->back()->with('sukses', $pesan);
+        });
+    }
+
     /**
      * Halaman kelola / perbaiki tanggal masa berlaku (berlaku_mulai/sampai) tiap slot.
      */

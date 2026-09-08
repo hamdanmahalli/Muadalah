@@ -116,6 +116,7 @@
                 <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal Efektif</th>
                 <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Keterangan</th>
                 <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Oleh</th>
+                <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-100">
@@ -158,10 +159,19 @@
                 </td>
                 <td class="px-5 py-3 text-xs text-gray-500 font-medium max-w-[220px]">{{ $r->keterangan ?? '-' }}</td>
                 <td class="px-5 py-3 whitespace-nowrap text-xs text-gray-500">{{ $r->user?->name ?? '-' }}</td>
+                <td class="px-5 py-3 whitespace-nowrap text-right">
+                    <form method="POST" action="/riwayat-mutasi/{{ $r->id }}" onsubmit="return confirm('Hapus riwayat mutasi ini?\n\nUntuk tipe Tukar Jam / Pindah Blok / Ganti Guru, jadwal akan DIKEMBALIKAN ke kondisi sebelum mutasi. Untuk Hapus Slot / Perubahan Plot, hanya catatan log yang dihapus.\n\nLanjutkan?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-500 hover:text-white rounded-lg text-xs font-bold transition" title="Hapus riwayat ini">
+                            <i class="fas fa-trash-alt mr-1"></i> Hapus
+                        </button>
+                    </form>
+                </td>
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="px-5 py-12 text-center">
+                <td colspan="8" class="px-5 py-12 text-center">
                     <div class="flex flex-col items-center text-gray-300">
                         <i class="fas fa-inbox text-5xl mb-3"></i>
                         <p class="text-sm font-bold text-gray-400">Belum ada riwayat mutasi/perubahan jadwal.</p>

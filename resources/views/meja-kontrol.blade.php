@@ -517,7 +517,12 @@
         // RADAR SINKRONISASI REAL-TIME
         // ==========================================
         setInterval(function() {
-            fetch('/cek-kehadiran-terbaru', {
+            let urlCek = '/cek-kehadiran-terbaru';
+            let inputTanggal = document.getElementById('kalender-dinamis');
+            let tanggalLayarRadar = inputTanggal ? inputTanggal.value : '{!! \Carbon\Carbon::now()->format("Y-m-d") !!}';
+            if (tanggalLayarRadar) urlCek += '?tanggal=' + encodeURIComponent(tanggalLayarRadar);
+
+            fetch(urlCek, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(response => response.json())

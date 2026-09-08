@@ -417,8 +417,10 @@ class JadwalService
                     $isHariSama = strtolower($j->hari) === strtolower($hariIndo)
                         || (strtolower($hariIndo) === 'ahad' && strtolower($j->hari) === 'ahad');
 
-                    $mulaiAktif = $j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01';
-                    $selesaiAktif = $j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31';
+                    // Rentang aktif pakai kolom efektif (berlaku/tgl_efektif), bukan created_at/deleted_at,
+                    // agar riwayat TIDAK menampilkan baris yang sudah ditutup & klonnya sekaligus (dobel).
+                    $mulaiAktif = $this->normalizeTanggalEfektif($j->berlaku_mulai ?? $j->tgl_efektif_mulai ?? ($j->created_at ? $j->created_at->format('Y-m-d') : '2000-01-01'), false);
+                    $selesaiAktif = $this->normalizeTanggalEfektif($j->berlaku_sampai ?? $j->tgl_efektif_selesai ?? ($j->deleted_at ? $j->deleted_at->format('Y-m-d') : '2099-12-31'), true);
                     $isDalamRentang = $tglStr >= $mulaiAktif && $tglStr <= $selesaiAktif;
 
                     return $isHariSama && $isDalamRentang;

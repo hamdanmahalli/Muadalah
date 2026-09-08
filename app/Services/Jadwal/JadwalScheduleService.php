@@ -25,19 +25,31 @@ class JadwalScheduleService
      */
     public function simpan(array $data, string $tahunAjaran): void
     {
+        $refTgl = \Carbon\Carbon::now()->format('Y-m-d');
+
         foreach ($data['jam_ke'] as $jamKe) {
-            JadwalHarian::updateOrCreate(
-                [
-                    'kelas_id' => $data['kelas_id'],
-                    'hari' => $data['hari'],
-                    'jam_ke' => (int) $jamKe,
-                    'tahun_ajaran' => $tahunAjaran,
-                ],
-                [
-                    'pelajaran_id' => $data['pelajaran_id'],
-                    'guru_id' => $data['guru_id'],
-                ]
-            );
+            $existing = JadwalHarian::aktifPada($refTgl)
+                ->where('kelas_id', $data['kelas_id'])
+                ->where('hari', $data['hari'])
+                ->where('jam_ke', (int) $jamKe)
+                ->where('tahun_ajaran', $tahunAjaran)
+                ->first();
+
+            if ($existing) {
+                $existing->pelajaran_id = $data['pelajaran_id'];
+                $existing->guru_id = $data['guru_id'];
+                $existing->save();
+                continue;
+            }
+
+            JadwalHarian::create([
+                'kelas_id'      => $data['kelas_id'],
+                'tahun_ajaran'  => $tahunAjaran,
+                'hari'          => $data['hari'],
+                'jam_ke'        => (int) $jamKe,
+                'pelajaran_id'  => $data['pelajaran_id'],
+                'guru_id'       => $data['guru_id'],
+            ]);
         }
     }
 

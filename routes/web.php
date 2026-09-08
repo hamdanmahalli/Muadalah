@@ -286,10 +286,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Halaman Riwayat Mutasi & Kelola Tanggal Masa Berlaku Jadwal
-    Route::middleware(['can:akses_riwayat_mutasi'])->group(function () {
+Route::middleware(['can:akses_riwayat_mutasi'])->group(function () {
         Route::get('/riwayat-mutasi', [\App\Http\Controllers\RiwayatMutasiController::class, 'index']);
         Route::get('/riwayat-mutasi/kelola-tanggal', [\App\Http\Controllers\RiwayatMutasiController::class, 'kelolaTanggal']);
         Route::post('/riwayat-mutasi/kelola-tanggal', [\App\Http\Controllers\RiwayatMutasiController::class, 'simpanTanggal']);
+        Route::delete('/riwayat-mutasi/{id}', [\App\Http\Controllers\RiwayatMutasiController::class, 'destroy']);
     });
 
     // Backup dan Restore (total & destruktif) — dikunci akses_backup_restore via Hak Akses
