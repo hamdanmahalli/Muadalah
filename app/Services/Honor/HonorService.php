@@ -107,7 +107,8 @@ class HonorService
             $piketJam = KehadiranGuru::where('nig_pengganti', $guru->nig)
                 ->whereBetween('tanggal', [$tglMulai, $tglSelesai])
                 ->count();
-            $honorPiket = $piketJam * $config->tarif_piket;
+            $tarifPiket = $guruConfig->status_honor === 'Tetap' ? $config->tarif_piket : $config->tarif_piket_pengabdian;
+            $honorPiket = $piketJam * $tarifPiket;
 
             $tunjanganStruktural = $this->hitungStruktural($config, $guru);
             $tunjanganWaliKelas = $this->hitungWaliKelas($guru, $config->tarif_wali_kelas);

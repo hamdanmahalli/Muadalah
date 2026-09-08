@@ -89,7 +89,7 @@
     </form>
 </div>
 
-<form action="{{ route('honor.konfigurasi.simpan') }}" method="POST">
+<form action="{{ route('honor.konfigurasi.simpan') }}" method="POST" id="form-konfigurasi-honor">
     @csrf
     <input type="hidden" name="bulan" value="{{ $bulan }}">
     <input type="hidden" name="tahun" value="{{ $tahun }}">
@@ -99,13 +99,14 @@
         <div class="bg-slate-50 border-b border-slate-100 p-4">
             <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fas fa-coins text-amber-500 mr-2"></i>Tarif Dasar (Rp)</h3>
         </div>
-        <div class="p-5 grid grid-cols-2 sm:grid-cols-5 gap-4">
+        <div class="p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             @php
                 $d = $config ?? null;
                 $fields = [
                     'tarif_jam_normal' => ['label' => 'Honor / Jam (Tetap)', 'val' => $d?->tarif_jam_normal ?? 5000],
                     'tarif_pengabdian' => ['label' => 'Honor / Jam (Pengabdian)', 'val' => $d?->tarif_pengabdian ?? 4000],
                     'tarif_piket'      => ['label' => 'Piket / Jam', 'val' => $d?->tarif_piket ?? 4000],
+                    'tarif_piket_pengabdian' => ['label' => 'Piket / Jam (Pengabdian)', 'val' => $d?->tarif_piket_pengabdian ?? 4000],
                     'tarif_transport'  => ['label' => 'Transport / km (Rp)', 'val' => $d?->tarif_transport ?? 5000],
                     'tarif_wali_kelas' => ['label' => 'Wali Kelas / Bln', 'val' => $d?->tarif_wali_kelas ?? 50000],
                 ];
@@ -113,7 +114,7 @@
             @foreach($fields as $name => $f)
             <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{{ $f['label'] }}</label>
-                <input type="number" name="{{ $name }}" value="{{ $f['val'] }}" min="0" step="500" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium">
+                <input type="text" inputmode="numeric" name="{{ $name }}" value="{{ is_numeric($f['val']) ? number_format($f['val'], 0, ',', '.') : '' }}" maxlength="15" class="js-rupiah w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium">
             </div>
             @endforeach
         </div>
@@ -164,7 +165,7 @@
                             </span>
                         </td>
                         <td class="px-4 py-2.5">
-                            <input type="number" name="guru_tarif[{{ $guru->id }}]" value="{{ $cfg?->tarif_override ?? '' }}" min="0" placeholder="Auto" class="w-28 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2 outline-none transition-all font-semibold">
+                            <input type="text" inputmode="numeric" name="guru_tarif[{{ $guru->id }}]" value="{{ is_numeric($cfg?->tarif_override) ? number_format($cfg->tarif_override, 0, ',', '.') : '' }}" maxlength="15" placeholder="Auto" class="js-rupiah w-28 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2 outline-none transition-all font-semibold">
                         </td>
                     </tr>
                     @endforeach
@@ -186,7 +187,7 @@
             @endphp
             <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{{ $jabatan->nama_jabatan }}</label>
-                <input type="number" name="jabatan_nominal[{{ $jabatan->id }}]" value="{{ $nominal }}" min="0" step="5000" placeholder="0" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium">
+                <input type="text" inputmode="numeric" name="jabatan_nominal[{{ $jabatan->id }}]" value="{{ is_numeric($nominal) ? number_format($nominal, 0, ',', '.') : '' }}" maxlength="15" placeholder="0" class="js-rupiah w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium">
             </div>
             @endforeach
         </div>
@@ -199,3 +200,29 @@
     </div>
 </form>
 @endsection
+
+@push('scripts')
+<script>
+    function formatRibuan(val) {
+        var d = String(val).replace(/\D/g, '').slice(0, 15);
+        if (!d) return '';
+        return d.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    document.querySelectorAll('.js-rupiah').forEach(function (el) {
+        el.value = formatRibuan(el.value);
+        el.addEventListener('input', function () {
+            this.value = formatRibuan(this.value);
+        });
+    });
+
+    var formKonfigurasi = document.getElementById('form-konfigurasi-honor');
+    if (formKonfigurasi) {
+        formKonfigurasi.addEventListener('submit', function () {
+            this.querySelectorAll('.js-rupiah').forEach(function (el) {
+                el.value = el.value.replace(/\D/g, '');
+            });
+        });
+    }
+</script>
+@endpush

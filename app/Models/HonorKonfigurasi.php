@@ -14,6 +14,7 @@ class HonorKonfigurasi extends Model
         'tarif_jam_normal',
         'tarif_pengabdian',
         'tarif_piket',
+        'tarif_piket_pengabdian',
         'tarif_transport',
         'tarif_wali_kelas',
         'catatan',
