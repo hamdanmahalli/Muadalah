@@ -526,7 +526,7 @@ class JadwalController extends Controller
         $guru->load(['jabatans', 'dokumens']);
 
         $editMode = (bool) $guru->boleh_edit_profil;
-        $isAdmin = $user->can('akses_master_guru');
+        $isAdmin = $user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan']);
 
         return view('guru.kelengkapan', compact('guru', 'editMode', 'isAdmin'));
     }
@@ -540,7 +540,9 @@ class JadwalController extends Controller
             return back()->with('error', 'Data Guru tidak ditemukan.');
         }
 
-        if (!$guru->boleh_edit_profil && !$user->can('akses_master_guru')) {
+        $isAdmin = $user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan']);
+
+        if (!$guru->boleh_edit_profil && !$isAdmin) {
             return back()->with('error', 'Pengeditan profil belum diizinkan. Silakan hubungi Administrator/Pimpinan.');
         }
 
