@@ -257,6 +257,35 @@ class HonorController extends Controller
         return view('admin.honor-rekap', compact('periodeHonor', 'bulanIndonesia'));
     }
 
+    public function cetakSlip(HonorPeriode $periode)
+    {
+        if ($periode->status === 'draft') {
+            abort(403, 'Slip bisyaroh hanya bisa diunduh setelah rekap difinalkan.');
+        }
+
+        $periode->load(['konfigurasi.periode', 'details.guru']);
+
+        if ($periode->details->isEmpty()) {
+            return redirect()->back()->with('error', 'Periode ini belum punya data honor.');
+        }
+
+        $bulanIndonesia = $this->bulanIndonesia();
+        $tahunAjaran = $periode->konfigurasi?->periode?->tahun_ajaran
+            ?? ($periode->tahun . '-' . ($periode->tahun + 1));
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.honor-slip', [
+                'periode' => $periode,
+                'details' => $periode->details,
+                'bulanIndonesia' => $bulanIndonesia,
+                'tahunAjaran' => $tahunAjaran,
+            ])
+            ->setPaper([0, 0, 595.28, 935.43], 'portrait');
+
+        $namaBulan = $bulanIndonesia[$periode->bulan] ?? $periode->bulan;
+
+        return $pdf->download('Slip_Bisyaroh_' . $namaBulan . '_' . $periode->tahun . '.pdf');
+    }
+
     public function finalisasi($id)
     {
         $periodeHonor = HonorPeriode::findOrFail($id);

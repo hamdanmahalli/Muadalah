@@ -252,13 +252,15 @@ Route::middleware(['auth'])->group(function () {
 
     // ----------------------------------------------------------
     // ZONA HONOR GURU (Admin) — akses pecah per sub-modul:
-    // akses_honor            = melihat beranda Honor Guru
+    // akses_honor            = melihat beranda, rekap, & mengunduh slip bisyaroh
     // akses_honor_konfigurasi = mengatur tarif konfigurasi
-    // akses_honor_proses      = hitung, rekap, edit nominal draft
+    // akses_honor_proses      = hitung, edit nominal draft
     // akses_honor_final       = finalisasi / buka kembali (HANYA Administrator)
     // akses_honor_scan        = scan penerimaan honor (Staf Bendahara)
     Route::middleware(['can:akses_honor'])->group(function () {
         Route::get('/honor', [\App\Http\Controllers\HonorController::class, 'index'])->name('honor.index');
+        Route::get('/honor/rekap/{id}', [\App\Http\Controllers\HonorController::class, 'rekap'])->name('honor.rekap');
+        Route::get('/honor/slip/{periode}', [\App\Http\Controllers\HonorController::class, 'cetakSlip'])->name('honor.slip');
     });
 
     Route::middleware(['can:akses_honor_konfigurasi'])->group(function () {
@@ -269,7 +271,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['can:akses_honor_proses'])->group(function () {
         Route::post('/honor/hitung', [\App\Http\Controllers\HonorController::class, 'hitung'])->name('honor.hitung');
-        Route::get('/honor/rekap/{id}', [\App\Http\Controllers\HonorController::class, 'rekap'])->name('honor.rekap');
         Route::post('/honor/detail/{id}', [\App\Http\Controllers\HonorController::class, 'updateDetail'])->name('honor.detail.update');
     });
 

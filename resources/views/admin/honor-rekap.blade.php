@@ -22,6 +22,11 @@
         <a href="{{ route('honor.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-slate-50 text-slate-600 hover:bg-slate-600 hover:text-white border border-slate-200 hover:border-slate-600 font-bold text-xs rounded-xl transition-all shadow-sm">
             <i class="fas fa-arrow-left mr-2"></i> Kembali
         </a>
+        @if($periodeHonor->status !== 'draft' && auth()->user()->can('akses_honor'))
+        <a href="{{ route('honor.slip', $periodeHonor->id) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white border border-violet-200 hover:border-violet-600 font-bold text-xs rounded-xl transition-all shadow-sm">
+            <i class="fas fa-file-pdf mr-2"></i> Download Slip PDF
+        </a>
+        @endif
         @if($periodeHonor->status === 'draft')
         @can('akses_honor_final')
         <form action="{{ route('honor.final', $periodeHonor->id) }}" method="POST" onsubmit="return confirm('Finalkan rekap ini? Setelah difinalkan, QR code muncul dan penerimaan bisa dipindai.');">
