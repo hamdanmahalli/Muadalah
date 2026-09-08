@@ -158,10 +158,10 @@
                 <i class="fas fa-id-badge text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">QR Pribadi</span>
             </button>
-            <button onclick="tampilToast('info', 'Ganti Jam segera hadir.'); return false;" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-90 transition-all">
-                <i class="fas fa-arrows-rotate text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Ganti Jam</span>
-            </button>
+            <a href="{{ route('guru.honor') }}" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(249,115,22,0.7)] active:scale-90 transition-all">
+                <i class="fas fa-money-bill-wave text-base text-white"></i>
+                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Bisyaroh</span>
+            </a>
             <button onclick="tampilToast('info', 'Cuti / Izin segera hadir.'); return false;" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(236,72,153,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-paper-plane text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Cuti</span>
@@ -169,10 +169,6 @@
             <a href="{{ route('guru.profil.lengkap') }}" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(16,185,129,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-user text-base text-white"></i>
                 <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Profil</span>
-            </a>
-            <a href="{{ route('guru.honor') }}" class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(16,185,129,0.7)] active:scale-90 transition-all">
-                <i class="fas fa-money-bill-wave text-base text-white"></i>
-                <span class="text-[8px] font-black text-white/95 tracking-wide leading-tight text-center px-0.5 whitespace-normal">Honor</span>
             </a>
             <a href="{{ route('nilai.index') }}" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl aspect-square overflow-hidden relative flex flex-col items-center justify-center gap-1 px-2 py-2 shadow-[0_12px_22px_-10px_rgba(59,130,246,0.7)] active:scale-90 transition-all">
                 <i class="fas fa-chart-column text-base text-white"></i>
@@ -198,49 +194,6 @@
             <span class="menu-toggle-text">Tampilkan Semua</span>
             <i class="fas fa-chevron-down menu-toggle-chev text-[8px] mt-0.5"></i>
         </button>
-
-        <!-- ===== SLIP HONOR TERBARU ===== -->
-        @if($honorTerbaru)
-        @php
-            $h2 = $honorTerbaru;
-            $bulanNama2 = \App\Http\Controllers\GuruHonorController::BULAN_INDO[$h2->periode->bulan] ?? $h2->periode->bulan;
-        @endphp
-        <div class="mt-7">
-            <div class="flex items-center justify-between mb-3 mx-4">
-                <h3 class="text-[15px] font-black text-slate-900 tracking-tight">Honor Bisyaroh</h3>
-                <a href="{{ route('guru.honor') }}" class="text-[10px] font-black text-emerald-600 flex items-center gap-1">Lihat Semua <i class="fas fa-chevron-right text-[8px]"></i></a>
-            </div>
-            <a href="{{ route('guru.honor') }}" class="block mx-4">
-                <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-5 shadow-[0_18px_38px_-18px_rgba(16,185,129,0.6)] relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <div class="relative z-10">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-[9px] font-black text-emerald-200 uppercase tracking-widest">Slip Bulan Ini</p>
-                                <p class="text-xs font-bold text-emerald-100 mt-0.5">{{ $bulanNama2 }} {{ $h2->periode->tahun }}</p>
-                            </div>
-                            <div class="w-11 h-11 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-white">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </div>
-                        </div>
-                        <p class="text-3xl font-black text-white tracking-tight mt-4">Rp {{ number_format($h2->total, 0, ',', '.') }}</p>
-                        @if($h2->is_diterima)
-                        <div class="mt-4 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 border border-white/20 text-white text-xs font-black">
-                            <i class="fas fa-check-circle text-emerald-300"></i> SUDAH DITERIMA
-                            @if($h2->waktu_diterima)
-                            <span class="text-emerald-200/90 font-semibold text-[10px]">· {{ $h2->waktu_diterima->format('d/m/Y H:i') }}</span>
-                            @endif
-                        </div>
-                        @else
-                        <div class="mt-4 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-400/20 border border-amber-200/30 text-amber-100 text-xs font-black">
-                            <i class="fas fa-hourglass-half"></i> MENUNGGU PENERIMAAN
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </a>
-        </div>
-        @endif
 
         <!-- ===== JADWAL HARI INI (list alá riwayat transaksi) ===== -->
         <div class="flex items-center justify-between mt-7 mb-3 mx-4">

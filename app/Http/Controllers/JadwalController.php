@@ -9,7 +9,6 @@ use App\Models\KehadiranGuru;
 use App\Models\Guru;
 use App\Models\MasterJam;
 use App\Models\Periode;
-use App\Models\HonorDetail;
 use App\Services\JadwalService;
 use App\Services\JadwalMatrixService;
 use App\Services\DashboardService;
@@ -84,6 +83,7 @@ class JadwalController extends Controller
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
         $jadwalsMentah = JadwalHarian::with(['kelas', 'pelajaran', 'guru'])
+                         ->aktifPada($tanggalPilihan)
                          ->where('hari', 'ilike', $hariIni)
                          ->whereIn('jam_ke', $arrayJamPilihan)
                          ->where('tahun_ajaran', $tahunAjaran)
@@ -230,9 +230,9 @@ class JadwalController extends Controller
     // ========================================================
     // RADAR LAYAR TU: Data kehadiran terbaru (AJAX)
     // ========================================================
-    public function cekKehadiranTerbaru()
+    public function cekKehadiranTerbaru(Request $request)
     {
-        $tanggalHariIni = Carbon::now()->format('Y-m-d');
+        $tanggalHariIni = $request->input('tanggal', Carbon::now()->format('Y-m-d'));
         $kehadiran = KehadiranGuru::where('tanggal', $tanggalHariIni)
                         ->get(['jadwal_id', 'status', 'keterangan', 'nig_pengganti']);
 
@@ -283,6 +283,7 @@ class JadwalController extends Controller
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
         $jadwalMentah = JadwalHarian::with(['kelas', 'pelajaran'])
+            ->aktifPada(Carbon::now()->format('Y-m-d'))
             ->where('guru_id', $guru->id)
             ->where('tahun_ajaran', $tahunAjaran)
             ->orderBy('hari', 'asc')
@@ -375,6 +376,7 @@ class JadwalController extends Controller
         $periodeId = $periodeAktif->id;
 
         $jadwals = JadwalHarian::with(['kelas', 'pelajaran'])
+                        ->aktifPada(Carbon::now()->format('Y-m-d'))
                         ->where('guru_id', $guru->id)
                         ->where('tahun_ajaran', $periodeAktif->tahun_ajaran)
                         ->get();
@@ -464,6 +466,7 @@ class JadwalController extends Controller
 
         if ($guru) {
             $jadwalMentah = JadwalHarian::with(['kelas', 'pelajaran'])
+                        ->aktifPada(Carbon::now()->format('Y-m-d'))
                         ->where('guru_id', $guru->id)
                         ->where('tahun_ajaran', $tahunAjaran)
                         ->get();
@@ -483,19 +486,7 @@ class JadwalController extends Controller
 
         $qrPribadi = app(\App\Services\Kehadiran\KehadiranScanService::class)->qrPribadi();
 
-        $honorTerbaru = null;
-        $honorAll = collect();
-        if ($guru) {
-            $honorAll = HonorDetail::with(['periode.konfigurasi'])
-                ->where('guru_id', $guru->id)
-                ->whereHas('periode', fn($q) => $q->where('status', 'final'))
-                ->whereHas('periode.konfigurasi')
-                ->orderByDesc('created_at')
-                ->get();
-            $honorTerbaru = $honorAll->first();
-        }
-
-        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans', 'qrPribadi', 'honorTerbaru', 'honorAll'));
+        return view('dashboard-guru', compact('guru', 'jadwals', 'periodeAktif', 'pengumumans', 'qrPribadi'));
     }
 
     // ========================================================
