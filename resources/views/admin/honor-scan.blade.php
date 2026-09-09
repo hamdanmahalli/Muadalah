@@ -68,6 +68,18 @@
                 Arahkan kamera ke QR Code honor guru (HONOR-...)
             </p>
 
+            <!-- Overlay saat kamera mati / belum menyala -->
+            <div id="overlay-kamera" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm px-6 text-center">
+                <div class="w-16 h-16 rounded-full bg-slate-800/80 text-slate-500 flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <p id="status-kamera" class="text-slate-300 text-[13px] font-bold leading-relaxed max-w-[280px]">Kamera belum menyala.</p>
+                <button type="button" id="btn-mulai-kamera" onclick="mulaiKamera()"
+                    class="mt-5 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-md shadow-emerald-500/30 transition-all active:scale-95">
+                    <i class="fas fa-qrcode mr-2"></i> Mulai Scan Barcode
+                </button>
+            </div>
+
             <!-- Panel Hasil Sukses -->
             <div id="panel-sukses" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm px-6 text-center">
                 <div id="sukses-ikon" class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-5 shadow-[0_0_40px_rgba(16,185,129,0.6)]">
@@ -82,7 +94,13 @@
             </div>
         </div>
 
-        <div class="shrink-0 bg-white border-t border-slate-200 relative z-20 h-10"></div>
+        <div class="shrink-0 bg-white border-t border-slate-200 relative z-20">
+            <button type="button" id="btn-toggle-kamera" onclick="toggleKamera()"
+                class="w-full py-3 text-sm font-black text-emerald-600 flex items-center justify-center gap-2 active:scale-[0.99] transition-all">
+                <i id="ikon-toggle-kamera" class="fas fa-video"></i>
+                <span id="label-toggle-kamera">Nyalakan Kamera</span>
+            </button>
+        </div>
     </div>
 
     {{-- Daftar status penerimaan --}}
@@ -106,7 +124,7 @@
 </div>
 
 @push('scripts')
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="/js/html5-qrcode.min.js" defer></script>
 <script>
 (function() {
     let isProcessing = false;
@@ -116,16 +134,71 @@
 
     const panelSukses = document.getElementById('panel-sukses');
     const laser = document.getElementById('laser-line');
+    const overlayKamera = document.getElementById('overlay-kamera');
+    const statusKamera = document.getElementById('status-kamera');
+    const btnToggle = document.getElementById('btn-toggle-kamera');
+    const labelToggle = document.getElementById('label-toggle-kamera');
+    const ikonToggle = document.getElementById('ikon-toggle-kamera');
+
+    function tampilScanToast(tipe, pesan) {
+        var lama = document.getElementById('toast-scan-honor');
+        if (lama) lama.remove();
+        var t = document.createElement('div');
+        t.id = 'toast-scan-honor';
+        var warna = tipe === 'error' ? '#f43f5e' : (tipe === 'success' ? '#10b981' : '#f59e0b');
+        t.style.cssText = 'position:fixed;left:16px;right:16px;bottom:120px;z-index:250;background:' + warna + ';color:#fff;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.25);opacity:0;transform:translateY(10px);transition:opacity .2s ease,transform .2s ease;';
+        t.textContent = pesan;
+        document.body.appendChild(t);
+        requestAnimationFrame(function() {
+            t.style.opacity = '1';
+            t.style.transform = 'translateY(0)';
+        });
+        setTimeout(function() { if (t.parentNode) { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 250); } }, 3800);
+    }
+
+    function setStatusKamera(pesan) {
+        statusKamera.textContent = pesan;
+    }
+
+    function aturTombolToggle(jalan) {
+        kameraBerjalan = jalan;
+        if (jalan) {
+            labelToggle.textContent = 'Matikan Kamera';
+            ikonToggle.className = 'fas fa-video-slash';
+        } else {
+            labelToggle.textContent = 'Nyalakan Kamera';
+            ikonToggle.className = 'fas fa-video';
+        }
+    }
+
+    function tampilOverlay(terlihat) {
+        if (terlihat) overlayKamera.classList.remove('hidden');
+        else overlayKamera.classList.add('hidden');
+    }
+
+    function konteksAman() {
+        if (window.isSecureContext) return true;
+        var host = location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
+        setStatusKamera('Kamera membutuhkan koneksi aman (HTTPS). Buka aplikasi melalui alamat https, bukan http.');
+        tampilOverlay(true);
+        aturTombolToggle(false);
+        tampilScanToast('error', 'Kamera butuh HTTPS (site bukan localhost).');
+        return false;
+    }
 
     function tampilSukses(nama, pesan) {
         document.getElementById('sukses-nama').textContent = nama;
         document.getElementById('sukses-pesan').textContent = pesan;
         panelSukses.classList.remove('hidden');
         laser.style.opacity = '0';
+        tampilOverlay(false);
+        aturTombolToggle(false);
     }
     function sembunyiSukses() {
         panelSukses.classList.add('hidden');
         laser.style.opacity = '1';
+        tampilOverlay(false);
     }
 
     function onScanSuccess(decodedText, decodedResult) {
@@ -155,14 +228,14 @@
                 }
                 tampilSukses(data.nama_guru || 'Honor Diterima', data.pesan);
             } else {
-                if (typeof tampilNotif === 'function') tampilNotif('error', 'Ditolak', data.pesan || 'QR tidak dikenali.');
+                tampilScanToast('error', data.pesan || 'QR tidak dikenali.');
                 if (navigator.vibrate) navigator.vibrate([300]);
             }
         })
         .catch(() => {
             const el = document.getElementById('sukses-ikon');
             if (el) el.innerHTML = '<i class="fas fa-circle-xmark"></i>';
-            if (typeof tampilNotif === 'function') tampilNotif('error', 'Gagal', 'Gagal terhubung ke server.');
+            tampilScanToast('error', 'Gagal terhubung ke server.');
         })
         .finally(() => {
             setTimeout(() => { isProcessing = false; }, 400);
@@ -171,37 +244,77 @@
 
     function initKamera() {
         if (typeof Html5Qrcode === 'undefined') {
-            if (typeof tampilNotif === 'function') tampilNotif('error', 'Kamera', 'Library kamera gagal dimuat. Muat ulang halaman.');
-            return;
+            setStatusKamera('Library kamera gagal dimuat. Muat ulang halaman.');
+            tampilOverlay(true);
+            aturTombolToggle(false);
+            tampilScanToast('error', 'Library kamera gagal dimuat. Muat ulang halaman.');
+            return false;
         }
-        if (html5QrCode) return;
+        if (html5QrCode) return true;
         try {
             html5QrCode = new Html5Qrcode("reader");
+            return true;
         } catch (err) {
             console.error("Gagal init kamera:", err);
+            setStatusKamera('Terjadi kendala menyiapkan kamera. Coba lagi.');
+            tampilOverlay(true);
+            aturTombolToggle(false);
+            return false;
         }
     }
 
     function mulaiKamera() {
         if (kameraBerjalan) return;
-        if (!html5QrCode) { initKamera(); }
-        if (!html5QrCode) return;
+        if (scanSelesai) return;
+        if (!konteksAman()) return;
+        if (!html5QrCode && !initKamera()) return;
 
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 220, height: 220 } },
-            onScanSuccess
-        ).then(function() {
-            kameraBerjalan = true;
-        }).catch(function(err) {
-            console.error("Gagal mengakses kamera:", err);
-            if (typeof tampilNotif === 'function') tampilNotif('error', 'Kamera', 'Gagal mengakses kamera. Aktifkan izin kamera di browser.');
-        });
+        tampilOverlay(false);
+        tampilScanToast('info', 'Mengakses kamera…');
+
+        function cobaMulai(facingMode) {
+            html5QrCode.start(
+                facingMode,
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                onScanSuccess
+            ).then(function() {
+                aturTombolToggle(true);
+                tampilScanToast('success', 'Kamera menyala. Arahkan ke QR honor guru.');
+            }).catch(function(err) {
+                console.error("Gagal mengakses kamera:", err);
+                if (typeof facingMode === 'object') {
+                    cobaMulai(true);
+                } else {
+                    setStatusKamera('Gagal mengakses kamera. Izinkan akses kamera di browser, lalu coba lagi.');
+                    tampilOverlay(true);
+                    aturTombolToggle(false);
+                    tampilScanToast('error', lokasiTidakAman() ? 'Kamera butuh HTTPS.' : 'Gagal mengakses kamera. Izinkan akses kamera di browser.');
+                }
+            });
+        }
+        cobaMulai({ facingMode: 'environment' });
+    }
+
+    function lokasiTidakAman() {
+        return !window.isSecureContext && !['localhost', '127.0.0.1', '::1'].includes(location.hostname);
+    }
+
+    function toggleKamera() {
+        if (kameraBerjalan) {
+            hentikanKamera();
+            setStatusKamera('Kamera dimatikan.');
+            tampilOverlay(true);
+            tampilScanToast('info', 'Kamera dimatikan.');
+        } else {
+            scanSelesai = false;
+            sembunyiSukses();
+            mulaiKamera();
+        }
     }
 
     function hentikanKamera() {
         if (!kameraBerjalan) return;
-        kameraBerjalan = false;
+        aturTombolToggle(false);
         try {
             if (html5QrCode && typeof html5QrCode.stop === 'function') {
                 html5QrCode.stop().catch(function() {});
@@ -218,20 +331,28 @@
         });
     }
 
-    function cobaMulaiKamera() {
+    // START AMAN (auto-start tetap dicoba; bila gagal overlay + tombol muncul)
+    function cobaMulaiAuto() {
         if (scanSelesai) return;
-        if (document.visibilityState === 'visible') mulaiKamera();
+        if (typeof Html5Qrcode === 'undefined') return;
+        if (document.visibilityState === 'visible') {
+            if (kameraBerjalan) return;
+            if (!konteksAman()) return;
+            mulaiKamera();
+        }
     }
-    window.addEventListener('load', function() { setTimeout(cobaMulaiKamera, 300); });
-    document.addEventListener('DOMContentLoaded', function() { setTimeout(cobaMulaiKamera, 300); });
-    document.addEventListener('turbo:load', function() { setTimeout(cobaMulaiKamera, 300); });
+    window.addEventListener('load', function() { setTimeout(cobaMulaiAuto, 300); });
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(cobaMulaiAuto, 300); });
+    document.addEventListener('turbo:load', function() { setTimeout(cobaMulaiAuto, 300); });
     document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible') cobaMulaiKamera();
+        if (document.visibilityState === 'visible') cobaMulaiAuto();
     });
-    window.addEventListener('pageshow', function() { setTimeout(cobaMulaiKamera, 300); });
+    window.addEventListener('pageshow', function() { setTimeout(cobaMulaiAuto, 300); });
 
     document.addEventListener('turbo:before-visit', hentikanKamera);
     window.addEventListener('pagehide', hentikanKamera);
+
+    aturTombolToggle(false);
 })();
 </script>
 @endpush

@@ -213,6 +213,7 @@
             <p class="absolute inset-x-0 bottom-3 z-20 text-white text-[12px] font-semibold text-center px-4">
                 Arahkan kamera ke QR honor (HONOR-...) yang ditampilkan atau dari layar TU.
             </p>
+            <p id="status-scan-honor" class="absolute top-4 inset-x-4 z-20 hidden text-white/90 text-[11px] font-bold text-center bg-white/10 backdrop-blur rounded-xl px-3 py-2"></p>
             <div id="panel-sukses-honor" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm px-6 text-center">
                 <div class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-5 shadow-[0_0_40px_rgba(16,185,129,0.6)]">
                     <i class="fas fa-check"></i>
@@ -279,6 +280,15 @@
         setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
+    function tampilStatusScanHonor(pesan) {
+        var el = document.getElementById('status-scan-honor');
+        if (!el) return;
+        el.textContent = pesan;
+        el.classList.remove('hidden');
+        clearTimeout(window.__tmrScanHonor);
+        window.__tmrScanHonor = setTimeout(function () { el.classList.add('hidden'); }, 4000);
+    }
+
     function onScanHonorSuccess(decodedText) {
         if (isProcessingHonor) return;
         isProcessingHonor = true;
@@ -298,20 +308,26 @@
                 document.getElementById('panel-sukses-honor').classList.remove('hidden');
                 document.getElementById('laser-line-honor').style.opacity = '0';
             } else {
-                if (typeof tampilToast === 'function') tampilToast('error', d.pesan || 'QR tidak dikenali.');
+                tampilStatusScanHonor(d.pesan || 'QR tidak dikenali.');
             }
         })
         .catch(() => {
-            if (typeof tampilToast === 'function') tampilToast('error', 'Gagal terhubung ke server.');
+            tampilStatusScanHonor('Gagal terhubung ke server.');
         })
         .finally(() => setTimeout(() => { isProcessingHonor = false; }, 500));
     }
 
     function mulaiKameraHonor() {
         if (kameraHonorBerjalan) return;
-        if (typeof Html5Qrcode === 'undefined') return;
+        if (typeof Html5Qrcode === 'undefined') {
+            tampilStatusScanHonor('Library kamera gagal dimuat. Muat ulang halaman.');
+            return;
+        }
         if (!html5QrHonor) {
-            try { html5QrHonor = new Html5Qrcode("reader-honor"); } catch (e) { return; }
+            try { html5QrHonor = new Html5Qrcode("reader-honor"); } catch (e) {
+                tampilStatusScanHonor('Terjadi kendala menyiapkan kamera. Coba lagi.');
+                return;
+            }
         }
         html5QrHonor.start(
             { facingMode: "environment" },
@@ -320,7 +336,7 @@
         ).then(() => { kameraHonorBerjalan = true; })
         .catch(err => {
             console.error("Gagal kamera:", err);
-            if (typeof tampilToast === 'function') tampilToast('error', 'Gagal mengakses kamera.');
+            tampilStatusScanHonor('Gagal mengakses kamera. Izinkan akses kamera di pengaturan browser.');
         });
     }
     function hentikanKameraHonor() {
@@ -336,5 +352,5 @@
         mulaiKameraHonor();
     });
 </script>
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="/js/html5-qrcode.min.js" defer></script>
 @endsection
