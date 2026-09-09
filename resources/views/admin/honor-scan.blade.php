@@ -89,18 +89,6 @@
                 Arahkan kamera ke QR Code honor guru (HONOR-...)
             </p>
 
-            <!-- Overlay saat kamera mati / belum menyala -->
-            <div id="overlay-kamera" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm px-6 text-center">
-                <div class="w-16 h-16 rounded-full bg-slate-800/80 text-slate-500 flex items-center justify-center text-2xl mb-4">
-                    <i class="fas fa-camera"></i>
-                </div>
-                <p id="status-kamera" class="text-slate-300 text-[13px] font-bold leading-relaxed max-w-[280px]">Kamera belum menyala.</p>
-                <button type="button" id="btn-mulai-kamera" onclick=" mulaiKamera()"
-                    class="mt-5 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-md shadow-emerald-500/30 transition-all active:scale-95">
-                    <i class="fas fa-qrcode mr-2"></i> Mulai Scan Barcode
-                </button>
-            </div>
-
             <!-- Panel Hasil Sukses -->
             <div id="panel-sukses" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm px-6 text-center">
                 <div id="sukses-ikon" class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-5 shadow-[0_0_40px_rgba(16,185,129,0.6)]">
@@ -209,8 +197,6 @@ function tutupQrGalri() {
     const tabQr = document.getElementById('tab-qr');
     const panelSukses = document.getElementById('panel-sukses');
     const laser = document.getElementById('laser-line');
-    const overlayKamera = document.getElementById('overlay-kamera');
-    const statusKamera = document.getElementById('status-kamera');
 
     function tampilScanToast(tipe, pesan) {
         var lama = document.getElementById('toast-scan-honor');
@@ -228,18 +214,8 @@ function tutupQrGalri() {
         setTimeout(function() { if (t.parentNode) { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 250); } }, 3800);
     }
 
-    function setStatusKamera(pesan) {
-        if (statusKamera) statusKamera.textContent = pesan;
-    }
-
     function setKameraBerjalan(jalan) {
         kameraBerjalan = jalan;
-    }
-
-    function tampilOverlay(terlihat) {
-        if (!overlayKamera) return;
-        if (terlihat) overlayKamera.classList.remove('hidden');
-        else overlayKamera.classList.add('hidden');
     }
 
     function lokasiTidakAman() {
@@ -250,9 +226,6 @@ function tutupQrGalri() {
         if (window.isSecureContext) return true;
         var host = location.hostname;
         if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
-        setStatusKamera('Kamera membutuhkan koneksi aman (HTTPS). Buka aplikasi melalui alamat https, bukan http.');
-        tampilOverlay(true);
-        setKameraBerjalan(false);
         tampilScanToast('error', 'Kamera butuh HTTPS (site bukan localhost).');
         return false;
     }
@@ -262,13 +235,11 @@ function tutupQrGalri() {
         document.getElementById('sukses-pesan').textContent = pesan;
         panelSukses.classList.remove('hidden');
         laser.style.opacity = '0';
-        tampilOverlay(false);
         setKameraBerjalan(false);
     }
     function sembunyiSukses() {
         panelSukses.classList.add('hidden');
         laser.style.opacity = '1';
-        tampilOverlay(false);
     }
 
     function onScanSuccess(decodedText, decodedResult) {
@@ -314,10 +285,8 @@ function tutupQrGalri() {
 
     function initKamera() {
         if (typeof Html5Qrcode === 'undefined') {
-            setStatusKamera('Library kamera gagal dimuat. Muat ulang halaman.');
-            tampilOverlay(true);
-            setKameraBerjalan(false);
             tampilScanToast('error', 'Library kamera gagal dimuat. Muat ulang halaman.');
+            setKameraBerjalan(false);
             return false;
         }
         if (html5QrCode) return true;
@@ -326,8 +295,7 @@ function tutupQrGalri() {
             return true;
         } catch (err) {
             console.error("Gagal init kamera:", err);
-            setStatusKamera('Terjadi kendala menyiapkan kamera. Coba lagi.');
-            tampilOverlay(true);
+            tampilScanToast('error', 'Terjadi kendala menyiapkan kamera. Coba lagi.');
             setKameraBerjalan(false);
             return false;
         }
@@ -339,7 +307,6 @@ function tutupQrGalri() {
         if (!konteksAman()) return;
         if (!html5QrCode && !initKamera()) return;
 
-        tampilOverlay(false);
         tampilScanToast('info', 'Mengakses kamera…');
 
         function cobaMulai(facingMode) {
@@ -355,10 +322,8 @@ function tutupQrGalri() {
                 if (typeof facingMode === 'object') {
                     cobaMulai(true);
                 } else {
-                    setStatusKamera('Gagal mengakses kamera. Izinkan akses kamera di browser, lalu coba lagi.');
-                    tampilOverlay(true);
                     setKameraBerjalan(false);
-                    tampilScanToast('error', lokasiTidakAman() ? 'Kamera butuh HTTPS.' : 'Gagal mengakses kamera. Izinkan akses kamera di browser.');
+                    tampilScanToast('error', lokasiTidakAman() ? 'Kamera butuh HTTPS.' : 'Gagal mengakses kamera. Buka melalui https, lalu izinkan akses kamera di browser.');
                 }
             });
         }
@@ -408,7 +373,7 @@ function tutupQrGalri() {
         });
     }
 
-    // START AMAN (auto-start tetap dicoba; bila gagal overlay + tombol muncul)
+    // START OTOMATIS (seperti scan-kelas: kamera langsung jalan saat halaman dibuka)
     function cobaMulaiAuto() {
         if (!panelScan) return;
         if (panelScan.classList.contains('hidden')) return;
