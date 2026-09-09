@@ -107,7 +107,7 @@
     </div>
 
     <!-- PANEL 2: QR CODE (galeri barcode honor) -->
-    <div id="panel-qr" class="hidden flex-1 z-0 bg-slate-100 overflow-y-auto scrollbar-none p-4">
+    <div id="panel-qr" class="hidden flex-1 z-0 bg-slate-100 overflow-y-auto scrollbar-none px-4 pt-4 pb-20">
         <div class="grid grid-cols-3 gap-2.5">
             @forelse($qrItems as $item)
             <div onclick="bukaQrGalri(this)" data-nama="{{ $item['nama'] }}" data-diterima="{{ $item['diterima'] ? '1' : '0' }}"

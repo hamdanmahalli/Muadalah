@@ -32,6 +32,11 @@
             main { padding-bottom: 2rem; }
         }
 
+        /* Sembunyikan garis ungu progress bar bawaan Turbo (sudah ada indikator #nav-loading sendiri) */
+        turbo-progress-bar {
+            visibility: hidden;
+        }
+
         /* NAV-CLICK LOADING: indikator kecil di atas (tidak menutupi halaman) */
         #nav-loading {
             position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
