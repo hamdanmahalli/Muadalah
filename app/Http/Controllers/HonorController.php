@@ -12,6 +12,7 @@ use App\Models\Guru;
 use App\Models\Jabatan;
 use App\Models\Periode;
 use App\Services\Honor\HonorService;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class HonorController extends Controller
 {
@@ -357,9 +358,22 @@ class HonorController extends Controller
             ->orderBy('bulan', 'desc')
             ->first();
 
+        $qrItems = collect();
+        if ($periodeHonor) {
+            foreach ($periodeHonor->details->where('butuh_penerimaan', true) as $d) {
+                $qrItems->push([
+                    'id' => $d->id,
+                    'nama' => $d->guru->nama_guru,
+                    'qr' => rawurlencode((string) QrCode::format('svg')->size(200)->margin(1)->generate($d->qr_token)),
+                    'diterima' => (bool) $d->is_diterima,
+                    'total' => $d->total,
+                ]);
+            }
+        }
+
         $bulanIndonesia = $this->bulanIndonesia();
 
-        return view('admin.honor-scan', compact('periodeHonor', 'bulanIndonesia'));
+        return view('admin.honor-scan', compact('periodeHonor', 'bulanIndonesia', 'qrItems'));
     }
 
     public function prosesScan(Request $request)

@@ -7,6 +7,10 @@
     <meta name="turbo-cache-control" content="no-cache">
 @endpush
 <style>
+    header, aside { display: none !important; }
+    #btn-buka-sidebar { display: none !important; }
+    main { padding: 0 !important; background-color: #000 !important; overflow: hidden !important; }
+    body { overflow: hidden !important; background-color: #000 !important; }
     #reader video {
         object-fit: cover !important;
         width: 100% !important;
@@ -26,12 +30,14 @@
         box-shadow: 0 0 12px #10b981, 0 0 24px #10b981;
         animation: scanLine 2s ease-in-out infinite alternate;
     }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 <div class="max-w-md mx-auto h-[100dvh] bg-black flex flex-col relative font-sans overflow-hidden">
 
-    <!-- HEADER -->
-    <div class="shrink-0 bg-white px-4 py-4 z-30">
+    <!-- HEADER + TAB -->
+    <div class="shrink-0 bg-white px-4 pt-4 pb-3 z-30">
         <div class="flex items-center justify-between">
             <div class="flex items-center">
                 <a href="{{ route('honor.index') }}" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-emerald-600 transition-colors mr-4">
@@ -54,11 +60,26 @@
             </span>
             @endif
         </div>
+
+        @if($periodeHonor)
+        <div class="flex mt-3 gap-1 bg-slate-100 p-1 rounded-2xl">
+            <button type="button" id="tab-scan"
+                class="w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all
+                       text-emerald-700 bg-white shadow-sm">
+                <i class="fas fa-qrcode"></i> Scan QR
+            </button>
+            <button type="button" id="tab-qr"
+                class="w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all
+                       text-slate-400">
+                <i class="fas fa-user-tag"></i> QR Code
+            </button>
+        </div>
+        @endif
     </div>
 
     @if($periodeHonor)
-    <!-- AREA KAMERA FULL SCREEN -->
-    <div class="flex-1 relative overflow-hidden z-0 flex flex-col bg-black">
+    <!-- PANEL 1: SCAN (kamera full screen) -->
+    <div id="panel-scan" class="flex-1 relative overflow-hidden z-0 flex flex-col bg-black">
 
         <div class="flex-1 relative min-h-0">
             <div id="reader" class="absolute inset-0"></div>
@@ -74,7 +95,7 @@
                     <i class="fas fa-camera"></i>
                 </div>
                 <p id="status-kamera" class="text-slate-300 text-[13px] font-bold leading-relaxed max-w-[280px]">Kamera belum menyala.</p>
-                <button type="button" id="btn-mulai-kamera" onclick="mulaiKamera()"
+                <button type="button" id="btn-mulai-kamera" onclick=" mulaiKamera()"
                     class="mt-5 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-md shadow-emerald-500/30 transition-all active:scale-95">
                     <i class="fas fa-qrcode mr-2"></i> Mulai Scan Barcode
                 </button>
@@ -95,7 +116,7 @@
         </div>
 
         <div class="shrink-0 bg-white border-t border-slate-200 relative z-20">
-            <button type="button" id="btn-toggle-kamera" onclick="toggleKamera()"
+            <button type="button" id="btn-toggle-kamera" onclick=" toggleKamera()"
                 class="w-full py-3 text-sm font-black text-emerald-600 flex items-center justify-center gap-2 active:scale-[0.99] transition-all">
                 <i id="ikon-toggle-kamera" class="fas fa-video"></i>
                 <span id="label-toggle-kamera">Nyalakan Kamera</span>
@@ -103,22 +124,41 @@
         </div>
     </div>
 
-    {{-- Daftar status penerimaan --}}
-    <div class="shrink-0 max-h-[35dvh] overflow-y-auto bg-white px-4 py-4 z-20 border-t border-slate-200">
-        <h3 class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-3"><i class="fas fa-list-check text-emerald-500 mr-1.5"></i>Status Penerimaan</h3>
-        <div class="space-y-1.5">
-            @foreach($periodeHonor->details as $d)
-            <div id="status-row-{{ $d->id }}" class="flex items-center gap-3 px-3 py-2 rounded-xl {{ $d->is_diterima ? 'bg-emerald-50 border border-emerald-100' : ($d->butuh_penerimaan ? 'bg-slate-50 border border-slate-100' : 'bg-slate-50 border border-slate-200 opacity-70') }}">
-                <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0 {{ $d->is_diterima ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500' }}">
-                    <i class="fas {{ $d->is_diterima ? 'fa-check' : ($d->butuh_penerimaan ? 'fa-clock' : 'fa-ban') }}"></i>
-                </span>
-                <span class="flex-1 min-w-0 text-xs font-bold {{ $d->is_diterima ? 'text-emerald-800' : 'text-slate-600' }} truncate">{{ $d->guru->nama_guru }}</span>
-                <span class="text-[10px] font-black {{ $d->is_diterima ? 'text-emerald-600' : 'text-slate-400' }}">
-                    {{ $d->is_diterima ? 'Diterima' : ($d->butuh_penerimaan ? 'Rp ' . number_format($d->total, 0, ',', '.') : 'Nol — tanpa penerimaan') }}
-                </span>
+    <!-- PANEL 2: QR CODE (galeri barcode honor) -->
+    <div id="panel-qr" class="hidden flex-1 z-0 bg-slate-100 overflow-y-auto scrollbar-none p-4">
+        <div class="grid grid-cols-3 gap-2.5">
+            @forelse($qrItems as $item)
+            <div class="bg-white rounded-2xl border border-slate-200 p-2 flex flex-col items-center text-center shadow-sm {{ $item['diterima'] ? 'opacity-50' : '' }}">
+                <div class="w-full aspect-square bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center p-1.5 relative">
+                    <img src="data:image/svg+xml,{{ $item['qr'] }}" alt="QR {{ $item['nama'] }}" class="w-full h-full object-contain rounded-lg">
+                    @if($item['diterima'])
+                    <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] shadow">
+                        <i class="fas fa-check"></i>
+                    </span>
+                    @endif
+                </div>
+                <p class="w-full text-[9px] font-bold text-slate-600 mt-1.5 truncate" title="{{ $item['nama'] }}">{{ $item['nama'] }}</p>
+                <p class="text-[8px] font-black {{ $item['diterima'] ? 'text-emerald-600' : 'text-amber-600' }} mt-0.5 uppercase">
+                    {{ $item['diterima'] ? 'Diterima' : 'Menunggu' }}
+                </p>
             </div>
-            @endforeach
+            @empty
+            <div class="col-span-3 py-12 flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4 text-3xl"><i class="fas fa-qrcode"></i></div>
+                <h4 class="text-sm font-black text-slate-700">Belum Ada QR Honor</h4>
+                <p class="text-xs font-medium text-slate-400 mt-1">Semua honor periode ini sudah diterima, atau belum ada nominal yang perlu penerimaan.</p>
+            </div>
+            @endforelse
         </div>
+    </div>
+    @else
+    <div class="flex-1 bg-slate-100 flex flex-col items-center justify-center px-8 text-center">
+        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4 text-3xl"><i class="fas fa-hourglass-half"></i></div>
+        <h4 class="text-sm font-black text-slate-700">Belum Ada Periode Final</h4>
+        <p class="text-xs font-medium text-slate-400 mt-1 leading-relaxed">Finalkan rekap honor terlebih dahulu agar QR penerimaan aktif.</p>
+        <a href="{{ route('honor.index') }}" class="mt-5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition shadow-sm active:scale-95">
+            <i class="fas fa-arrow-left mr-2"></i> Kembali
+        </a>
     </div>
     @endif
 </div>
@@ -132,6 +172,10 @@
     let kameraBerjalan = false;
     let scanSelesai = false;
 
+    const panelScan = document.getElementById('panel-scan');
+    const panelQr = document.getElementById('panel-qr');
+    const tabScan = document.getElementById('tab-scan');
+    const tabQr = document.getElementById('tab-qr');
     const panelSukses = document.getElementById('panel-sukses');
     const laser = document.getElementById('laser-line');
     const overlayKamera = document.getElementById('overlay-kamera');
@@ -157,23 +201,30 @@
     }
 
     function setStatusKamera(pesan) {
-        statusKamera.textContent = pesan;
+        if (statusKamera) statusKamera.textContent = pesan;
     }
 
     function aturTombolToggle(jalan) {
         kameraBerjalan = jalan;
-        if (jalan) {
-            labelToggle.textContent = 'Matikan Kamera';
-            ikonToggle.className = 'fas fa-video-slash';
-        } else {
-            labelToggle.textContent = 'Nyalakan Kamera';
-            ikonToggle.className = 'fas fa-video';
+        if (btnToggle) {
+            if (jalan) {
+                labelToggle.textContent = 'Matikan Kamera';
+                ikonToggle.className = 'fas fa-video-slash';
+            } else {
+                labelToggle.textContent = 'Nyalakan Kamera';
+                ikonToggle.className = 'fas fa-video';
+            }
         }
     }
 
     function tampilOverlay(terlihat) {
+        if (!overlayKamera) return;
         if (terlihat) overlayKamera.classList.remove('hidden');
         else overlayKamera.classList.add('hidden');
+    }
+
+    function lokasiTidakAman() {
+        return !window.isSecureContext && !['localhost', '127.0.0.1', '::1'].includes(location.hostname);
     }
 
     function konteksAman() {
@@ -295,10 +346,6 @@
         cobaMulai({ facingMode: 'environment' });
     }
 
-    function lokasiTidakAman() {
-        return !window.isSecureContext && !['localhost', '127.0.0.1', '::1'].includes(location.hostname);
-    }
-
     function toggleKamera() {
         if (kameraBerjalan) {
             hentikanKamera();
@@ -322,6 +369,30 @@
         } catch (err) {}
     }
 
+    // ===== TAB =====
+    function pindahTab(nama) {
+        if (!panelScan || !panelQr) return;
+        if (nama === 'scan') {
+            scanSelesai = false;
+            panelScan.classList.remove('hidden');
+            panelQr.classList.add('hidden');
+            tabScan.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-emerald-700 bg-white shadow-sm";
+            tabQr.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-slate-400";
+            sembunyiSukses();
+            mulaiKamera();
+        } else {
+            panelQr.classList.remove('hidden');
+            panelScan.classList.add('hidden');
+            tabQr.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-emerald-700 bg-white shadow-sm";
+            tabScan.className = "w-1/2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all text-slate-400";
+            hentikanKamera();
+        }
+    }
+    window.pindahTab = pindahTab;
+
+    if (tabScan) tabScan.addEventListener('click', function() { pindahTab('scan'); });
+    if (tabQr) tabQr.addEventListener('click', function() { pindahTab('qr'); });
+
     const btnScanLagi = document.getElementById('btn-scan-lagi');
     if (btnScanLagi) {
         btnScanLagi.addEventListener('click', function() {
@@ -333,6 +404,8 @@
 
     // START AMAN (auto-start tetap dicoba; bila gagal overlay + tombol muncul)
     function cobaMulaiAuto() {
+        if (!panelScan) return;
+        if (panelScan.classList.contains('hidden')) return;
         if (scanSelesai) return;
         if (typeof Html5Qrcode === 'undefined') return;
         if (document.visibilityState === 'visible') {
