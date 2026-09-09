@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - Mu'adalah Wustho</title>
-    <link rel="manifest" href="{{ asset('manifest.json?v=2') }}">
+    <link rel="manifest" href="{{ asset('manifest.json?v=3') }}">
     <meta name="theme-color" content="#065f46">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icons/favicon-32x32.png?v=2') }}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192x192.png?v=2') }}">
-    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png?v=2') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icons/favicon-32x32-v2.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192x192-v2.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192-v2.png') }}">
     @vite(['resources/css/app.css'])
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">

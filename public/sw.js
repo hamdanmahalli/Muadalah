@@ -1,8 +1,8 @@
-const CACHE_NAME = 'smart-pesantren-v13';
+const CACHE_NAME = 'smart-pesantren-v14';
 const PRECACHE_URLS = [
-    '/icons/icon-192x192.png?v=2',
-    '/icons/icon-512x512.png?v=2',
-    '/icons/favicon-32x32.png?v=2',
+    '/icons/icon-192x192-v2.png',
+    '/icons/icon-512x512-v2.png',
+    '/icons/favicon-32x32-v2.png',
     '/offline.html',
     '/dashboard-guru',
     '/kaldik',
@@ -131,8 +131,8 @@ self.addEventListener('push', function(event) {
 
     const options = {
         body: data.body,
-        icon: data.icon || '/icons/icon-192x192.png',
-        badge: data.badge || '/icons/icon-192x192.png',
+        icon: data.icon || '/icons/icon-192x192-v2.png',
+        badge: data.badge || '/icons/icon-192x192-v2.png',
         tag: data.tag || 'smart-pesantren',
         renotify: true,
         vibrate: mode === 'silent' ? [] : [200, 100, 200],
