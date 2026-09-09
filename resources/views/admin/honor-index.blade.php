@@ -34,47 +34,61 @@
 </div>
 @endif
 
-@can('akses_honor_proses')
+@if(auth()->user()->can('akses_honor_proses') || auth()->user()->can('akses_honor_konfigurasi'))
 <div class="mb-6 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="bg-slate-50 border-b border-slate-100 p-4">
+    <button type="button" onclick="lipatHonorConfig()" class="w-full bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center text-left">
         <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fas fa-cog text-emerald-500 mr-2"></i>Mulai / Konfigurasi Periode Honor</h3>
-    </div>
-    <form action="{{ route('honor.hitung') }}" method="POST" class="p-5">
-        @csrf
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Bulan</label>
-                <select name="bulan" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block p-3 outline-none transition-all font-medium cursor-pointer">
-                    @foreach($bulanIndonesia as $no => $nama)
-                    <option value="{{ $no }}" {{ ($no == now()->month) ? 'selected' : '' }}>{{ $nama }}</option>
-                    @endforeach
-                </select>
+        <i id="ikon-config-honor" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+    </button>
+    <div id="isi-config-honor" class="hidden">
+        @can('akses_honor_proses')
+        <form action="{{ route('honor.hitung') }}" method="POST" class="p-5">
+            @csrf
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Bulan</label>
+                    <select name="bulan" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block p-3 outline-none transition-all font-medium cursor-pointer">
+                        @foreach($bulanIndonesia as $no => $nama)
+                        <option value="{{ $no }}" {{ ($no == now()->month) ? 'selected' : '' }}>{{ $nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tahun</label>
+                    <input type="number" name="tahun" value="{{ now()->year }}" min="2000" max="2100" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block p-3 outline-none transition-all font-medium">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-[0_4px_15px_-3px_rgba(16,185,129,0.4)] flex items-center justify-center">
+                        <i class="fas fa-calculator mr-2"></i> Hitung Honor Bulan Ini
+                    </button>
+                </div>
             </div>
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tahun</label>
-                <input type="number" name="tahun" value="{{ now()->year }}" min="2000" max="2100" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block p-3 outline-none transition-all font-medium">
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-[0_4px_15px_-3px_rgba(16,185,129,0.4)] flex items-center justify-center">
-                    <i class="fas fa-calculator mr-2"></i> Hitung Honor Bulan Ini
-                </button>
-            </div>
+            <p class="text-[11px] font-semibold text-slate-400 mt-3">
+                <i class="fas fa-info-circle text-sky-400 mr-1"></i>
+                Pastikan konfigurasi (tarif, status guru, tunjangan struktural) sudah diatur di halaman Konfigurasi. Jika belum, hitung akan ditolak.
+            </p>
+        </form>
+        @endcan
+        <div class="px-5 pb-5 flex justify-end">
+            @can('akses_honor_konfigurasi')
+            <a href="{{ route('honor.konfigurasi') }}" class="inline-flex items-center justify-center px-5 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 font-bold text-sm rounded-xl transition-all shadow-sm">
+                <i class="fas fa-sliders-h mr-2"></i> Atur Konfigurasi Honor
+            </a>
+            @endcan
         </div>
-        <p class="text-[11px] font-semibold text-slate-400 mt-3">
-            <i class="fas fa-info-circle text-sky-400 mr-1"></i>
-            Pastikan konfigurasi (tarif, status guru, tunjangan struktural) sudah diatur di halaman Konfigurasi. Jika belum, hitung akan ditolak.
-        </p>
-    </form>
+    </div>
 </div>
-@endcan
-
-@can('akses_honor_konfigurasi')
-<div class="mb-6 flex justify-end">
-    <a href="{{ route('honor.konfigurasi') }}" class="inline-flex items-center justify-center px-5 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 font-bold text-sm rounded-xl transition-all shadow-sm">
-        <i class="fas fa-sliders-h mr-2"></i> Atur Konfigurasi Honor
-    </a>
-</div>
-@endcan
+<script>
+    function lipatHonorConfig() {
+        var isi = document.getElementById('isi-config-honor');
+        var ikon = document.getElementById('ikon-config-honor');
+        if (!isi) return;
+        var membuka = isi.classList.contains('hidden');
+        isi.classList.toggle('hidden');
+        if (ikon) ikon.style.transform = membuka ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+</script>
+@endif
 
 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center">
