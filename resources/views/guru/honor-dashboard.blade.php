@@ -106,7 +106,7 @@
             </div>
 
             <!-- Status -->
-            <div class="px-5 pb-5">
+            <div class="px-5 pb-5 slip-status" data-id="{{ $h->id }}">
                 @if($h->is_diterima)
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -159,7 +159,7 @@
 
         <!-- Tombol scan konfirmasi oleh guru sendiri -->
         @if($honors->where('is_diterima', false)->where('butuh_penerimaan', true)->count() > 0)
-        <button onclick="bukaModalScan()" class="w-full mb-4 inline-flex items-center justify-center gap-2 px-5 py-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-black rounded-2xl shadow-lg active:scale-95 transition-all">
+        <button id="btn-konfirmasi-honor" onclick="bukaModalScan()" class="w-full mb-4 inline-flex items-center justify-center gap-2 px-5 py-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-black rounded-2xl shadow-lg active:scale-95 transition-all">
             <i class="fas fa-camera text-base"></i> Konfirmasi Terima via Scan QR
         </button>
         @endif
@@ -307,6 +307,7 @@
                 document.getElementById('sukses-pesan-honor').textContent = d.pesan;
                 document.getElementById('panel-sukses-honor').classList.remove('hidden');
                 document.getElementById('laser-line-honor').style.opacity = '0';
+                refreshStatusHonor();
             } else {
                 tampilStatusScanHonor(d.pesan || 'QR tidak dikenali.');
             }
@@ -316,6 +317,43 @@
         })
         .finally(() => setTimeout(() => { isProcessingHonor = false; }, 500));
     }
+
+    // ===== SINKRON STATUS OTOMATIS (tanpa muat ulang) =====
+    function markupSudahDiterima(st) {
+        return '<div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 flex items-center gap-3">' +
+            '<div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">' +
+            '<i class="fas fa-check text-lg"></i></div>' +
+            '<div class="flex-1 min-w-0">' +
+            '<p class="text-sm font-black text-emerald-700">SUDAH DITERIMA</p>' +
+            '<p class="text-[11px] font-bold text-emerald-600/80 mt-0.5">' +
+            (st.waktu_diterima ? st.waktu_diterima : 'Tercatat') +
+            (st.metode_penerimaan ? ' · via ' + st.metode_penerimaan : '') +
+            '</p></div></div>';
+    }
+
+    function refreshStatusHonor() {
+        if (document.visibilityState !== 'visible') return;
+        fetch('/guru/honor/status')
+        .then(r => r.json())
+        .then(function(d) {
+            if (!d.success) return;
+            var sisa = 0;
+            d.status.forEach(function(st) {
+                var el = document.querySelector('.slip-status[data-id="' + st.id + '"]');
+                if (!el) return;
+                if (st.is_diterima && el.dataset.marked !== '1') {
+                    el.innerHTML = markupSudahDiterima(st);
+                    el.dataset.marked = '1';
+                }
+                if (!st.is_diterima && st.butuh_penerimaan) sisa++;
+            });
+            var btn = document.getElementById('btn-konfirmasi-honor');
+            if (btn) btn.classList.toggle('hidden', sisa === 0);
+        })
+        .catch(function() {});
+    }
+    setInterval(refreshStatusHonor, 5000);
+    refreshStatusHonor();
 
     function mulaiKameraHonor() {
         if (kameraHonorBerjalan) return;
@@ -352,5 +390,5 @@
         mulaiKameraHonor();
     });
 </script>
-<script src="/js/html5-qrcode.min.js" defer></script>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 @endsection

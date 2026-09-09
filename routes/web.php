@@ -342,6 +342,7 @@ Route::middleware(['can:akses_riwayat_mutasi'])->group(function () {
         // Rute Honor Guru
         Route::get('/guru/honor', [\App\Http\Controllers\GuruHonorController::class, 'index'])->name('guru.honor');
         Route::post('/guru/honor/scan', [\App\Http\Controllers\GuruHonorController::class, 'scan'])->name('guru.honor.scan');
+        Route::get('/guru/honor/status', [\App\Http\Controllers\GuruHonorController::class, 'status'])->name('guru.honor.status');
 
         Route::get('/rekap-presensi', [JadwalController::class, 'rekapPresensiPribadi']);
         Route::get('/kaldik', [JadwalController::class, 'kaldikGuru']);

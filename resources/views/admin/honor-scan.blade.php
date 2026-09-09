@@ -55,7 +55,7 @@
                 </div>
             </div>
             @if($periodeHonor)
-            <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 font-bold text-xs rounded-lg">
+            <span id="htr-counter" class="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 font-bold text-xs rounded-lg">
                 <i class="fas fa-circle-check"></i> {{ $periodeHonor->details->where('butuh_penerimaan', true)->count() > 0 ? $periodeHonor->details->where('is_diterima', true)->count() . '/' . $periodeHonor->details->where('butuh_penerimaan', true)->count() : '—' }}
             </span>
             @endif
@@ -110,8 +110,7 @@
     <div id="panel-qr" class="hidden flex-1 z-0 bg-slate-100 overflow-y-auto scrollbar-none px-4 pt-4 pb-20">
         <div class="grid grid-cols-3 gap-2.5">
             @forelse($qrItems as $item)
-            <div onclick="bukaQrGalri(this)" data-nama="{{ $item['nama'] }}" data-diterima="{{ $item['diterima'] ? '1' : '0' }}"
-                class="bg-white rounded-2xl border border-slate-200 p-2 flex flex-col items-center text-center shadow-sm cursor-pointer active:scale-95 transition-transform {{ $item['diterima'] ? 'opacity-60' : '' }}">
+            <div class="qr-card bg-white rounded-2xl border border-slate-200 p-2 flex flex-col items-center text-center shadow-sm cursor-pointer active:scale-95 transition-transform {{ $item['diterima'] ? 'opacity-60' : '' }}" onclick="bukaQrGalri(this)" data-nama="{{ $item['nama'] }}" data-diterima="{{ $item['diterima'] ? '1' : '0' }}" data-qr="{{ $item['token'] }}" data-marked="{{ $item['diterima'] ? '1' : '0' }}">
                 <div class="w-full aspect-square bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center p-1.5 relative">
                     <img src="data:image/svg+xml,{{ $item['qr'] }}" alt="QR {{ $item['nama'] }}" class="w-full h-full object-contain rounded-lg">
                     @if($item['diterima'])
@@ -243,6 +242,29 @@ function tutupQrGalri() {
         laser.style.opacity = '1';
     }
 
+    function tandaiKartuScan(token, sudahDiterimaLama) {
+        var kartu = document.querySelector('.qr-card[data-qr="' + token + '"]');
+        if (!kartu) return;
+        if (kartu.dataset.marked === '1') return;
+        kartu.dataset.marked = '1';
+        kartu.classList.add('opacity-60');
+        var wadah = kartu.querySelector('.relative');
+        if (wadah && !wadah.querySelector('.badge-cek')) {
+            var b = document.createElement('span');
+            b.className = 'badge-cek absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] shadow';
+            b.innerHTML = '<i class="fas fa-check"></i>';
+            wadah.appendChild(b);
+        }
+        if (!sudahDiterimaLama) naikkanCounterScan();
+    }
+
+    function naikkanCounterScan() {
+        var el = document.getElementById('htr-counter');
+        if (!el) return;
+        var m = el.textContent.trim().match(/^(\d+)\/(\d+)$/);
+        if (m) el.textContent = (parseInt(m[1], 10) + 1) + '/' + m[2];
+    }
+
     function onScanSuccess(decodedText, decodedResult) {
         if (isProcessing) return;
         isProcessing = true;
@@ -269,6 +291,7 @@ function tutupQrGalri() {
                     document.getElementById('sukses-ikon').innerHTML = '<i class="fas fa-hand-holding-dollar"></i>';
                 }
                 tampilSukses(data.nama_guru || 'Honor Diterima', data.pesan);
+                if (data.token) tandaiKartuScan(data.token, !!data.sudah_diterima_sebelumnya);
             } else {
                 tampilScanToast('error', data.pesan || 'QR tidak dikenali.');
                 if (navigator.vibrate) navigator.vibrate([300]);

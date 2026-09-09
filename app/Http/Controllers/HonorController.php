@@ -363,6 +363,7 @@ class HonorController extends Controller
             foreach ($periodeHonor->details->where('butuh_penerimaan', true) as $d) {
                 $qrItems->push([
                     'id' => $d->id,
+                    'token' => $d->qr_token,
                     'nama' => $d->guru->nama_guru,
                     'qr' => rawurlencode((string) QrCode::format('svg')->size(200)->margin(1)->generate($d->qr_token)),
                     'diterima' => (bool) $d->is_diterima,
@@ -401,6 +402,7 @@ class HonorController extends Controller
                 'success' => true,
                 'pesan' => strtoupper($detail->guru->nama_guru) . ' — honor sudah diterima pada ' . $detail->waktu_diterima->format('d/m/Y H:i') . '.',
                 'sudah_diterima_sebelumnya' => true,
+                'token' => $detail->qr_token,
             ]);
         }
 
@@ -409,6 +411,7 @@ class HonorController extends Controller
             'pesan' => 'Honor ' . $detail->guru->nama_guru . ' tercatat telah diterima!',
             'nama_guru' => $detail->guru->nama_guru,
             'total' => $detail->total,
+            'token' => $detail->qr_token,
         ]);
     }
 

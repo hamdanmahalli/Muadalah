@@ -39,6 +39,33 @@ class GuruHonorController extends Controller
         return view('guru.honor-dashboard', compact('guru', 'honors', 'bulanIndonesia'));
     }
 
+    public function status()
+    {
+        $user = auth()->user();
+        $guru = $this->guruContext->fromUser($user);
+
+        if (!$guru) {
+            return response()->json(['success' => false, 'pesan' => 'Guru tidak ditemukan.']);
+        }
+
+        $honors = HonorDetail::where('guru_id', $guru->id)
+            ->whereHas('periode', fn($q) => $q->where('status', 'final'))
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'status' => $honors->map(fn($h) => [
+                'id' => $h->id,
+                'qr_token' => $h->qr_token,
+                'is_diterima' => (bool) $h->is_diterima,
+                'butuh_penerimaan' => (bool) $h->butuh_penerimaan,
+                'waktu_diterima' => $h->waktu_diterima ? $h->waktu_diterima->translatedFormat('l, d F Y · H:i') : null,
+                'metode_penerimaan' => $h->metode_penerimaan,
+            ])->values()->all(),
+        ]);
+    }
+
     public function scan(Request $request)
     {
         $request->validate([
