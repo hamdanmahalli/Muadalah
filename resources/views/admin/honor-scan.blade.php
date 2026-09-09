@@ -167,7 +167,8 @@
 </div>
 
 @push('scripts')
-<script src="/js/html5-qrcode.min.js" defer></script>
+<!-- Library Html5Qrcode (sama dengan scan kelas) -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
 function bukaQrGalri(card) {
     var img = card.querySelector('img');
