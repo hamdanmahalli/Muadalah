@@ -308,16 +308,19 @@
     @stack('styles')
     <!-- ================= PWA SETUP ================= -->
     <!-- Memanggil KTP Aplikasi -->
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="manifest" href="{{ asset('manifest.json?v=2') }}">
     <meta name="theme-color" content="#065f46">
+    <!-- Ikon browser / tab -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icons/favicon-32x32.png?v=2') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192x192.png?v=2') }}">
     <!-- Ikon khusus untuk perangkat Apple / iOS -->
-    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png?v=2') }}">
 
     <!-- Memanggil Asisten (Service Worker) -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js?v=12')
+                navigator.serviceWorker.register('/sw.js?v=13')
                     .then(registration => {
                         console.log('PWA Asisten siap bertugas di jalur:', registration.scope);
                         return registration.update();

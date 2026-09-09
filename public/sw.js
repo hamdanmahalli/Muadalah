@@ -1,7 +1,8 @@
-const CACHE_NAME = 'smart-pesantren-v12';
+const CACHE_NAME = 'smart-pesantren-v13';
 const PRECACHE_URLS = [
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
+    '/icons/icon-192x192.png?v=2',
+    '/icons/icon-512x512.png?v=2',
+    '/icons/favicon-32x32.png?v=2',
     '/offline.html',
     '/dashboard-guru',
     '/kaldik',
