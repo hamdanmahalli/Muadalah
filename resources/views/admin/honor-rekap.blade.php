@@ -18,7 +18,7 @@
             {{ $bulanIndonesia[$periodeHonor->bulan] ?? $periodeHonor->bulan }} {{ $periodeHonor->tahun }} · TA {{ $k?->periode?->tahun_ajaran ?? '-' }}
         </p>
     </div>
-    <div class="flex flex-col sm:flex-row gap-2">
+    <div class="flex flex-wrap items-center gap-2">
         <a href="{{ route('honor.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-slate-50 text-slate-600 hover:bg-slate-600 hover:text-white border border-slate-200 hover:border-slate-600 font-bold text-xs rounded-xl transition-all shadow-sm">
             <i class="fas fa-arrow-left mr-2"></i> Kembali
         </a>
@@ -82,40 +82,40 @@
 @endphp
 
 {{-- Ringkasan --}}
-<div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fas fa-users"></i></div>
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Guru</p>
-                <p class="text-xl font-black text-slate-800">{{ $totalGuru }}</p>
+<div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 mb-6">
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 md:p-4 shadow-sm">
+        <div class="flex items-center gap-2.5 md:gap-3">
+            <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="fas fa-users text-sm md:text-base"></i></div>
+            <div class="min-w-0">
+                <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider">Guru</p>
+                <p class="text-base md:text-xl font-black text-slate-800">{{ $totalGuru }}</p>
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fas fa-money-bill-wave"></i></div>
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Honor</p>
-                <p class="text-xl font-black text-slate-800">Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 md:p-4 shadow-sm">
+        <div class="flex items-center gap-2.5 md:gap-3">
+            <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fas fa-money-bill-wave text-sm md:text-base"></i></div>
+            <div class="min-w-0">
+                <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Honor</p>
+                <p class="text-base md:text-xl font-black text-slate-800">Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center"><i class="fas fa-circle-check"></i></div>
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sudah Diterima</p>
-                <p class="text-xl font-black text-slate-800">{{ $butuhPenerimaan > 0 ? $sudahDiterima . '/' . $butuhPenerimaan : '—' }}</p>
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 md:p-4 shadow-sm">
+        <div class="flex items-center gap-2.5 md:gap-3">
+            <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0"><i class="fas fa-circle-check text-sm md:text-base"></i></div>
+            <div class="min-w-0">
+                <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider">Diterima</p>
+                <p class="text-base md:text-xl font-black text-slate-800">{{ $butuhPenerimaan > 0 ? $sudahDiterima . '/' . $butuhPenerimaan : '—' }}</p>
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fas fa-tag"></i></div>
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Status</p>
-                <span class="inline-block mt-1 text-[10px] font-black px-2 py-1 rounded-md border {{ $warnaStatus[$periodeHonor->status] ?? $warnaStatus['draft'] }}">
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 md:p-4 shadow-sm">
+        <div class="flex items-center gap-2.5 md:gap-3">
+            <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><i class="fas fa-tag text-sm md:text-base"></i></div>
+            <div class="min-w-0">
+                <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider">Status</p>
+                <span class="inline-block mt-0.5 md:mt-1 text-[10px] font-black px-2 py-1 rounded-md border {{ $warnaStatus[$periodeHonor->status] ?? $warnaStatus['draft'] }}">
                     {{ $labelStatus[$periodeHonor->status] ?? $periodeHonor->status }}
                 </span>
             </div>
@@ -131,7 +131,7 @@
         <span class="text-[10px] font-black px-2 py-1 rounded-md border bg-amber-100 text-amber-700 border-amber-200">Draft — nominal bisa diedit</span>
         @endif
     </div>
-    <div class="overflow-x-auto">
+    <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-sm whitespace-nowrap">
             <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black">
                 <tr>
@@ -211,6 +211,78 @@
                     <td colspan="9" class="px-3 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Keseluruhan</td>
                     <td class="px-3 py-3 text-right font-black text-emerald-700">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
                     <td class="px-3 py-3" colspan="2"></td>
+                </tr>
+            </tfoot>
+            @endif
+        </table>
+    </div>
+
+    <div class="md:hidden overflow-x-auto">
+        <table class="w-full text-sm whitespace-nowrap">
+            <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black">
+                <tr>
+                    <th class="px-3 py-3 text-left">No</th>
+                    <th class="px-3 py-3 text-left">Nama Guru</th>
+                    <th class="px-3 py-3 text-right">Total</th>
+                    <th class="px-3 py-3 text-center">Status</th>
+                    <th class="px-3 py-3 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse($periodeHonor->details as $i => $d)
+                <tr class="hover:bg-slate-50/60">
+                    <td class="px-3 py-2.5 text-[11px] font-bold text-slate-400">{{ $i + 1 }}</td>
+                    <td class="px-3 py-2.5">
+                        <span class="font-bold text-slate-700">{{ $d->guru->nama_guru }}</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-right font-black text-emerald-700 whitespace-nowrap">Rp {{ number_format($d->total, 0, ',', '.') }}</td>
+                    <td class="px-3 py-2.5 text-center">
+                        @if($d->is_diterima)
+                            <span class="text-[10px] font-black px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 whitespace-nowrap">
+                                <i class="fas fa-circle-check mr-1"></i> Diterima
+                            </span>
+                        @elseif(!$d->butuh_penerimaan)
+                            <span class="text-[10px] font-black px-2 py-1 rounded-md bg-slate-100 text-slate-500 whitespace-nowrap">
+                                <i class="fas fa-ban mr-1"></i> Tanpa
+                            </span>
+                        @else
+                            <span class="text-[10px] font-black px-2 py-1 rounded-md bg-slate-100 text-slate-500 whitespace-nowrap">
+                                <i class="fas fa-hourglass-half mr-1"></i> Menunggu
+                            </span>
+                        @endif
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        @if($periodeHonor->status === 'draft' && auth()->user()->can('akses_honor_proses'))
+                        <button type="button"
+                            onclick="bukaModalEdit({{ $d->id }}, '{{ js_q($d->guru->nama_guru) }}', {{ $d->piket_jam }}, {{ $d->realita_jam }}, {{ $d->honor_pokok }}, {{ $d->tunjangan_struktural }}, {{ $d->tunjangan_wali_kelas }}, {{ $d->transport }}, {{ $d->honor_piket }}, {{ $d->total }}, {{ $d->is_diterima ? 'true' : 'false' }})"
+                            class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition flex items-center justify-center border border-amber-200 shadow-sm" title="Edit Honor">
+                            <i class="fas fa-pen text-xs"></i>
+                        </button>
+                        @else
+                        <span class="inline-flex w-8 h-8 rounded-lg bg-slate-50 text-slate-300 items-center justify-center border border-slate-100" title="Terkunci — buka kembali ke Draft untuk mengedit">
+                            <i class="fas fa-lock text-xs"></i>
+                        </span>
+                        @endif
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="px-4 py-10 text-center">
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4 text-3xl shadow-inner"><i class="fas fa-inbox"></i></div>
+                            <h4 class="text-sm font-black text-slate-700">Belum Ada Data Honor</h4>
+                            <p class="text-xs font-medium text-slate-400 mt-1">Periode ini belum dihitung.</p>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+            @if($periodeHonor->details->count() > 0)
+            <tfoot class="bg-slate-50 border-t-2 border-slate-100">
+                <tr>
+                    <td colspan="3" class="px-3 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Keseluruhan</td>
+                    <td class="px-3 py-3 text-right font-black text-emerald-700 whitespace-nowrap">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                    <td class="px-3 py-3"></td>
                 </tr>
             </tfoot>
             @endif
