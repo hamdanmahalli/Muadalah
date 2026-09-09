@@ -115,20 +115,15 @@
             </div>
         </div>
 
-        <div class="shrink-0 bg-white border-t border-slate-200 relative z-20">
-            <button type="button" id="btn-toggle-kamera" onclick=" toggleKamera()"
-                class="w-full py-3 text-sm font-black text-emerald-600 flex items-center justify-center gap-2 active:scale-[0.99] transition-all">
-                <i id="ikon-toggle-kamera" class="fas fa-video"></i>
-                <span id="label-toggle-kamera">Nyalakan Kamera</span>
-            </button>
-        </div>
+        <div class="shrink-0 bg-white border-t border-slate-200 relative z-20 h-10"></div>
     </div>
 
     <!-- PANEL 2: QR CODE (galeri barcode honor) -->
     <div id="panel-qr" class="hidden flex-1 z-0 bg-slate-100 overflow-y-auto scrollbar-none p-4">
         <div class="grid grid-cols-3 gap-2.5">
             @forelse($qrItems as $item)
-            <div class="bg-white rounded-2xl border border-slate-200 p-2 flex flex-col items-center text-center shadow-sm {{ $item['diterima'] ? 'opacity-50' : '' }}">
+            <div onclick="bukaQrGalri(this)" data-nama="{{ $item['nama'] }}" data-diterima="{{ $item['diterima'] ? '1' : '0' }}"
+                class="bg-white rounded-2xl border border-slate-200 p-2 flex flex-col items-center text-center shadow-sm cursor-pointer active:scale-95 transition-transform {{ $item['diterima'] ? 'opacity-60' : '' }}">
                 <div class="w-full aspect-square bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center p-1.5 relative">
                     <img src="data:image/svg+xml,{{ $item['qr'] }}" alt="QR {{ $item['nama'] }}" class="w-full h-full object-contain rounded-lg">
                     @if($item['diterima'])
@@ -151,6 +146,26 @@
             @endforelse
         </div>
     </div>
+
+    <!-- MODAL PERBESAR QR -->
+    <div id="modal-qr-galeri" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onclick="tutupQrGalri()"></div>
+        <div class="flex items-center justify-center min-h-screen px-6">
+            <div class="relative bg-white w-full max-w-[320px] rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center">
+                <button type="button" onclick="tutupQrGalri()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition active:scale-95">
+                    <i class="fas fa-times"></i>
+                </button>
+                <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 mb-4">
+                    <i class="fas fa-qrcode text-[10px] mr-1.5"></i> QR Honor
+                </span>
+                <div class="w-[260px] h-[260px] bg-slate-50 rounded-2xl border border-slate-100 p-2 flex items-center justify-center">
+                    <img id="qr-galeri-img" src="" alt="QR Honor" class="w-full h-full object-contain">
+                </div>
+                <p id="qr-galeri-nama" class="mt-4 text-base font-black text-slate-900"></p>
+                <p id="qr-galeri-status" class="mt-1 text-[10px] font-black uppercase"></p>
+            </div>
+        </div>
+    </div>
     @else
     <div class="flex-1 bg-slate-100 flex flex-col items-center justify-center px-8 text-center">
         <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4 text-3xl"><i class="fas fa-hourglass-half"></i></div>
@@ -166,6 +181,22 @@
 @push('scripts')
 <script src="/js/html5-qrcode.min.js" defer></script>
 <script>
+function bukaQrGalri(card) {
+    var img = card.querySelector('img');
+    var nama = card.getAttribute('data-nama');
+    var diterima = card.getAttribute('data-diterima') === '1';
+    document.getElementById('qr-galeri-img').src = img.getAttribute('src');
+    document.getElementById('qr-galeri-nama').textContent = nama;
+    var st = document.getElementById('qr-galeri-status');
+    st.textContent = diterima ? 'Sudah Diterima' : 'Menunggu Penerimaan';
+    st.className = (diterima ? 'text-emerald-600' : 'text-amber-600') + ' mt-1 text-[10px] font-black uppercase';
+    document.getElementById('modal-qr-galeri').classList.remove('hidden');
+}
+function tutupQrGalri() {
+    document.getElementById('modal-qr-galeri').classList.add('hidden');
+}
+</script>
+<script>
 (function() {
     let isProcessing = false;
     let html5QrCode = null;
@@ -180,9 +211,6 @@
     const laser = document.getElementById('laser-line');
     const overlayKamera = document.getElementById('overlay-kamera');
     const statusKamera = document.getElementById('status-kamera');
-    const btnToggle = document.getElementById('btn-toggle-kamera');
-    const labelToggle = document.getElementById('label-toggle-kamera');
-    const ikonToggle = document.getElementById('ikon-toggle-kamera');
 
     function tampilScanToast(tipe, pesan) {
         var lama = document.getElementById('toast-scan-honor');
@@ -204,17 +232,8 @@
         if (statusKamera) statusKamera.textContent = pesan;
     }
 
-    function aturTombolToggle(jalan) {
+    function setKameraBerjalan(jalan) {
         kameraBerjalan = jalan;
-        if (btnToggle) {
-            if (jalan) {
-                labelToggle.textContent = 'Matikan Kamera';
-                ikonToggle.className = 'fas fa-video-slash';
-            } else {
-                labelToggle.textContent = 'Nyalakan Kamera';
-                ikonToggle.className = 'fas fa-video';
-            }
-        }
     }
 
     function tampilOverlay(terlihat) {
@@ -233,7 +252,7 @@
         if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
         setStatusKamera('Kamera membutuhkan koneksi aman (HTTPS). Buka aplikasi melalui alamat https, bukan http.');
         tampilOverlay(true);
-        aturTombolToggle(false);
+        setKameraBerjalan(false);
         tampilScanToast('error', 'Kamera butuh HTTPS (site bukan localhost).');
         return false;
     }
@@ -244,7 +263,7 @@
         panelSukses.classList.remove('hidden');
         laser.style.opacity = '0';
         tampilOverlay(false);
-        aturTombolToggle(false);
+        setKameraBerjalan(false);
     }
     function sembunyiSukses() {
         panelSukses.classList.add('hidden');
@@ -297,7 +316,7 @@
         if (typeof Html5Qrcode === 'undefined') {
             setStatusKamera('Library kamera gagal dimuat. Muat ulang halaman.');
             tampilOverlay(true);
-            aturTombolToggle(false);
+            setKameraBerjalan(false);
             tampilScanToast('error', 'Library kamera gagal dimuat. Muat ulang halaman.');
             return false;
         }
@@ -309,7 +328,7 @@
             console.error("Gagal init kamera:", err);
             setStatusKamera('Terjadi kendala menyiapkan kamera. Coba lagi.');
             tampilOverlay(true);
-            aturTombolToggle(false);
+            setKameraBerjalan(false);
             return false;
         }
     }
@@ -329,7 +348,7 @@
                 { fps: 10, qrbox: { width: 220, height: 220 } },
                 onScanSuccess
             ).then(function() {
-                aturTombolToggle(true);
+                setKameraBerjalan(true);
                 tampilScanToast('success', 'Kamera menyala. Arahkan ke QR honor guru.');
             }).catch(function(err) {
                 console.error("Gagal mengakses kamera:", err);
@@ -338,7 +357,7 @@
                 } else {
                     setStatusKamera('Gagal mengakses kamera. Izinkan akses kamera di browser, lalu coba lagi.');
                     tampilOverlay(true);
-                    aturTombolToggle(false);
+                    setKameraBerjalan(false);
                     tampilScanToast('error', lokasiTidakAman() ? 'Kamera butuh HTTPS.' : 'Gagal mengakses kamera. Izinkan akses kamera di browser.');
                 }
             });
@@ -346,22 +365,9 @@
         cobaMulai({ facingMode: 'environment' });
     }
 
-    function toggleKamera() {
-        if (kameraBerjalan) {
-            hentikanKamera();
-            setStatusKamera('Kamera dimatikan.');
-            tampilOverlay(true);
-            tampilScanToast('info', 'Kamera dimatikan.');
-        } else {
-            scanSelesai = false;
-            sembunyiSukses();
-            mulaiKamera();
-        }
-    }
-
     function hentikanKamera() {
         if (!kameraBerjalan) return;
-        aturTombolToggle(false);
+        setKameraBerjalan(false);
         try {
             if (html5QrCode && typeof html5QrCode.stop === 'function') {
                 html5QrCode.stop().catch(function() {});
@@ -425,7 +431,7 @@
     document.addEventListener('turbo:before-visit', hentikanKamera);
     window.addEventListener('pagehide', hentikanKamera);
 
-    aturTombolToggle(false);
+    setKameraBerjalan(false);
 })();
 </script>
 @endpush

@@ -32,19 +32,24 @@
             main { padding-bottom: 2rem; }
         }
 
-        /* NAV-CLICK LOADING OVERLAY */
+        /* NAV-CLICK LOADING: indikator kecil di atas (tidak menutupi halaman) */
         #nav-loading {
-            position: fixed; top: 0; bottom: 0; left: 0; right: 0; z-index: 15;
-            background: #f8fafc;
-            display: none; align-items: center; justify-content: center;
-            flex-direction: column; gap: 12px;
+            position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+            z-index: 180; pointer-events: none;
+            background: rgba(255,255,255,0.92);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border: 1px solid rgba(16,185,129,0.25);
+            border-radius: 999px;
+            padding: 9px 16px;
+            box-shadow: 0 10px 28px rgba(2,6,23,0.14);
+            display: none; align-items: center; justify-content: center; gap: 10px;
         }
         #nav-loading.show { display: flex; }
-        #nav-loading .dots { display: flex; gap: 8px; }
+        #nav-loading .dots { display: flex; gap: 6px; }
         #nav-loading .dot {
-            width: 12px; height: 12px; border-radius: 50%;
+            width: 8px; height: 8px; border-radius: 50%;
             background: #10b981;
-            box-shadow: 0 0 12px 3px rgba(16,185,129,0.4);
+            box-shadow: 0 0 8px 2px rgba(16,185,129,0.4);
             animation: navDotBounce 1.2s ease-in-out infinite;
         }
         #nav-loading .dot:nth-child(2) { animation-delay: 0.15s; }
@@ -871,13 +876,14 @@
         </div>
     </div>
 
-    <!-- NAV-CLICK LOADING OVERLAY -->
+    <!-- NAV-CLICK LOADING: indikator memuat tanpa menutupi halaman -->
     <div id="nav-loading">
         <div class="dots">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
         </div>
+        <span style="font-size:12px;font-weight:700;color:#0f172a;white-space:nowrap;">Memuat…</span>
     </div>
 
     <script>
