@@ -32,9 +32,9 @@
             main { padding-bottom: 2rem; }
         }
 
-        /* Sembunyikan garis ungu progress bar bawaan Turbo (sudah ada indikator #nav-loading sendiri) */
-        turbo-progress-bar {
-            visibility: hidden;
+        /* Sembunyikan bar progress bawaan Turbo (ubah warna biru #0076ff menjadi transparan; sudah ada indikator #nav-loading sendiri) */
+        div.turbo-progress-bar {
+            visibility: hidden !important;
         }
 
         /* NAV-CLICK LOADING: indikator kecil di atas (tidak menutupi halaman) */
