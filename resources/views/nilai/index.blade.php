@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div class="flex-1 p-4 overflow-y-auto pb-8" style="max-height: calc(100dvh - 92px);">
+    <div class="flex-1 p-4 overflow-y-auto pb-24" style="max-height: calc(100dvh - 92px);">
 @else
 <div class="flex justify-between items-center mb-6">
     <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-clipboard-list mr-2 text-indigo-600"></i> Input Nilai</h2>

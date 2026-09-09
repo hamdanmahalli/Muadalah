@@ -26,7 +26,7 @@
         }
 
         main {
-            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            padding-bottom: max(5rem, calc(1rem + env(safe-area-inset-bottom)));
         }
         @media (min-width: 768px) {
             main { padding-bottom: 2rem; }
