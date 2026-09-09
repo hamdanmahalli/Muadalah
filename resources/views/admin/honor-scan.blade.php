@@ -150,11 +150,11 @@
     <!-- MODAL PERBESAR QR -->
     <div id="modal-qr-galeri" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onclick="tutupQrGalri()"></div>
+        <button type="button" onclick="tutupQrGalri()" class="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 shadow-xl flex items-center justify-center transition active:scale-95 z-[110]">
+            <i class="fas fa-times text-lg"></i>
+        </button>
         <div class="flex items-center justify-center min-h-screen px-6">
             <div class="relative bg-white w-full max-w-[320px] rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center">
-                <button type="button" onclick="tutupQrGalri()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition active:scale-95">
-                    <i class="fas fa-times"></i>
-                </button>
                 <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 mb-4">
                     <i class="fas fa-qrcode text-[10px] mr-1.5"></i> QR Honor
                 </span>
