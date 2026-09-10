@@ -40,8 +40,9 @@
 
     {{-- ================= TABEL DATA USER (gaya Excel) ================= --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50/70 flex items-center gap-2">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50/70 flex items-center gap-2 flex-wrap">
             <h3 class="text-sm font-bold text-gray-700"><i class="fas fa-table mr-2 text-gray-400"></i>Data User</h3>
+            <input type="text" id="cari-user" onkeyup="cariUser(this.value)" placeholder="Cari nama / username..." class="ml-auto px-3 py-2 w-64 max-w-full border border-gray-300 rounded-lg text-sm outline-none focus:border-emerald-500 bg-white placeholder-gray-400">
         </div>
 
         <div class="overflow-x-auto">
@@ -343,6 +344,14 @@
                     document.getElementById('grup-menu').innerHTML = '<div class="p-10 text-center text-sm text-red-500"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat fasilitas (' + e.message + '). Segarkan halaman lalu coba lagi.</div>';
                     console.error(e);
                 });
+        }
+
+        function cariUser(q) {
+            q = q.toLowerCase().trim();
+            document.querySelectorAll('.baris-user').forEach(tr => {
+                const teks = (tr.dataset.nama || '') + ' ' + (tr.dataset.username || '') + ' ' + tr.textContent;
+                tr.classList.toggle('hidden', !teks.toLowerCase().includes(q));
+            });
         }
 
         function tutupModalFasilitas() {
