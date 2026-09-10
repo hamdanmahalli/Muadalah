@@ -108,6 +108,17 @@ class AuthController extends Controller
         return response()->json($result, $result['status'] ?? 200);
     }
 
+    public function simpanTema(Request $request)
+    {
+        $valid = $request->validate([
+            'tema' => 'required|in:sistem,terang,gelap',
+        ]);
+
+        Auth::user()->update(['tema' => $valid['tema']]);
+
+        return response()->json(['status' => 'success', 'tema' => $valid['tema']]);
+    }
+
     public function logout(Request $request)
     {
         Auth::logout();

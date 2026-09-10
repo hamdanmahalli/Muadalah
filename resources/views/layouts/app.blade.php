@@ -143,165 +143,203 @@
         @keyframes notif-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes notif-out { to { opacity: 0; transform: translateY(-14px); } }
 
-        /* ============ SIDEBAR COLLAPSE (md+): icons-only -> hover melebar ============
-           Ikon (brand & menu) TIDAK bergeser saat menciut/melebar — selalu di posisi kiri. */
-        .sb-sidebar { width: 16rem; }
+/* ================================================================
+           SIDEBAR NAVIGASI (gaya Codinglab): Light/Dark + Expand/Collapse
+        ================================================================ */
+        .sb-sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            transition: width 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        html.dark .sb-sidebar {
+            background-color: #0e1116;
+            border-right-color: #1f2937;
+        }
+
+        /* ============ HEADER / BRAND ============ */
+        .sb-brand { display: flex; align-items: center; gap: 12px; }
+        .sb-brand-inner { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+        .sb-brand-icon {
+            width: 42px; height: 42px; flex-shrink: 0; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 14px;
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+        }
+        .sb-brand-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .sb-brand-title { color: #111827; font-size: 15px; font-weight: 800; letter-spacing: 0.02em; line-height: 1.2; }
+        .sb-brand-sub { color: #6b7280; font-size: 11px; font-weight: 600; margin-top: 1px; }
+        html.dark .sb-brand-title { color: #f9fafb; }
+        html.dark .sb-brand-sub { color: #94a3b8; }
+
+        /* ============ PENCARIAN ============ */
+        .sb-search { padding: 8px 12px 16px; }
+        .sb-search-wrap { position: relative; }
+        .sb-search-ikon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none; transition: left 0.3s ease; }
+        .sb-search-input {
+            width: 100%; outline: none;
+            background-color: #f3f4f6; border: 1px solid transparent;
+            color: #111827; font-size: 13px; font-weight: 500;
+            padding: 9px 14px 9px 36px;
+            border-radius: 999px;
+            transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease, padding 0.3s ease;
+        }
+        .sb-search-input:focus { border-color: #2563eb; background-color: #ffffff; }
+        html.dark .sb-search-input { background-color: #1e2733; color: #f3f4f6; }
+        html.dark .sb-search-input::placeholder { color: #64748b; }
+        html.dark .sb-search-input:focus { background-color: #273343; border-color: #3b82f6; }
+        html.dark .sb-search-ikon { color: #64748b; }
+
+        /* ============ MENU (item & grup) ============ */
+        .sb-item, .sb-group-toggle {
+            display: flex; align-items: center;
+            width: 100%;
+            padding: 10px 12px;
+            margin: 2px 0;
+            border-radius: 10px;
+            color: #6b7280;
+            font-size: 14px; font-weight: 500;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        html.dark .sb-item, html.dark .sb-group-toggle { color: #9ca3af; }
+        .sb-item:hover, .sb-group-toggle:hover { background: #f3f4f6; color: #111827; }
+        html.dark .sb-item:hover, html.dark .sb-group-toggle:hover { background: #1e2733; color: #f9fafb; }
+        .sb-icon, .sb-gicon {
+            width: 24px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.05rem;
+        }
+        .sb-item .sb-text { font-size: 13px; margin-left: 12px; font-weight: 500; }
+        .sb-group-toggle .sb-glabel { font-size: 13px; margin-left: 12px; flex: 1; font-weight: 700; }
+        .sb-chev { margin-left: auto; font-size: 12px; flex-shrink: 0; transition: transform 0.25s ease; }
+        .sb-group.sb-open .sb-chev { transform: rotate(180deg); }
+        .sb-item.sb-inactive { color: #6b7280; }
+        html.dark .sb-item.sb-inactive { color: #9ca3af; }
+        .sb-sub { display: none; padding: 2px 0; }
+        .sb-group.sb-open > .sb-sub { display: block; }
+        .sb-sub .sb-item { padding-left: 38px; }
+        .sb-group { margin-bottom: 2px; }
+
+        /* ACTIVE STATE: biru solid + teks/ikon putih */
+        .sb-item.sb-active {
+            background: #2563eb;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+            color: #ffffff;
+        }
+        .sb-item.sb-active .sb-text,
+        .sb-item.sb-active .sb-icon i { color: #ffffff !important; font-weight: 700; }
+        .sb-group:has(.sb-active) .sb-group-toggle { color: #2563eb; }
+        html.dark .sb-group:has(.sb-active) .sb-group-toggle { color: #60a5fa; }
+
+        /* ============ FOOTER (user, logout, toggle tema) ============ */
+        .sb-divider { height: 1px; background: #e5e7eb; margin: 6px 12px; }
+        html.dark .sb-divider { background: #1f2937; }
+        .sb-user-trigger {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 10px; border-radius: 10px; cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .sb-user-trigger:hover { background: #f3f4f6; }
+        html.dark .sb-user-trigger:hover { background: #1e2733; }
+        .sb-avatar {
+            width: 38px; height: 38px; flex-shrink: 0; border-radius: 999px;
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+        }
+        .sb-logout {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 10px; border-radius: 10px;
+            color: #ef4444; font-weight: 600; font-size: 13px; cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .sb-logout:hover { background: rgba(239, 68, 68, 0.08); }
+        .sb-logout i { width: 24px; text-align: center; font-size: 1rem; }
+
+        /* toggle tema */
+        .sb-theme {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 9px 10px; border-radius: 10px; cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .sb-theme:hover { background: #f3f4f6; }
+        html.dark .sb-theme:hover { background: #1e2733; }
+        .sb-theme-switch-show { display: flex; align-items: center; flex-shrink: 0; }
+        .sb-theme-switch { position: relative; width: 38px; height: 22px; border-radius: 999px; background: #e5e7eb; transition: background 0.3s ease; }
+        html.dark .sb-theme-switch { background: #2563eb; }
+        .sb-theme-knob {
+            position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+            border-radius: 999px; background: #ffffff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+        html.dark .sb-theme-knob { transform: translateX(16px); }
+        .sb-theme-knob i { font-size: 9px; color: #f59e0b; }
+        html.dark .sb-theme-knob i { color: #60a5fa; }
+        .sb-theme-label { font-size: 13px; font-weight: 600; color: #374151; }
+        html.dark .sb-theme-label { color: #e5e7eb; }
+        .sb-theme-icon-show {
+            display: none; align-items: center; justify-content: center;
+            width: 38px; height: 38px; border-radius: 999px;
+            background: #eef2ff; color: #2563eb; font-size: 15px; flex-shrink: 0;
+        }
+        html.dark .sb-theme-icon-show { background: #1e2733; color: #60a5fa; }
+
+        /* ============ COLLAPSE (md+): 80px ikon saja -> hover 250px ============ */
+        @media (max-width: 767.98px) {
+            .sb-sidebar { width: 250px !important; }
+        }
         @media (min-width: 768px) {
-            .sb-sidebar { width: 70px; }
-            .sb-sidebar:hover { width: 270px; } 
+            .sb-sidebar { width: 80px; }
+            .sb-sidebar:hover { width: 250px; }
 
             .sb-sidebar .sb-text,
             .sb-sidebar .sb-glabel,
-            .sb-sidebar .sb-chev,
-            .sb-sidebar .sb-brand-txt,
+            .sb-sidebar .sb-brand-inner .sb-brand-txt,
             .sb-sidebar .sb-footer-txt,
-            .sb-sidebar .sb-ta-txt,
-            .sb-sidebar .sb-search { width: 0; min-width: 0; visibility: hidden; opacity: 0; overflow: hidden; white-space: nowrap; }
-            
+            .sb-sidebar .sb-theme-label,
+            .sb-sidebar .sb-search-input {
+                width: 0; min-width: 0; visibility: hidden; opacity: 0;
+                overflow: hidden; white-space: nowrap;
+            }
             .sb-sidebar:hover .sb-text,
             .sb-sidebar:hover .sb-glabel,
-            .sb-sidebar:hover .sb-chev,
-            .sb-sidebar:hover .sb-brand-txt,
+            .sb-sidebar:hover .sb-brand-inner .sb-brand-txt,
             .sb-sidebar:hover .sb-footer-txt,
-            .sb-sidebar:hover .sb-ta-txt { visibility: visible; opacity: 1; }
-            .sb-sidebar:hover .sb-search { visibility: visible; opacity: 1; width: 8.5rem; }
-            
-            /* --- KODE YANG DIREVISI: Kembalikan lebar otomatis untuk logo dan footer --- */
-            .sb-sidebar:hover .sb-brand-txt,
-            .sb-sidebar:hover .sb-footer-txt,
-            .sb-sidebar:hover .sb-ta-txt,
-            .sb-sidebar:hover .sb-text,
-            .sb-sidebar:hover .sb-glabel { 
-                width: auto; 
+            .sb-sidebar:hover .sb-theme-label,
+            .sb-sidebar:hover .sb-search-input {
+                visibility: visible; opacity: 1; width: auto;
             }
 
-            /* --- Paksa sub menu tertutup secara visual saat menciut --- */
+            .sb-sidebar .sb-brand { justify-content: center; }
+            .sb-sidebar:hover .sb-brand { justify-content: flex-start; }
+            .sb-sidebar:not(:hover) .sb-search-input { width: 0 !important; padding-left: 0; padding-right: 0; }
+            .sb-sidebar:not(:hover) .sb-search-ikon { left: 50%; transform: translate(-50%, -50%); }
+            .sb-sidebar:hover .sb-search-ikon { left: 12px; transform: translateY(-50%); }
+
+            .sb-sidebar:not(:hover) .sb-chev { display: none; }
+            .sb-sidebar:hover .sb-chev { display: inline-block; }
+
+            .sb-sidebar:not(:hover) .sb-divider { margin: 6px 14px; }
+            .sb-sidebar:not(:hover) .sb-item,
+            .sb-sidebar:not(:hover) .sb-group-toggle { justify-content: center; padding: 10px 0; }
+            .sb-sidebar:not(:hover) .sb-item .sb-text,
+            .sb-sidebar:not(:hover) .sb-group-toggle .sb-glabel { margin-left: 0; }
+            .sb-sidebar:not(:hover) .sb-user-trigger,
+            .sb-sidebar:not(:hover) .sb-logout,
+            .sb-sidebar:not(:hover) .sb-theme { justify-content: center; padding: 8px; }
+            .sb-sidebar:not(:hover) .sb-theme-switch-show { display: none; }
+            .sb-sidebar:not(:hover) .sb-theme-icon-show { display: flex; }
+            .sb-sidebar:hover .sb-theme-icon-show { display: none; }
+            .sb-sidebar:hover .sb-theme-switch-show { display: flex; }
+
             .sb-sidebar:not(:hover) .sb-sub { display: none !important; }
-
-            /* --- Menghapus blok hijau pada grup menu saat menciut --- */
-            .sb-sidebar:not(:hover) .sb-group:has(.sb-active) .sb-group-toggle {
-                background: transparent !important; 
-                box-shadow: none !important; 
-            }
-
-            /* --- Hanya jadikan ikonnya saja yang warna hijau saat menciut --- */
-            .sb-sidebar:not(:hover) .sb-group:has(.sb-active) .sb-group-toggle .sb-gicon i {
-                color: #10b981 !important; 
-            }
-        
+            .sb-sidebar:not(:hover) .sb-group:has(.sb-active) .sb-group-toggle .sb-gicon i { color: #2563eb; }
         }
-
-/* ============ SPACING & TIPOGRAFI MENU ============ */
-        .sb-item { font-weight: 500; color: #9ca3af; }
-        .sb-item.sb-active { font-weight: 700; color: #fff; }
-        .sb-sidebar:hover .sb-item,
-        .sb-sidebar:hover .sb-group-toggle { margin-bottom: 2px; }
-        .sb-sidebar:hover .sb-item { margin: 1px 0; }
-        .sb-sidebar:hover .sb-sub .sb-item { margin: 2px 0; }
-
-        /* ============ ITEM MENU & SUB MENU ============ */
-        .sb-group-toggle, .sb-item { width: 95%; border-radius: 0; }
-
-        /* SEMUA SIKU: buang lengkungan di setiap pojok dalam sidebar */
-        .sb-sidebar, .sb-sidebar * { border-radius: 0 !important; }
-
-        /* PENGATURAN SUB-MENU (Lebih kecil dari menu utama) */
-        .sb-item {
-            display: flex; align-items: center;
-            padding: 9px 24px 9px 12px; /* Atas-bawah diubah jadi 9px agar lebih pipih */
-            font-weight: 500;
-            color: #9ca3af;
-            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .sb-icon {
-            width: 24px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.05rem;
-            margin-right: 0;
-            transition: all 0.2s ease;
-        }
-        
-        .sb-item .sb-text { 
-            font-size: 13px !important; /* Ukuran font sub-menu dikecilkan */
-            margin-left: 0; /* Menghapus margin ganda, agar jarak icon dekat */
-        }
-        
-        /* WARNA SUB-MENU SAAT DIPILIH (AKTIF) */
-        .sb-item.sb-active {
-            background: rgba(16, 185, 129, 0.08); /* Latar belakang hijau transparan */
-            box-shadow: none;
-        }
-        
-        .sb-item.sb-active .sb-text,
-        .sb-item.sb-active .sb-icon i {
-            color: #10b981 !important; /* Teks & icon jadi emerald */
-            font-weight: 700;
-        }
-        
-        /* Hover saat tidak aktif */
-        .sb-item.sb-inactive:hover { background: rgba(16, 185, 129, 0.08); color: #10b981; }
-        .sb-item.sb-inactive:hover .sb-icon,
-        .sb-item.sb-inactive:hover .sb-text { color: #10b981 !important; }
-
-        /* ============ GRUP ACCORDION (MENU UTAMA) ============ */
-        .sb-group { margin-bottom: 4px; }
-        .sb-group-toggle {
-            display: flex; align-items: center;
-            padding: 13px 24px 13px 12px; /* Menu utama tetap besar (13px) */
-            font-weight: 500; font-size: 14px;
-            color: #9ca3af;
-            cursor: pointer;
-            text-align: left;
-            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .sb-group-toggle .sb-glabel { 
-            margin-left: 0;  /* Menghapus margin ganda, agar jarak icon dekat */
-        }
-        
-        /* Hover Menu Utama */
-        .sb-group-toggle:hover { background: rgba(16, 185, 129, 0.08); color: #10b981; }
-        .sb-group-toggle:hover .sb-gicon i,
-        .sb-group-toggle:hover .sb-glabel,
-        .sb-group-toggle:hover .sb-chev { color: #10b981 !important; }
-
-        /* WARNA MENU UTAMA BERDASARKAN HALAMAN AKTIF (Bukan karena diklik) */
-        .sb-group:has(.sb-active) .sb-group-toggle {
-            background: #10b981 !important;
-            box-shadow: 0 8px 20px rgba(16,185,129,0.3) !important;
-        }
-
-        .sb-group:has(.sb-active) .sb-group-toggle,
-        .sb-group:has(.sb-active) .sb-group-toggle .sb-glabel,
-        .sb-group:has(.sb-active) .sb-group-toggle .sb-gicon i,
-        .sb-group:has(.sb-active) .sb-group-toggle .sb-chev {
-            color: #ffffff !important; /* Teks, icon, panah jadi putih */
-        }
-        
-        .sb-gicon {
-            width: 24px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.05rem;
-            margin-right: 0;
-            color: #9ca3af;
-            transition: color 0.2s ease;
-        }
-        
-        /* FUNGSI BUKA/TUTUP ACCORDION (Tetap menggunakan .sb-open) */
-        .sb-chev { 
-            margin-left: auto; font-size: 14px; color: #64748b; transition: transform 0.25s ease;
-            visibility: visible !important; opacity: 1 !important; width: auto !important;
-            min-width: auto !important; flex-shrink: 0; display: inline-block;
-        }
-        .sb-group.sb-open .sb-chev { transform: rotate(180deg); }
-        
-        .sb-sub {
-            display: none;
-            padding: 4px 0 0 0;
-            margin-left: 0;
-        }
-        .sb-group.sb-open > .sb-sub { display: block; }
 
     </style>
     
@@ -350,29 +388,25 @@
             <!-- NOTIFIKASI REUSABLE (atas, auto-hilang) -->
             <div id="notif-stack" role="status" aria-live="polite"></div>
 
-            <aside id="sidebar" class="sb-sidebar fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 flex flex-col shadow-md md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 overflow-hidden transition-[width,transform] duration-300 ease-in-out">
+            <aside id="sidebar" class="sb-sidebar fixed inset-y-0 left-0 z-50 flex flex-col shadow-md md:shadow-sm transform -translate-x-full md:relative md:translate-x-0 overflow-hidden">
                 @php
                     $periodeAktif = \App\Models\Periode::where('is_active', true)->first();
                     $teksPeriode = $periodeAktif ? 'TA. ' . $periodeAktif->tahun_ajaran . ' (' . $periodeAktif->semester . ')' : '⚠ Periode Belum Diatur';
                 @endphp
-                <!-- HEADER LOGO: SPM WUSTHA + TA kecil di bawahnya -->
-                <!-- Ubah px-5 menjadi pl-[12px] pr-5 agar titik awal (kiri) sejajar persis dengan menu -->
-                <div class="sb-brand shrink-0 pl-[12px] pr-5 pt-6 pb-4 flex items-center justify-between">
-                    <!-- Gunakan gap-3 agar jarak icon ke teks sama dengan jarak pada menu -->
-                    <div class="sb-brand-inner flex items-center gap-3 overflow-hidden">
-                        
-                        <!-- Tambahkan w-10 h-10 flex justify-center items-center agar lebar icon sama dengan icon menu -->
-                        <span class="sb-brand-icon w-10 h-10 flex justify-center items-center flex-shrink-0">
+                <!-- HEADER LOGO (gaya Codinglab): kotak biru rounded + judul + subjudul -->
+                <div class="sb-brand shrink-0 pl-[12px] pr-5 pt-5 pb-4">
+                    <div class="sb-brand-inner">
+                        <!-- KOTAK LOGO BIRU ROUNDED -->
+                        <span class="sb-brand-icon">
                             <img src="{{ asset('img/logo-muadalah.png') }}" alt="Logo Mu'adalah" class="w-full h-full object-contain">
                         </span>
-                        
                         <div class="sb-brand-txt min-w-0">
-                            <span class="sb-brand-text block font-bold text-slate-800 text-[17px] tracking-wide leading-tight">SPM WUSTHA</span>
-                            <span class="block text-[11px] font-semibold text-slate-500 mt-0.5">{{ $teksPeriode }}</span>
+                            <span class="sb-brand-title block">SPM WUSTHA <span class="text-[9px] font-bold align-top">MU'ADALAH</span></span>
+                            <span class="sb-brand-sub block">{{ $teksPeriode }}</span>
                         </div>
                     </div>
-                    
-                    <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 focus:outline-none transition p-1">
+
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 focus:outline-none transition p-1 shrink-0">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -748,29 +782,51 @@
                     </div>
                     @endcanany
 
-                    <!-- LOGO CARI: ikon saja, di atas user -->
-                    <div class="sb-search-logo px-6 pt-1 pb-2 flex justify-center">
-                        <button type="button" class="w-9 h-8 flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 transition cursor-pointer">
-                            <i class="fas fa-search text-xl"></i>
-                        </button>
+                    <!-- PENCARIAN MENU (rounded, ikon kaca pembesar di kiri) -->
+                    <div class="sb-search">
+                        <div class="sb-search-wrap">
+                            <i class="fas fa-magnifying-glass sb-search-ikon"></i>
+                            <input type="text" id="sb-cari" class="sb-search-input" placeholder="Cari menu..." autocomplete="off" oninput="sbFilterMenu(this.value)">
+                        </div>
                     </div>
 
                 </div>
 
-                <!-- FOOTER SIDEBAR: LOGO CARI (di atas) + USER (aktif, buka dropdown) -->
-                <div class="sb-footer shrink-0 p-3 border-t border-slate-100">
-                    
+                <!-- FOOTER SIDEBAR: USER + divider + LOGOUT + TEMA (gaya Codinglab) -->
+                <div class="sb-footer shrink-0 border-t" style="border-color: var(--sb-border, #e5e7eb);">
+
                     <!-- USER: klik -> buka dropdown (Ganti Password + Logout) -->
-                    <button id="user-trigger" onclick="toggleUserMenu(this)" type="button" class="w-full flex items-center gap-3 p-2 hover:bg-emerald-50 transition cursor-pointer">
-                        <!-- Avatar tetap bulat & aksen emerald -->
-                        <div class="h-10 w-10 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-md border-2 border-white flex-shrink-0">
-                            <i class="fas fa-user text-sm"></i>
-                        </div>
-                        <div class="sb-footer-txt flex-1 text-left min-w-0 overflow-hidden">
-                            <p class="text-sm font-bold text-slate-600 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
-                            <p class="text-[11px] font-semibold text-slate-400 truncate">{{ auth()->user()->aksesLabel() }}</p>
-                        </div>
-                        <i class="sb-footer-chev fas fa-chevron-down text-xs text-slate-400"></i>
+                    <button id="user-trigger" onclick="toggleUserMenu(this)" type="button" class="sb-user-trigger">
+                        <span class="sb-avatar"><i class="fas fa-user text-sm"></i></span>
+                        <span class="sb-footer-txt flex-1 text-left min-w-0 overflow-hidden">
+                            <span class="block text-[13px] font-bold text-slate-700 truncate">{{ auth()->user()->name ?? 'Nama User' }}</span>
+                            <span class="block text-[10px] font-semibold text-slate-400 truncate">{{ auth()->user()->aksesLabel() }}</span>
+                        </span>
+                        <i class="sb-footer-chev fas fa-chevron-down text-xs text-slate-400 flex-shrink-0"></i>
+                    </button>
+
+                    <div class="sb-divider"></div>
+
+                    <!-- LOGOUT -->
+                    <form method="POST" action="/logout" class="px-1">
+                        @csrf
+                        <button type="submit" class="sb-logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="sb-text">Logout</span>
+                        </button>
+                    </form>
+
+                    <div class="sb-divider"></div>
+
+                    <!-- TOGGLE TEMA: Dark Mode / Light Mode -->
+                    <button type="button" class="sb-theme" onclick="toggleTema()">
+                        <span class="sb-theme-switch-show">
+                            <span class="sb-theme-switch">
+                                <span class="sb-theme-knob"><i class="fas fa-moon" data-sb-tema-ikon></i></span>
+                            </span>
+                        </span>
+                        <span class="sb-theme-icon-show" data-sb-tema-ikon-bulat><i class="fas fa-moon" data-sb-tema-ikon></i></span>
+                        <span class="sb-theme-label sb-text" data-sb-tema-label>Dark Mode</span>
                     </button>
                 </div>
 
@@ -901,6 +957,66 @@
             });
             // Buka grup yang diklik hanya jika tadinya tertutup (toggle)
             if (!isOpen) group.classList.add('sb-open');
+        }
+
+        // ============ CARI MENU SIDEBAR ============
+        function sbFilterMenu(q) {
+            q = (q || '').trim().toLowerCase();
+            document.querySelectorAll('.sb-group').forEach(function (g) {
+                if (!q) { g.style.display = ''; return; }
+                var teks = (g.textContent || '').toLowerCase();
+                g.style.display = teks.indexOf(q) !== -1 ? '' : 'none';
+            });
+        }
+
+        // ============ MODE GELAP / TERANG (per akun, disimpan via API) ============
+        var TEMA_AKUN = @json(auth()->user()->tema ?? 'sistem');
+
+        function temaSistemGelap() {
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+        // Apakah tema aktif adalah gelap? ('sistem' ikut preferensi perangkat)
+        function temaAktif() {
+            if (TEMA_AKUN === 'gelap') return true;
+            if (TEMA_AKUN === 'terang') return false;
+            return temaSistemGelap();
+        }
+
+        function perbaruiIkonTema(gelap) {
+            document.querySelectorAll('[data-sb-tema-ikon]').forEach(function (el) {
+                el.className = 'fas ' + (gelap ? 'fa-moon' : 'fa-sun');
+            });
+            var lbl = document.querySelector('[data-sb-tema-label]');
+            if (lbl) lbl.textContent = gelap ? 'Light Mode' : 'Dark Mode';
+        }
+
+        function terapkanTema() {
+            var gelap = temaAktif();
+            document.documentElement.classList.toggle('dark', gelap);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', gelap ? '#0b1220' : '#065f46');
+            perbaruiIkonTema(gelap);
+        }
+
+        function toggleTema() {
+            var gelap = !temaAktif();
+            document.documentElement.classList.toggle('dark', gelap);
+            var nilai = gelap ? 'gelap' : 'terang';
+            TEMA_AKUN = nilai;
+            perbaruiIkonTema(gelap);
+            // Simpan preferensi ke akun
+            var csrf = document.querySelector('meta[name="csrf-token"]');
+            fetch('/preferensi-tema', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf ? csrf.content : '' },
+                body: new URLSearchParams('tema=' + nilai)
+            }).catch(function () {});
+        }
+
+        if (!window.__temaInit) {
+            window.__temaInit = 1;
+            terapkanTema();
         }
 
         // TOGGLE DROPDOWN USER (posisikan di atas tombol di footer sidebar)

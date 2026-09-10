@@ -35,6 +35,9 @@
                 <div class="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur border border-white/20">
                     <span class="text-[10px] font-black text-white">TA. {{ $periodeAktif->tahun_ajaran ?? '2026/2027' }}</span>
                 </div>
+<button type="button" onclick="toggleTema()" class="relative w-10 h-10 rounded-full bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center text-white active:scale-95 transition" title="Mode Gelap / Terang">
+                    <i class="fas fa-moon" data-sb-tema-ikon></i>
+                </button>
                 <a href="/notifikasi/pengaturan" class="relative w-10 h-10 rounded-full bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center text-white active:scale-95 transition">
                     <i class="fas fa-bell text-sm"></i>
                     <span class="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-rose-400 ring-2 ring-emerald-700"></span>

@@ -48,8 +48,9 @@ Route::get('/login/intip-jadwal', [AuthController::class, 'intipJadwal'])->middl
 // ==========================================================
 Route::middleware(['auth'])->group(function () {
         
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::put('/ganti-password', [AuthController::class, 'gantiPassword']);
+    Route::post('/preferensi-tema', [AuthController::class, 'simpanTema']);
 
     // GERBANG PENGALIHAN CERDAS (Titik Masuk Pertama)
     Route::get('/dashboard-utama', [JadwalController::class, 'dashboard'])->name('dashboard.utama');

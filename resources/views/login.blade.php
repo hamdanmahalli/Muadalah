@@ -183,6 +183,12 @@
         <div class="absolute top-10 -right-10 w-32 h-32 bg-sky-300 opacity-20 rounded-full blur-2xl"></div>
     </div>
 
+    <button type="button" id="tema-login-btn"
+        class="fixed top-4 right-4 z-50 w-11 h-11 rounded-full bg-white/90 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-lg flex items-center justify-center text-gray-700 dark:text-slate-200 transition cursor-pointer"
+        title="Mode Gelap / Terang">
+        <i id="ikon-tema-login" class="fas fa-moon"></i>
+    </button>
+
     <div class="relative w-full max-w-md px-6 z-10 mt-8">
 
         <!-- ===== BAGIAN ATAS: LOGO + TULISAN (SESUAI ASAL) ===== -->
@@ -665,6 +671,36 @@
                 }
             });
         }
+    </script>
+
+    <script>
+        // ===== MODE GELAP / TERANG HALAMAN LOGIN (simpan di perangkat) =====
+        (function () {
+            var kunci = 'mumaris-tema-login';
+
+            function sistemGelap() {
+                return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+
+            function terapkan(gelap) {
+                document.documentElement.classList.toggle('dark', gelap);
+                var meta = document.querySelector('meta[name="theme-color"]');
+                if (meta) meta.setAttribute('content', gelap ? '#0b1220' : '#065f46');
+                var ikon = document.getElementById('ikon-tema-login');
+                if (ikon) ikon.className = 'fas ' + (gelap ? 'fa-moon' : 'fa-sun');
+            }
+
+            var nilai = localStorage.getItem(kunci);
+            if (nilai === null) nilai = sistemGelap() ? 'gelap' : 'terang';
+            terapkan(nilai === 'gelap');
+
+            var btn = document.getElementById('tema-login-btn');
+            if (btn) btn.onclick = function () {
+                var baru = document.documentElement.classList.contains('dark') ? 'terang' : 'gelap';
+                localStorage.setItem(kunci, baru);
+                terapkan(baru === 'gelap');
+            };
+        })();
     </script>
 
 </body>

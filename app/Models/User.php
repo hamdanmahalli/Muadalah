@@ -28,6 +28,7 @@ class User extends Authenticatable implements PasskeyUser
         'hp',
         'role',
         'status',
+        'tema',
         'email_verified_at',
         'password',
         'remember_token',
