@@ -44,10 +44,11 @@
             <h3 class="text-sm font-bold text-gray-700"><i class="fas fa-table mr-2 text-gray-400"></i>Data User</h3>
         </div>
 
-        <table class="min-w-full divide-y divide-gray-200">
+        <div class="overflow-x-auto">
+        <table class="min-w-[720px] divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase w-10">No</th>
+                    <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase w-10 max-w-10">No</th>
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Nama User</th>
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden md:table-cell">Akses</th>
                     <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase w-24 hidden md:table-cell">Status</th>
@@ -64,7 +65,7 @@
                     data-email="{{ js_q($user->email) }}"
                     data-hp="{{ js_q($user->hp ?? '') }}"
                     @if(auth()->user()->hasRole('Administrator') && !$user->hasRole('Administrator')) onclick="pilihUser(this)" @endif>
-                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500 text-center">{{ $index + 1 }}</td>
                     <td class="px-6 py-3 whitespace-nowrap">
                         <p class="text-sm font-bold text-gray-800">{{ $user->name }}</p>
                         <p class="text-[11px] text-gray-400">{{ $user->username }}</p>
@@ -123,6 +124,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
     {{-- ================= POPUP FASILITAS MENU ================= --}}
