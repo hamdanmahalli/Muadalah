@@ -199,7 +199,7 @@
             background-color: transparent; border: none; outline: none;
             color: #0f172a; font-size: 13px; font-weight: 500; letter-spacing: 0.01em;
             padding: 0 14px 0 0;
-            transition: opacity 0.3s ease, width 0.3s ease, padding 0.3s ease;
+            transition: opacity 0.2s ease;
         }
         .sb-search-input::placeholder { color: #9ca3af; }
         html.dark .sb-search-wrap { background-color: #1e2733; }
@@ -439,14 +439,14 @@
                     $teksPeriode = $periodeAktif ? 'TA. ' . $periodeAktif->tahun_ajaran . ' (' . $periodeAktif->semester . ')' : '⚠ Periode Belum Diatur';
                 @endphp
                 <!-- HEADER LOGO (gaya Codinglab): kotak biru rounded + judul + subjudul -->
-                <div class="sb-brand shrink-0 pl-[12px] pr-5 pt-5 pb-4">
+                <div class="sb-brand shrink-0 pl-[16px] pr-5 pt-5 pb-4">
                     <div class="sb-brand-inner">
                         <!-- KOTAK LOGO BIRU ROUNDED -->
                         <span class="sb-brand-icon">
                             <img src="{{ asset('img/logo-muadalah.png') }}" alt="Logo Mu'adalah" class="w-full h-full object-contain">
                         </span>
                         <div class="sb-brand-txt min-w-0">
-                            <span class="sb-brand-title block">SPM WUSTHA <span class="text-[9px] font-bold align-top">MU'ADALAH</span></span>
+                            <span class="sb-brand-title block">SPM WUSTHA</span>
                             <span class="sb-brand-sub block">{{ $teksPeriode }}</span>
                         </div>
                     </div>
@@ -865,7 +865,7 @@
                 </div>
 
                 <!-- DROPDOWN USER (fixed overlay: identitas + Ganti Password + Logout) -->
-                <div id="user-dropdown" class="hidden fixed z-[80] w-64 rounded-2xl border shadow-2xl overflow-hidden">
+                <div id="user-dropdown" class="hidden fixed z-[80] w-56 rounded-2xl border shadow-2xl overflow-hidden">
                     <div class="sb-ub-header p-3 border-b flex items-center gap-3 bg-gradient-to-br from-emerald-500/10 to-emerald-600/10">
                         <span class="sb-avatar !h-11 !w-11"><i class="fas fa-user text-xl"></i></span>
                         <div class="min-w-0">
@@ -1058,7 +1058,7 @@
             if (menu.classList.contains('hidden')) {
                 menu.classList.remove('hidden');
                 const r = btn.getBoundingClientRect();
-                const w = 256; // 16rem
+                const w = 224; // 14rem (w-56)
                 const h = menu.offsetHeight || 220;
                 let left = r.left;
                 if (left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
