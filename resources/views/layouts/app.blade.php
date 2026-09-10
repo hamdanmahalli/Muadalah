@@ -150,6 +150,7 @@
             width: 250px;
             background-color: #ffffff;
             border-right: 1px solid #e5e7eb;
+            overflow-x: hidden;
             transition: width 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
         html.dark .sb-sidebar {
@@ -157,15 +158,21 @@
             border-right-color: #1f2937;
         }
 
+        /* scrollbar sisi: tipis & tidak menabrak ikon */
+        .sb-sidebar ::-webkit-scrollbar { width: 5px; }
+        .sb-sidebar ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 999px; }
+        .sb-sidebar ::-webkit-scrollbar-track { background: transparent; }
+        .sb-scroll { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.35) transparent; }
+
         /* ============ HEADER / BRAND ============ */
         .sb-brand { display: flex; align-items: center; gap: 12px; }
         .sb-brand-inner { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
         .sb-brand-icon {
             width: 42px; height: 42px; flex-shrink: 0; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: linear-gradient(135deg, #10b981, #059669);
             border-radius: 14px;
-            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 6px 14px rgba(5, 150, 105, 0.35);
         }
         .sb-brand-icon img { width: 100%; height: 100%; object-fit: contain; }
         .sb-brand-title { color: #111827; font-size: 15px; font-weight: 800; letter-spacing: 0.02em; line-height: 1.2; }
@@ -173,31 +180,40 @@
         html.dark .sb-brand-title { color: #f9fafb; }
         html.dark .sb-brand-sub { color: #94a3b8; }
 
-        /* ============ PENCARIAN ============ */
-        .sb-search { padding: 8px 12px 16px; }
-        .sb-search-wrap { position: relative; }
-        .sb-search-ikon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none; transition: left 0.3s ease; }
-        .sb-search-input {
-            width: 100%; outline: none;
-            background-color: #f3f4f6; border: 1px solid transparent;
-            color: #111827; font-size: 13px; font-weight: 500;
-            padding: 9px 14px 9px 36px;
-            border-radius: 999px;
-            transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease, padding 0.3s ease;
+        /* ============ PENCARIAN (ikon sejajar kolom ikon menu) ============ */
+        .sb-search { padding: 8px 8px 16px; }
+        .sb-search-wrap {
+            display: flex; align-items: center; overflow: hidden;
+            background-color: #f3f4f6; border: 1px solid transparent; border-radius: 12px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
-        .sb-search-input:focus { border-color: #2563eb; background-color: #ffffff; }
-        html.dark .sb-search-input { background-color: #1e2733; color: #f3f4f6; }
-        html.dark .sb-search-input::placeholder { color: #64748b; }
-        html.dark .sb-search-input:focus { background-color: #273343; border-color: #3b82f6; }
+        .sb-search-wrap:hover, .sb-search-wrap:focus-within { background-color: #ffffff; border-color: #10b981; }
+        .sb-search-ikon {
+            width: 40px; height: 40px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #9ca3af; font-size: 14px; pointer-events: none;
+        }
+        .sb-search-input {
+            flex: 1; min-width: 0; height: 40px;
+            background-color: transparent; border: none; outline: none;
+            color: #0f172a; font-size: 13px; font-weight: 500; letter-spacing: 0.01em;
+            padding: 0 14px 0 0;
+            transition: opacity 0.3s ease, width 0.3s ease, padding 0.3s ease;
+        }
+        .sb-search-input::placeholder { color: #9ca3af; }
+        html.dark .sb-search-wrap { background-color: #1e2733; }
+        html.dark .sb-search-wrap:hover, html.dark .sb-search-wrap:focus-within { background-color: #273343; border-color: #10b981; }
+        html.dark .sb-search-input { color: #f3f4f6; }
         html.dark .sb-search-ikon { color: #64748b; }
 
         /* ============ MENU (item & grup) ============ */
         .sb-item, .sb-group-toggle {
-            display: flex; align-items: center;
+            display: flex; align-items: center; gap: 12px;
+            flex-wrap: nowrap;
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px;
             margin: 2px 0;
-            border-radius: 10px;
+            border-radius: 12px;
             color: #6b7280;
             font-size: 14px; font-weight: 500;
             cursor: pointer;
@@ -208,12 +224,11 @@
         .sb-item:hover, .sb-group-toggle:hover { background: #f3f4f6; color: #111827; }
         html.dark .sb-item:hover, html.dark .sb-group-toggle:hover { background: #1e2733; color: #f9fafb; }
         .sb-icon, .sb-gicon {
-            width: 24px; flex-shrink: 0;
+            width: 40px; height: 40px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.05rem;
         }
-        .sb-item .sb-text { font-size: 13px; margin-left: 12px; font-weight: 500; }
-        .sb-group-toggle .sb-glabel { font-size: 13px; margin-left: 12px; flex: 1; font-weight: 700; }
+        .sb-item .sb-text { font-size: 13px; font-weight: 500; }
+        .sb-group-toggle .sb-glabel { font-size: 13px; flex: 1; font-weight: 700; }
         .sb-chev { margin-left: auto; font-size: 12px; flex-shrink: 0; transition: transform 0.25s ease; }
         .sb-group.sb-open .sb-chev { transform: rotate(180deg); }
         .sb-item.sb-inactive { color: #6b7280; }
@@ -221,55 +236,62 @@
         .sb-sub { display: none; padding: 2px 0; }
         .sb-group.sb-open > .sb-sub { display: block; }
         .sb-sub .sb-item { padding-left: 38px; }
+        .sb-sub .sb-icon { width: 28px; height: 28px; }
+        .sb-sub .sb-icon i { font-size: 0.9rem; }
         .sb-group { margin-bottom: 2px; }
 
-        /* ACTIVE STATE: biru solid + teks/ikon putih */
+        /* ACTIVE STATE: emerald solid + teks/ikon putih */
         .sb-item.sb-active {
-            background: #2563eb;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+            background: #059669;
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
             color: #ffffff;
         }
         .sb-item.sb-active .sb-text,
         .sb-item.sb-active .sb-icon i { color: #ffffff !important; font-weight: 700; }
-        .sb-group:has(.sb-active) .sb-group-toggle { color: #2563eb; }
-        html.dark .sb-group:has(.sb-active) .sb-group-toggle { color: #60a5fa; }
+        .sb-group:has(.sb-active) .sb-group-toggle { color: #059669; }
+        html.dark .sb-group:has(.sb-active) .sb-group-toggle { color: #34d399; }
 
         /* ============ FOOTER (user, logout, toggle tema) ============ */
-        .sb-divider { height: 1px; background: #e5e7eb; margin: 6px 12px; }
+        .sb-footer { padding: 8px; }
+        .sb-divider { height: 1px; background: #e5e7eb; margin: 6px 0; }
         html.dark .sb-divider { background: #1f2937; }
         .sb-user-trigger {
             display: flex; align-items: center; gap: 12px; width: 100%;
-            padding: 10px; border-radius: 10px; cursor: pointer;
+            padding: 8px; border-radius: 12px; cursor: pointer;
             transition: background 0.2s ease;
         }
         .sb-user-trigger:hover { background: #f3f4f6; }
         html.dark .sb-user-trigger:hover { background: #1e2733; }
         .sb-avatar {
-            width: 38px; height: 38px; flex-shrink: 0; border-radius: 999px;
+            width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px;
             display: flex; align-items: center; justify-content: center; color: #fff;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
         }
         .sb-logout {
             display: flex; align-items: center; gap: 12px; width: 100%;
-            padding: 10px; border-radius: 10px;
+            padding: 8px; border-radius: 12px;
             color: #ef4444; font-weight: 600; font-size: 13px; cursor: pointer;
             transition: background 0.2s ease;
         }
         .sb-logout:hover { background: rgba(239, 68, 68, 0.08); }
-        .sb-logout i { width: 24px; text-align: center; font-size: 1rem; }
+        .sb-logout i {
+            width: 40px; height: 40px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
 
         /* toggle tema */
         .sb-theme {
             display: flex; align-items: center; gap: 12px; width: 100%;
-            padding: 9px 10px; border-radius: 10px; cursor: pointer;
+            padding: 7px 8px; border-radius: 12px; cursor: pointer;
             transition: background 0.2s ease;
         }
         .sb-theme:hover { background: #f3f4f6; }
         html.dark .sb-theme:hover { background: #1e2733; }
         .sb-theme-switch-show { display: flex; align-items: center; flex-shrink: 0; }
         .sb-theme-switch { position: relative; width: 38px; height: 22px; border-radius: 999px; background: #e5e7eb; transition: background 0.3s ease; }
-        html.dark .sb-theme-switch { background: #2563eb; }
+        html.dark .sb-theme-switch { background: #059669; }
         .sb-theme-knob {
             position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
             border-radius: 999px; background: #ffffff;
@@ -279,15 +301,15 @@
         }
         html.dark .sb-theme-knob { transform: translateX(16px); }
         .sb-theme-knob i { font-size: 9px; color: #f59e0b; }
-        html.dark .sb-theme-knob i { color: #60a5fa; }
+        html.dark .sb-theme-knob i { color: #10b981; }
         .sb-theme-label { font-size: 13px; font-weight: 600; color: #374151; }
         html.dark .sb-theme-label { color: #e5e7eb; }
         .sb-theme-icon-show {
             display: none; align-items: center; justify-content: center;
-            width: 38px; height: 38px; border-radius: 999px;
-            background: #eef2ff; color: #2563eb; font-size: 15px; flex-shrink: 0;
+            width: 40px; height: 40px; border-radius: 12px;
+            background: #d1fae5; color: #047857; font-size: 15px; flex-shrink: 0;
         }
-        html.dark .sb-theme-icon-show { background: #1e2733; color: #60a5fa; }
+        html.dark .sb-theme-icon-show { background: #1e2733; color: #34d399; }
 
         /* ============ COLLAPSE (md+): 80px ikon saja -> hover 250px ============ */
         @media (max-width: 767.98px) {
@@ -299,46 +321,45 @@
 
             .sb-sidebar .sb-text,
             .sb-sidebar .sb-glabel,
-            .sb-sidebar .sb-brand-inner .sb-brand-txt,
             .sb-sidebar .sb-footer-txt,
             .sb-sidebar .sb-theme-label,
-            .sb-sidebar .sb-search-input {
+            .sb-sidebar .sb-brand-inner .sb-brand-txt {
                 width: 0; min-width: 0; visibility: hidden; opacity: 0;
                 overflow: hidden; white-space: nowrap;
             }
             .sb-sidebar:hover .sb-text,
             .sb-sidebar:hover .sb-glabel,
-            .sb-sidebar:hover .sb-brand-inner .sb-brand-txt,
             .sb-sidebar:hover .sb-footer-txt,
             .sb-sidebar:hover .sb-theme-label,
-            .sb-sidebar:hover .sb-search-input {
+            .sb-sidebar:hover .sb-brand-inner .sb-brand-txt {
                 visibility: visible; opacity: 1; width: auto;
             }
 
-            .sb-sidebar .sb-brand { justify-content: center; }
-            .sb-sidebar:hover .sb-brand { justify-content: flex-start; }
-            .sb-sidebar:not(:hover) .sb-search-input { width: 0 !important; padding-left: 0; padding-right: 0; }
-            .sb-sidebar:not(:hover) .sb-search-ikon { left: 50%; transform: translate(-50%, -50%); }
-            .sb-sidebar:hover .sb-search-ikon { left: 12px; transform: translateY(-50%); }
+            /* logo: tutup = kotak logo di tengah rapi */
+            .sb-sidebar:not(:hover) .sb-brand { justify-content: center; padding-left: 8px; padding-right: 8px; }
 
+            /* pencarian: tutup = chip ikon saja di tengah, sejajar kolom ikon menu */
+            .sb-sidebar:not(:hover) .sb-search-wrap { background-color: transparent; justify-content: center; border-color: transparent; }
+            .sb-sidebar:not(:hover) .sb-search-input { flex: 0 0 0; width: 0; min-width: 0; padding: 0; opacity: 0; }
+            .sb-sidebar:hover .sb-search-input { flex: 1; width: auto; min-width: 0; padding: 0 14px 0 0; opacity: 1; }
+
+            /* menu & footer: ikon 40px ditengah rapi, tanpa gap + teks tetap tersembunyi */
+            .sb-sidebar:not(:hover) .sb-item,
+            .sb-sidebar:not(:hover) .sb-group-toggle,
+            .sb-sidebar:not(:hover) .sb-user-trigger,
+            .sb-sidebar:not(:hover) .sb-logout,
+            .sb-sidebar:not(:hover) .sb-theme { justify-content: center; padding: 8px; gap: 0; }
             .sb-sidebar:not(:hover) .sb-chev { display: none; }
             .sb-sidebar:hover .sb-chev { display: inline-block; }
 
-            .sb-sidebar:not(:hover) .sb-divider { margin: 6px 14px; }
-            .sb-sidebar:not(:hover) .sb-item,
-            .sb-sidebar:not(:hover) .sb-group-toggle { justify-content: center; padding: 10px 0; }
-            .sb-sidebar:not(:hover) .sb-item .sb-text,
-            .sb-sidebar:not(:hover) .sb-group-toggle .sb-glabel { margin-left: 0; }
-            .sb-sidebar:not(:hover) .sb-user-trigger,
-            .sb-sidebar:not(:hover) .sb-logout,
-            .sb-sidebar:not(:hover) .sb-theme { justify-content: center; padding: 8px; }
+            .sb-sidebar:not(:hover) .sb-divider { margin: 6px 0; }
             .sb-sidebar:not(:hover) .sb-theme-switch-show { display: none; }
             .sb-sidebar:not(:hover) .sb-theme-icon-show { display: flex; }
             .sb-sidebar:hover .sb-theme-icon-show { display: none; }
             .sb-sidebar:hover .sb-theme-switch-show { display: flex; }
 
             .sb-sidebar:not(:hover) .sb-sub { display: none !important; }
-            .sb-sidebar:not(:hover) .sb-group:has(.sb-active) .sb-group-toggle .sb-gicon i { color: #2563eb; }
+            .sb-sidebar:not(:hover) .sb-group:has(.sb-active) .sb-group-toggle .sb-gicon i { color: #059669; }
         }
 
     </style>
@@ -411,7 +432,7 @@
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto flex flex-col gap-1 py-2 px-2 scrollbar-none">
+                <div class="sb-scroll flex-1 flex flex-col gap-1 py-2 px-2">
 
                     @php
                         $gBeranda  = request()->is('/', 'meja-kontrol', 'monitoring-kehadiran*', 'laporan', 'pabrik-barcode', 'agenda-kegiatan*', 'honor*');
@@ -782,10 +803,10 @@
                     </div>
                     @endcanany
 
-                    <!-- PENCARIAN MENU (rounded, ikon kaca pembesar di kiri) -->
+                    <!-- PENCARIAN MENU (rounded, ikon kaca pembesar sejajar kolom ikon menu) -->
                     <div class="sb-search">
                         <div class="sb-search-wrap">
-                            <i class="fas fa-magnifying-glass sb-search-ikon"></i>
+                            <span class="sb-search-ikon"><i class="fas fa-magnifying-glass"></i></span>
                             <input type="text" id="sb-cari" class="sb-search-input" placeholder="Cari menu..." autocomplete="off" oninput="sbFilterMenu(this.value)">
                         </div>
                     </div>
