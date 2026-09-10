@@ -22,7 +22,8 @@ class PermissionSeeder extends Seeder
             'akses_monitoring_kehadiran',
             'akses_laporan',
             'akses_import_excel',
-            'akses_master_guru',
+'akses_master_guru',
+            'akses_master_jabatan',
             'akses_master_pelajaran',
             'akses_master_kelas',
             'akses_target_mengajar',
@@ -33,6 +34,7 @@ class PermissionSeeder extends Seeder
             'akses_manajemen_user',
             'akses_manajemen_akses',
             'akses_jadwal_saya',
+            'akses_pabrik_barcode',
             'akses_riwayat_mutasi',
             'akses_pengumuman',
             // === MODUL SISWA ===
@@ -79,7 +81,7 @@ class PermissionSeeder extends Seeder
         // 4. Sinkronisasi Kunci Sementara
         $roleAdmin->syncPermissions($permissions); // Admin pegang semua kunci
         $rolePimpinan->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_riwayat_mutasi', 'akses_target_mengajar', 'akses_jadwal_harian', 'akses_laporan_siswa']);
-        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi', 'akses_pengumuman', 'akses_master_siswa', 'akses_penempatan_siswa', 'akses_pembayaran', 'akses_absen_siswa', 'akses_laporan_siswa', 'akses_input_nilai', 'akses_agenda', 'akses_batas_pelajaran', 'akses_honor']);
+        $roleTataUsaha->syncPermissions(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_master_guru', 'akses_master_jabatan', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi', 'akses_pengumuman', 'akses_master_siswa', 'akses_penempatan_siswa', 'akses_pembayaran', 'akses_absen_siswa', 'akses_laporan_siswa', 'akses_input_nilai', 'akses_agenda', 'akses_batas_pelajaran', 'akses_pabrik_barcode', 'akses_honor']);
         
         // PENTING: Berikan Kunci Dashboard Guru ke Dewan Guru (+ input nilai harian)
         $roleDewanGuru->syncPermissions(['akses_dashboard_guru', 'akses_jadwal_saya', 'akses_input_nilai']);

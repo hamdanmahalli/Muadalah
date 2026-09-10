@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
  *
  * SRP: Satu tanggung jawab — mengelola catatan Guru & akun pengguna terkait.
  * Stateless; transaksi antar entitas tereksekusi secara atomik di sini.
+ * Hak akses akun = permission langsung per user, diatur manual di Setup User (kosong saat akun dibuat).
  */
 class GuruService
 {
@@ -42,6 +43,37 @@ class GuruService
             return ['sukses' => false, 'pesan' => 'Data pengurus berhasil disimpan!'];
         }
 
+        $hasil = $this->siapkanAkun($guru, 'Dewan Guru');
+
+        return [
+            'sukses' => true,
+            'pesan' => 'Data pengurus berhasil disimpan! ' . $hasil['pesan'],
+        ];
+    }
+
+    /**
+     * Buat/pastikan akun login untuk guru apa pun (jabatan apa pun).
+     * Dipakai tombol "Buat Akun" di Master Guru. Hak akses selalu kosong.
+     *
+     * @return array{sukses: bool, pesan: string, sandi: ?string}
+     */
+    public function buatAkunManual(Guru $guru): array
+    {
+        $hasil = $this->siapkanAkun($guru);
+        return [
+            'sukses' => true,
+            'pesan' => $hasil['pesan'],
+            'sandi' => $hasil['sandi'] ?? null,
+        ];
+    }
+
+    /**
+     * Inti pembuatan/pembaruan akun: username = NIG, hak akses kosong (diatur manual).
+     *
+     * @return array{pesan: string, sandi: ?string}
+     */
+    private function siapkanAkun(Guru $guru): array
+    {
         $user = User::where('username', $guru->nig)->first();
 
         // Akun belum ada -> buat akun baru dengan sandi sekali tampil
@@ -54,22 +86,20 @@ class GuruService
                 'email'    => $guru->nig . '@pesantren.com',
                 'hp'       => $guru->no_hp,
                 'status'   => 'Aktif',
+                'role'     => null,
                 'password' => Hash::make($sandi),
             ]);
-            $user->assignRole('Dewan Guru');
 
             return [
-                'sukses' => true,
-                'pesan' => 'Data pengurus berhasil disimpan! Akun guru otomatis terbuat (Username: ' . $guru->nig . ' | Sandi sementara: ' . $sandi . '). Segera beri tahu guru untuk mengganti sandi.',
+                'pesan' => 'Akun guru otomatis terbuat (Username: ' . $guru->nig . ' | Sandi sementara: ' . $sandi . ' | Hak akses masih kosong). Segera beri tahu guru untuk mengganti sandi; beri fasilitas menu lewat Setup User.',
+                'sandi' => $sandi,
             ];
         }
 
-        // Akun sudah ada -> cukup pastikan peran guru terpasang
-        $user->assignRole('Dewan Guru');
-
+        // Akun sudah ada -> tidak mengubah apa pun; akses diatur manual.
         return [
-            'sukses' => true,
-            'pesan' => 'Data pengurus berhasil disimpan! Akun guru untuk NIG ' . $guru->nig . ' sudah ada sebelumnya.',
+            'pesan' => 'Akun untuk NIG ' . $guru->nig . ' sudah ada sebelumnya; akun tidak diubah. Atur fasilitas menu lewat Setup User.',
+            'sandi' => null,
         ];
     }
 }

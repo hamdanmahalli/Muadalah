@@ -385,11 +385,11 @@
                         $gJadwal   = request()->is('master-hari-operasional*', 'agenda-kaldik*', 'pengumuman*', 'master-plot-jadwal*', 'master-jadwal-harian*', 'riwayat-mutasi*');
                         $gGuru     = request()->is('dashboard-guru', 'jadwal-saya', 'scan-kelas', 'siswa-saya*');
                         $gSiswa    = request()->is('penempatan-siswa*', 'absen-siswa*', 'input-nilai*', 'raport*', 'laporan-siswa*', 'tagihan*');
-                        $gSetup    = request()->is('setup-user', 'user*', 'manajemen-akses', 'master-import*', 'backup-restore*', 'panduan-aplikasi*');
+                        $gSetup    = request()->is('setup-user', 'user*', 'master-import*', 'backup-restore*', 'panduan-aplikasi*');
                     @endphp
 
                     <!-- GRUP: BERANDA & MONITORING -->
-                    @canany(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_jadwal_saya', 'akses_master_kelas', 'akses_agenda', 'akses_honor'])
+                    @canany(['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_pabrik_barcode', 'akses_agenda', 'akses_honor'])
                     <div class="sb-group {{ $gBeranda ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
                             <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
@@ -431,7 +431,7 @@
                                 </a>
                             </div>
                             @endcan
-                            @can('akses_jadwal_saya')
+                            @can('akses_pabrik_barcode')
                             <div class="relative flex items-center group">
                                 <a href="/pabrik-barcode" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('pabrik-barcode') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-barcode text-xl"></i></div>
@@ -459,7 +459,7 @@
                     </div>
                     @endcanany
 
-                    @canany(['akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_batas_pelajaran', 'akses_master_siswa', 'akses_master_periode'])
+                    @canany(['akses_master_guru', 'akses_master_jabatan', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_batas_pelajaran', 'akses_master_siswa', 'akses_master_periode'])
                     <!-- GRUP: MASTER DATA -->
                     <div class="sb-group {{ $gMaster ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
@@ -478,7 +478,7 @@
                                 </a>
                             </div>
                             @endcan
-                            @can('akses_master_guru')
+                            @can('akses_master_jabatan')
                             <div class="relative flex items-center group">
                                 <a href="/master-jabatan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('master-jabatan*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-briefcase text-xl"></i></div>
@@ -701,7 +701,7 @@
                     </div>
                     @endcanany
 
-                    @canany(['akses_manajemen_user', 'akses_manajemen_akses', 'akses_master_guru', 'akses_import_excel', 'akses_backup_restore'])
+                    @canany(['akses_manajemen_user', 'akses_import_excel', 'akses_backup_restore'])
                     <!-- GRUP: PENGATURAN SISTEM -->
                     <div class="sb-group {{ $gSetup ? 'sb-open' : '' }}">
                         <div class="relative flex items-center group">
@@ -717,14 +717,6 @@
                                 <a href="/setup-user" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('setup-user') || request()->is('user*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-users-cog text-xl"></i></div>
                                     <span class="sb-text flex-1 text-left text-sm font-semibold">Setup User</span>
-                                </a>
-                            </div>
-                            @endcan
-                            @can('akses_manajemen_akses')
-                            <div class="relative flex items-center group">
-                                <a href="/manajemen-akses" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('manajemen-akses') ? 'sb-active' : 'sb-inactive' }}">
-                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-key text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Hak Akses</span>
                                 </a>
                             </div>
                             @endcan
@@ -776,7 +768,7 @@
                         </div>
                         <div class="sb-footer-txt flex-1 text-left min-w-0 overflow-hidden">
                             <p class="text-sm font-bold text-slate-600 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
-                            <p class="text-[11px] font-semibold text-slate-400 truncate">{{ auth()->user()->role ?? 'Role' }}</p>
+                            <p class="text-[11px] font-semibold text-slate-400 truncate">{{ auth()->user()->aksesLabel() }}</p>
                         </div>
                         <i class="sb-footer-chev fas fa-chevron-down text-xs text-slate-400"></i>
                     </button>
@@ -790,7 +782,7 @@
                         </div>
                         <div class="min-w-0">
                             <p class="text-sm font-black text-slate-700 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
-                            <p class="text-xs text-slate-500 font-semibold truncate">{{ auth()->user()->role ?? 'Role' }}</p>
+                            <p class="text-xs text-slate-500 font-semibold truncate">{{ auth()->user()->aksesLabel() }}</p>
                         </div>
                     </div>
                     <div class="p-2">

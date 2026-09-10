@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Guru;
 use App\Models\GuruDokumen;
 use App\Models\Jabatan;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\GuruExport;
@@ -43,7 +44,12 @@ class GuruController extends Controller
 
         $jabatans = Jabatan::where('status', 'Aktif')->orderBy('nama_jabatan', 'asc')->get();
 
-        return view('guru', compact('gurus', 'search', 'nigBaru', 'perPage', 'jabatans'));
+        // Akun login yang sudah ada per NIG (untuk badge & peringatan hapus)
+        $akunGuru = User::whereIn('username', $gurus->pluck('nig'))
+            ->pluck('username')
+            ->flip();
+
+        return view('guru', compact('gurus', 'search', 'nigBaru', 'perPage', 'jabatans', 'akunGuru'));
     }
 
     public function store(Request $request)
@@ -108,9 +114,45 @@ class GuruController extends Controller
     public function destroy($id)
     {
         $guru = Guru::findOrFail($id);
+
+        $akun = User::where('username', $guru->nig)->first()
+            ?? User::where('name', $guru->nama_guru)->first();
+
         $guru->jabatans()->detach();
         $guru->delete();
+
+        if ($akun) {
+            if ((bool) $akun->hasRole('Administrator')) {
+                return redirect()->back()->with('error', 'Data pengurus dihapus, tetapi akun Administrator (' . $akun->username . ') tidak ikut dihapus demi keamanan.');
+            }
+            if (request()->boolean('hapus_akun')) {
+                $akun->syncRoles([]);
+                $akun->syncPermissions([]);
+                $akun->delete();
+                return redirect()->back()->with('sukses', 'Data pengurus beserta akun loginnya (' . $akun->username . ') berhasil dihapus.');
+            }
+            return redirect()->back()->with('sukses', 'Data pengurus dihapus. Akun login (' . $akun->username . ') tetap dipertahankan.');
+        }
+
         return redirect()->back()->with('sukses', 'Data pengurus berhasil dihapus!');
+    }
+
+    // Buat / perbarui akun login dari data guru (jabatan selain Guru).
+    public function buatAkun($id)
+    {
+        $guru = Guru::with('jabatans')->findOrFail($id);
+
+        $hasil = $this->guruService->buatAkunManual($guru);
+
+        if (!empty($hasil['sandi'])) {
+            session()->flash('hasil_reset', [
+                'nama'     => $guru->nama_guru,
+                'username' => $guru->nig,
+                'sandi'    => $hasil['sandi'],
+            ]);
+        }
+
+        return redirect()->back()->with('sukses', $hasil['pesan']);
     }
 
     // ========================================================
@@ -124,9 +166,6 @@ class GuruController extends Controller
         if ($user->can('akses_master_guru')) {
             return true;
         }
-        if ($user->hasAnyRole(['Administrator', 'Pimpinan'])) {
-            return true;
-        }
 
         $saya = $this->guruContext->fromUser($user);
         return $saya && $saya->id === $guru->id && (bool) $guru->boleh_edit_profil;
@@ -135,7 +174,7 @@ class GuruController extends Controller
     private function bolehTampil(Guru $guru): bool
     {
         $user = auth()->user();
-        if ($user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan'])) {
+        if ($user->can('akses_master_guru')) {
             return true;
         }
 
@@ -156,7 +195,7 @@ class GuruController extends Controller
 
         $editMode    = (bool) $guru->boleh_edit_profil;
         $isAdmin     = $user->can('akses_master_guru');
-        $bolehToggle = $user->hasAnyRole(['Administrator', 'Pimpinan']);
+        $bolehToggle = $user->can('akses_master_guru');
         $editable    = $this->bolehKelola($guru);
         $jabatans    = Jabatan::orderBy('nama_jabatan', 'asc')->get();
 
@@ -167,7 +206,7 @@ class GuruController extends Controller
     public function toggleEditKelengkapan($id)
     {
         $user = auth()->user();
-        abort_unless($user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan']), 403);
+        abort_unless($user->can('akses_master_guru'), 403);
 
         $guru = Guru::findOrFail($id);
         $guru->update(['boleh_edit_profil' => !$guru->boleh_edit_profil]);

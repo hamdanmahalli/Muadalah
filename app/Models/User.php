@@ -45,4 +45,20 @@ class User extends Authenticatable implements PasskeyUser
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Label akses untuk tampilan (footer, tabel user, dll).
+     * Administrator sejati = role; selain itu = jumlah fasilitas menu per-user.
+     */
+    public function aksesLabel(): string
+    {
+        if ($this->hasRole('Administrator')) {
+            return 'Administrator';
+        }
+        $n = $this->getPermissionNames()->count();
+        if ($n === 0) {
+            return 'Tanpa akses';
+        }
+        return 'Manual (' . $n . ')';
+    }
 }

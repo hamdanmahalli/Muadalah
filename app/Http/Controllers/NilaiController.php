@@ -38,15 +38,20 @@ class NilaiController extends Controller
             return [];
         }
 
-        $roles = $user->getRoleNames();
-        $options = [];
-        if ($roles->contains('Dewan Guru')) {
-            $options[] = 'guru';
+        // Mode disimpulkan dari JABATAN guru yang login (jabatan = dasar acuan honor).
+        // - jabatan 'Guru'        -> mode 'guru'     (Nilai Harian sesuai ampuannya)
+        // - jabatan 'Kepanitiaan'  -> mode 'panitia'  (Skor UTS/UAS)
+        $guru = $this->guruService->fromAuthUser();
+        if (!$guru) {
+            return [];
         }
-        if ($roles->contains('Kepanitiaan')) {
-            $options[] = 'panitia';
-        }
-        return $options;
+
+        return $guru->jabatans->pluck('nama_jabatan')
+            ->filter(fn ($nama) => in_array($nama, ['Guru', 'Kepanitiaan'], true))
+            ->map(fn ($nama) => $nama === 'Guru' ? 'guru' : 'panitia')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     protected function modePenginput(?string $force = null): string
@@ -68,7 +73,7 @@ class NilaiController extends Controller
     }
 
     /**
-     * Hanya Administrator/Pimpinan yang boleh mengatur kolom yang ditampilkan.
+     * Hanya Administrator (pemegang seluruh kunci) yang boleh mengatur kolom yang ditampilkan.
      */
     protected function bolehKontrolKolom(): bool
     {
@@ -76,8 +81,7 @@ class NilaiController extends Controller
         if (!$user) {
             return false;
         }
-        return $user->getRoleNames()->contains('Administrator')
-            || $user->getRoleNames()->contains('Pimpinan');
+        return $user->hasRole('Administrator');
     }
 
     public function index(Request $request)

@@ -57,8 +57,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
 
-        // Jika memiliki jabatan Guru / Dewan Guru, lempar ke Dashboard HP
-        if ($user->hasAnyRole(['Dewan Guru', 'Guru'])) {
+// Jika pegangan akses Dashboard Guru (mobile), arahkan ke Dashboard HP.
+        // Otorisasi kini berbasis permission langsung per user, bukan role.
+        if ($user->can('akses_dashboard_guru')) {
             return redirect('/dashboard-guru');
         }
 
@@ -97,8 +98,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/agenda-kegiatan/{id}', [AgendaKegiatanController::class, 'destroy']);
     });
     
-// Pabrik Barcode (QR presensi guru per kelas — hanya yang memegang jadwal-saya boleh mencetak)
-    Route::middleware(['can:akses_jadwal_saya'])->group(function () {
+// Pabrik Barcode (QR presensi guru per kelas) — kunci khusus terpisah dari payung mobile guru
+    Route::middleware(['can:akses_pabrik_barcode'])->group(function () {
         Route::get('/pabrik-barcode', [BarcodeController::class, 'index']);
         Route::get('/pabrik-barcode/cetak/{kelas_id}', [BarcodeController::class, 'cetak']);
     });
@@ -122,7 +123,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/master-guru/{id}/dokumen', [GuruController::class, 'uploadDokumen']);
     Route::post('/master-guru-dokumen/{id}/hapus', [GuruController::class, 'hapusDokumen']);
     Route::get('/master-guru/{id}/detail', [GuruController::class, 'detail'])->middleware('can:akses_master_guru');
-    Route::resource('master-jabatan', JabatanController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('can:akses_master_guru');
+    // Buat akun login dari data guru (jabatan selain Guru yang tak dibuat otomatis)
+    Route::post('/master-guru/{id}/buat-akun', [GuruController::class, 'buatAkun'])->middleware('can:akses_master_guru');
+    Route::resource('master-jabatan', JabatanController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('can:akses_master_jabatan');
     Route::resource('master-pelajaran', PelajaranController::class)->middleware('can:akses_master_pelajaran');
     Route::resource('master-kelas', KelasController::class)->middleware('can:akses_master_kelas');
 
@@ -285,17 +288,25 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-    // ----------------------------------------------------------
+// ----------------------------------------------------------
     // ZONA SETUP PENGGUNA & HAK AKSES
     // ----------------------------------------------------------
     Route::middleware(['can:akses_manajemen_user'])->group(function () {
-        Route::resource('setup-user', UserController::class);
-        Route::put('/setup-user/{id}/reset-password', [UserController::class, 'resetPassword']);
-    });
+        Route::get('setup-user', [UserController::class, 'index'])->name('setup-user.index');
+        Route::put('/setup-user/{id}/reset-password', [UserController::class, 'resetPassword'])->name('setup-user.reset-password');
 
-    Route::middleware(['can:akses_manajemen_akses'])->group(function () {
-        Route::get('/manajemen-akses', [RolePermissionController::class, 'index']);
-        Route::put('/manajemen-akses', [RolePermissionController::class, 'update']);
+        // HANYA Administrator: tambah/edit/hapus user & atur fasilitas menu.
+        // Pemegang "akses_manajemen_user" lainnya hanya boleh lihat daftar & reset sandi.
+        Route::middleware(['role:Administrator'])->group(function () {
+            Route::post('setup-user', [UserController::class, 'store'])->name('setup-user.store');
+            Route::put('setup-user/{user}', [UserController::class, 'update'])->name('setup-user.update');
+            Route::delete('setup-user/{user}', [UserController::class, 'destroy'])->name('setup-user.destroy');
+
+            // Hak akses per-user (popup "Fasilitas Menu" di halaman Setup User)
+            Route::get('/setup-user/akses/{user}', [RolePermissionController::class, 'getUserPermissions'])->name('setup-user.akses');
+            Route::put('/setup-user/akses/{user}', [RolePermissionController::class, 'simpanAkses'])->name('setup-user.akses.simpan');
+            Route::put('/setup-user/akses/{user}/hapus-semua', [RolePermissionController::class, 'hapusSemuaFasilitas'])->name('setup-user.akses.hapus-semua');
+        });
     });
 
     // Halaman Panduan & Penjelasan Aplikasi (khusus Administrator)

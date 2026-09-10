@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Master Data Pengurus/Guru</h1>
-            <p class="text-sm text-gray-500 mt-1">Kelola data pengurus, guru, dan profil profesional Pondok Pesantren.</p>
+            <p class="text-sm text-gray-500 mt-1">Kelola data pengurus, guru, dan profil profesional Pondok Pesantren. Data berjabatan <b>Guru</b> otomatis mendapat akun login.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -92,8 +92,17 @@
                                 </span>
                             </td>
                             <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end space-x-2">
+                                <div class="flex justify-end items-center space-x-2">
+                                    @if(!$akunGuru->has($guru->nig))
                                     <!-- Tombol Edit diperbarui dengan membawa data baru -->
+                                    <button type="button" onclick="buatAkun('{{ $guru->id }}', '{{ js_q($guru->nama_guru) }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Buat Akun Login (untuk jabatan selain Guru)">
+                                        <i class="fas fa-key text-[10px]"></i>
+                                    </button>
+                                    @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full" title="Akun login sudah ada (username = NIG)">
+                                        <i class="fas fa-check text-[9px]"></i> Akun
+                                    </span>
+                                    @endif
                                     <a href="/master-guru/{{ $guru->id }}/kelengkapan" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-sky-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Kelengkapan Data">
                                         <i class="fas fa-user-shield text-[10px]"></i>
                                     </a>
@@ -101,7 +110,7 @@
                                         <i class="fas fa-pen text-[10px]"></i>
                                     </button>
                                     
-                                    <button type="button" onclick="konfirmasiHapus('{{ $guru->id }}', '{{ js_q($guru->nama_guru) }}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Hapus">
+                                    <button type="button" onclick="konfirmasiHapus('{{ $guru->id }}', '{{ js_q($guru->nama_guru) }}', '{{ js_q($guru->nig) }}', {{ $akunGuru->has($guru->nig) ? 'true' : 'false' }})" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center border border-gray-100 shadow-sm" title="Hapus">
                                         <i class="fas fa-trash text-[10px]"></i>
                                     </button>
                                 </div>
@@ -254,7 +263,17 @@
                 <i class="fas fa-trash-alt text-2xl text-red-600"></i>
             </div>
             <h3 class="text-xl font-extrabold text-gray-800 mb-2">Hapus Data Pengurus/Guru?</h3>
-            <p class="text-sm text-gray-600 mb-6">Yakin ingin menghapus <b id="teks-nama-hapus" class="text-gray-900"></b>? Data ini akan dihapus secara permanen dari sistem.</p>
+            <p class="text-sm text-gray-600 mb-4">Yakin ingin menghapus <b id="teks-nama-hapus" class="text-gray-900"></b>? Data ini akan dihapus secara permanen dari sistem.</p>
+
+            <div id="div-punya-akun" class="hidden text-left bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" id="check-hapus-akun" class="mt-0.5 w-4 h-4 text-red-600 rounded focus:ring-red-500">
+                    <span class="text-xs text-amber-800 font-semibold leading-relaxed">
+                        Pengurus ini punya akun login (<span id="teks-akun-username"></span>). Centang bila akunnya
+                        <u>ikut dihapus</u>. Tanpa centang, akun tetap dipertahankan.
+                    </span>
+                </label>
+            </div>
             
             <div class="flex justify-center space-x-3">
                 <button type="button" onclick="tutupModalHapus()" class="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition">Batal</button>
@@ -266,6 +285,12 @@
             </form>
         </div>
     </div>
+
+    <!-- FORM BUAT AKUN -->
+    <form id="form-buat-akun" method="POST" action="/master-guru/buat-akun" class="hidden">
+        @csrf
+        <input type="hidden" id="buat-akun-id" name="id" value="">
+    </form>
 
     <script>
         // 1. SKRIP PENCARIAN AJAX LIVE SEARCH
@@ -341,10 +366,27 @@
         }
 
         // 4. SKRIP KENDALI MODAL HAPUS ELEGAN
-        function konfirmasiHapus(id, namaGuru) {
+        function konfirmasiHapus(id, namaGuru, username, punyaAkun) {
             document.getElementById('modal-hapus').classList.remove('hidden');
             document.getElementById('teks-nama-hapus').innerText = namaGuru;
             document.getElementById('form-hapus-global').action = "/master-guru/" + id;
+            document.getElementById('check-hapus-akun').checked = false;
+
+            if (punyaAkun) {
+                document.getElementById('div-punya-akun').classList.remove('hidden');
+                document.getElementById('teks-akun-username').innerText = username;
+            } else {
+                document.getElementById('div-punya-akun').classList.add('hidden');
+            }
+        }
+
+        // Buat akun login manual (jabatan selain Guru)
+        function buatAkun(idNIG, namaGuru) {
+            if (!confirm('Buat akun login untuk "' + namaGuru + '" (NIG: ' + idNIG + ')?\\nSandi sementara akan ditampilkan di layar.')) {
+                return;
+            }
+            document.getElementById('form-buat-akun').action = "/master-guru/" + idNIG + "/buat-akun";
+            document.getElementById('form-buat-akun').submit();
         }
 
         function tutupModalHapus() {
@@ -352,7 +394,14 @@
         }
 
         function eksekusiHapus() {
-            document.getElementById('form-hapus-global').submit();
+            const f = document.getElementById('form-hapus-global');
+            f.querySelectorAll('input[name="hapus_akun"]').forEach(i => i.remove());
+            const inp = document.createElement('input');
+            inp.type = 'hidden';
+            inp.name = 'hapus_akun';
+            inp.value = document.getElementById('check-hapus-akun').checked ? '1' : '0';
+            f.appendChild(inp);
+            f.submit();
         }
     </script>
 @endsection

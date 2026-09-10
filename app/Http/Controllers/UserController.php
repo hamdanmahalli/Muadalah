@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
+
 class UserController extends Controller
 {
     public function index()
@@ -21,9 +21,15 @@ class UserController extends Controller
         }
         $users = $query->get();
         $gurus = \App\Models\Guru::orderBy('nama_guru', 'asc')->get();
-        $roles = Role::orderBy('name', 'asc')->get(); 
 
-        return view('user', compact('users', 'gurus', 'roles'));
+        // Pohon menu untuk popup "Fasilitas Menu" (sumber render ceklis) — dari RolePermissionController
+        $grupMenu = RolePermissionController::GRUP_MENU;
+        $ikonGrup = RolePermissionController::IKON_GRUP;
+        $warnaGrup = RolePermissionController::WARNA_GRUP;
+        $warnaNamaGrup = RolePermissionController::WARNA_NAMA_GRUP;
+        $daftarSistem = RolePermissionController::SISTEM;
+
+        return view('user', compact('users', 'gurus', 'grupMenu', 'ikonGrup', 'warnaGrup', 'warnaNamaGrup', 'daftarSistem'));
     }
 
     public function store(Request $request)
@@ -33,7 +39,6 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'hp'       => 'nullable|string',
-            'roles'    => 'required|array|min:1', // Menerima Array dari Checkbox Multi-Role
         ]);
 
         // Buat sandi acak & tampilkan sekali di layar (hindari sandi bawaan yang bisa ditebak)
@@ -45,13 +50,12 @@ class UserController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'hp'       => $request->hp,
-            'role'     => implode(', ', $request->roles), // Gabungan teks untuk cadangan
+            'role'     => null,
             'status'   => $request->status ?? 'Aktif',
             'password' => Hash::make($sandi),
         ]);
 
-        // SINKRONISASI MULTI-ROLE SPATIE
-        $user->syncRoles($request->roles);
+        // HAK AKSES KOSONG — diatur manual via popup Fasilitas Menu di Setup User.
 
         session()->flash('hasil_reset', [
             'nama'     => $user->name,
@@ -59,7 +63,7 @@ class UserController extends Controller
             'sandi'    => $sandi,
         ]);
 
-        return redirect()->back()->with('sukses', 'Pengguna baru berhasil ditambahkan dengan Multi-Role! Salin sandi sementara dari layar dan sebarkan ke pengguna.');
+        return redirect()->back()->with('sukses', 'Pengguna baru berhasil ditambahkan! Salin sandi sementara dari layar. Hak akses masih kosong—atur lewat Fasilitas Menu.');
     }
 
     public function update(Request $request, $id)
@@ -70,13 +74,12 @@ class UserController extends Controller
         if ($user->hasRole('Administrator') && !auth()->user()->hasRole('Administrator')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengubah user Administrator.');
         }
-        
+
         $request->validate([
             'username' => 'required|string|unique:users,username,'.$id,
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,'.$id,
             'hp'       => 'nullable|string',
-            'roles'    => 'required|array|min:1', // Menerima Array dari Checkbox Multi-Role
             'status'   => 'required|string'
         ]);
 
@@ -85,14 +88,13 @@ class UserController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'hp'       => $request->hp,
-            'role'     => implode(', ', $request->roles),
+            'role'     => null,
             'status'   => $request->status,
         ]);
 
-        // UPDATE MULTI-ROLE SPATIE (Bisa Tambah / Cabut Role Secara Instan)
-        $user->syncRoles($request->roles);
+        // Hak akses TIDAK ikut diubah di sini — dikelola manual via popup Fasilitas Menu.
 
-        return redirect()->back()->with('sukses', 'Data Pengguna & Hak Akses berhasil diperbarui!');
+        return redirect()->back()->with('sukses', 'Data Pengguna berhasil diperbarui!');
     }
 
     public function resetPassword($id)
@@ -133,6 +135,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'Anda tidak memiliki izin menghapus user Administrator.');
         }
         $user->syncRoles([]); 
+        $user->syncPermissions([]); 
         $user->delete();
         
         return redirect()->back()->with('sukses', 'Pengguna berhasil dihapus!');

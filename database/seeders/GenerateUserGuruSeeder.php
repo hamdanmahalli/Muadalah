@@ -30,12 +30,11 @@ class GenerateUserGuruSeeder extends Seeder
                     'password' => Hash::make('123456'),
                 ]);
 
-                // Pasang Role Dewan Guru
-                $user->assignRole('Dewan Guru');
+                // Hak akses sengaja KOSONG — fasilitas menu diatur manual di Setup User.
                 $createdCount++;
             }
         }
 
-        $this->command->info("Selesai! Berhasil membuat {$createdCount} akun Dewan Guru baru (Username = NIG | Password = 123456).");
+        $this->command->info("Selesai! Berhasil membuat {$createdCount} akun guru baru (Username = NIG | Password = 123456 | Hak akses kosong, atur di Setup User).");
     }
 }

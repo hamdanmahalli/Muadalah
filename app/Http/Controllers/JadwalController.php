@@ -38,8 +38,7 @@ class JadwalController extends Controller
     // ========================================================
     public function mejaKontrol(Request $request)
     {
-        $bolehUbahWaktu = auth()->user()->getRoleNames()->contains('Administrator')
-            || auth()->user()->getRoleNames()->contains('Pimpinan');
+        $bolehUbahWaktu = auth()->user()->can('akses_meja_kontrol');
 
         $tanggalPilihan = $bolehUbahWaktu
             ? $request->input('tanggal', Carbon::now()->format('Y-m-d'))
@@ -149,8 +148,7 @@ class JadwalController extends Controller
         $periodeAktif = get_periode_aktif();
         $periodeId = $periodeAktif ? $periodeAktif->id : null;
 
-        $bolehUbahWaktu = auth()->user()->getRoleNames()->contains('Administrator')
-            || auth()->user()->getRoleNames()->contains('Pimpinan');
+        $bolehUbahWaktu = auth()->user()->can('akses_meja_kontrol');
 
         $tanggalPilihan = $bolehUbahWaktu
             ? ($request->tanggal ?? Carbon::now()->format('Y-m-d'))
@@ -517,7 +515,7 @@ class JadwalController extends Controller
         $guru->load(['jabatans', 'dokumens']);
 
         $editMode = (bool) $guru->boleh_edit_profil;
-        $isAdmin = $user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan']);
+        $isAdmin = $user->can('akses_master_guru');
 
         return view('guru.kelengkapan', compact('guru', 'editMode', 'isAdmin'));
     }
@@ -531,7 +529,7 @@ class JadwalController extends Controller
             return back()->with('error', 'Data Guru tidak ditemukan.');
         }
 
-        $isAdmin = $user->can('akses_master_guru') || $user->hasAnyRole(['Administrator', 'Pimpinan']);
+        $isAdmin = $user->can('akses_master_guru');
 
         if (!$guru->boleh_edit_profil && !$isAdmin) {
             return back()->with('error', 'Pengeditan profil belum diizinkan. Silakan hubungi Administrator/Pimpinan.');
