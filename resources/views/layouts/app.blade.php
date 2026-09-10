@@ -358,20 +358,13 @@
                 visibility: visible; opacity: 1; width: auto;
             }
 
-            /* logo: tutup = kotak logo di tengah rapi (brand-inner juga dibuat center) */
-            .sb-sidebar:not(:hover) .sb-brand { padding-left: 8px; padding-right: 8px; }
-            .sb-sidebar:not(:hover) .sb-brand-inner { justify-content: center; gap: 0; }
+            /* IKON TIDAK BERGANDA POSISI: saat tertutup, ikon tetap di kolom yang sama (hanya teks/elemen samping yang disembunyikan) */
 
-            /* pencarian: tutup = chip ikon saja di tengah, sejajar kolom ikon menu */
-            .sb-sidebar:not(:hover) .sb-search-wrap { background-color: transparent; justify-content: center; border-color: transparent; }
+            /* pencarian: tutup = chip ikon saja di kiri (sejajar kolom ikon menu) */
+            .sb-sidebar:not(:hover) .sb-search-wrap { background-color: transparent; border-color: transparent; }
             .sb-sidebar:not(:hover) .sb-search-input { flex: 0 0 0; width: 0; min-width: 0; padding: 0; opacity: 0; }
             .sb-sidebar:hover .sb-search-input { flex: 1; width: auto; min-width: 0; padding: 0 14px 0 0; opacity: 1; }
 
-            /* menu & footer: ikon 40px ditengah rapi, tanpa gap + teks tetap tersembunyi */
-            .sb-sidebar:not(:hover) .sb-item,
-            .sb-sidebar:not(:hover) .sb-group-toggle,
-            .sb-sidebar:not(:hover) .sb-user-trigger,
-            .sb-sidebar:not(:hover) .sb-theme { justify-content: center; padding: 8px; gap: 0; }
             .sb-sidebar:not(:hover) .sb-chev { display: none; }
             .sb-sidebar:hover .sb-chev { display: inline-block; }
             .sb-sidebar:not(:hover) .sb-footer-chev { display: none; }
