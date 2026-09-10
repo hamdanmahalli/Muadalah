@@ -360,6 +360,10 @@
 
             /* IKON TIDAK BERGANDA POSISI: saat tertutup, ikon tetap di kolom yang sama (hanya teks/elemen samping yang disembunyikan) */
 
+            /* kecuali LOGO aplikasi: saat tertutup di-centre (biar pas seperti sebelumnya) */
+            .sb-sidebar:not(:hover) .sb-brand { padding-left: 8px; padding-right: 8px; }
+            .sb-sidebar:not(:hover) .sb-brand-inner { justify-content: center; gap: 0; }
+
             /* pencarian: tutup = chip ikon saja di kiri (sejajar kolom ikon menu) */
             .sb-sidebar:not(:hover) .sb-search-wrap { background-color: transparent; border-color: transparent; }
             .sb-sidebar:not(:hover) .sb-search-input { flex: 0 0 0; width: 0; min-width: 0; padding: 0; opacity: 0; }
