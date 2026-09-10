@@ -51,25 +51,6 @@
             </div>
         @endif
 
-        @if(session('error'))
-            <div class="mb-5 bg-rose-50 text-rose-700 p-4 rounded-2xl text-xs font-bold flex items-center border border-rose-100 shadow-sm animate-[sweep_0.3s_ease-in-out]">
-                <div class="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center mr-3 shrink-0">
-                    <i class="fas fa-exclamation-triangle text-rose-600"></i>
-                </div>
-                {{ session('error') }}
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="mb-5 bg-rose-50 text-rose-700 p-4 rounded-2xl text-xs font-bold border border-rose-100 shadow-sm">
-                <ul class="list-disc list-inside space-y-1">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         @if(!$editable)
             <div class="mb-5 bg-sky-50 border border-sky-200 text-sky-800 p-4 rounded-2xl text-xs font-bold flex items-center animate-[sweep_0.3s_ease-in-out]">
                 <div class="w-8 h-8 rounded-xl bg-sky-100 flex items-center justify-center mr-3 shrink-0">

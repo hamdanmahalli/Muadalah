@@ -20,12 +20,6 @@
     </a>
 </div>
 
-@if(session('sukses'))
-<div class="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-bold shadow-sm flex items-center">
-    <i class="fas fa-check-circle mr-2 text-emerald-500"></i> {{ session('sukses') }}
-</div>
-@endif
-
 <!-- Kartu Statistik -->
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
     <div class="bg-white border-b-4 border-[#00c0c7] rounded-xl shadow-sm p-4">

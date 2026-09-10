@@ -29,12 +29,6 @@
         </a>
     </div>
 </div>
-@if(session('sukses'))
-<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-6 flex items-center shadow-sm">
-    <i class="fas fa-check-circle text-xl mr-3"></i>
-    <span class="font-bold text-sm">{{ session('sukses') }}</span>
-</div>
-@endif
 
 <!-- Kartu Statistik Analitik (Tercatat mencakup Hadir, Izin, & Sakit) -->
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">

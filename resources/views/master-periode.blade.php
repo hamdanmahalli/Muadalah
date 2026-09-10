@@ -13,14 +13,6 @@
 </div>
 
 
-@if ($errors->any())
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
-        <ul class="list-disc ml-5 mt-1 text-sm font-medium">
-            @foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach
-        </ul>
-    </div>
-@endif
-
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">

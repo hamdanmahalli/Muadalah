@@ -8,14 +8,6 @@
         <p class="text-sm text-gray-500 mt-1">Pusat pengunggahan data masal terpusat berbasis file Excel (.xlsx / .csv)</p>
     </div>
 
-    
-    @if(session('error'))
-    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 font-semibold flex items-center">
-        <i class="fas fa-exclamation-triangle text-xl mr-3 text-red-600"></i>
-        {{ session('error') }}
-    </div>
-    @endif
-
     <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-8 shadow-sm relative overflow-hidden">
         <div class="absolute -right-10 -top-10 text-indigo-100 text-9xl opacity-30"><i class="fas fa-info-circle"></i></div>
         <h3 class="font-bold text-indigo-800 text-lg mb-3 relative z-10"><i class="fas fa-clipboard-list mr-2"></i> SOP Urutan Import (Wajib Diikuti)</h3>

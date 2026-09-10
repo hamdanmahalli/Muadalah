@@ -813,29 +813,6 @@
             </button>
             @endif
 
-            @if(session('sukses'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded shadow-sm">
-                    <i class="fas fa-check-circle mr-2"></i> {{ session('sukses') }}
-                </div>
-            @endif
-            
-            @if(session('error'))
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded shadow-sm">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> {{ session('error') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded shadow-sm">
-                    <strong>Gagal menyimpan:</strong>
-                    <ul class="list-disc ml-5 mt-1 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             @yield('content')
         </main>
             </div>
@@ -1218,6 +1195,32 @@
         }, true);
 
     </script>
+
+    @if(session('sukses'))
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            var pesan = @json(session('sukses'));
+            if (pesan && window.tampilNotif) window.tampilNotif('success', 'Sukses', pesan);
+        });
+    </script>
+    @endif
+
+    @if(session('error'))
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            var pesan = @json(session('error'));
+            if (pesan && window.tampilNotif) window.tampilNotif('error', 'Gagal', pesan);
+        });
+    </script>
+    @endif
+
+    @if($errors->any())
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            if (window.tampilNotif) window.tampilNotif('error', 'Gagal Menyimpan', @json(implode('; ', $errors->all())));
+        });
+    </script>
+    @endif
 
     @stack('scripts')
 

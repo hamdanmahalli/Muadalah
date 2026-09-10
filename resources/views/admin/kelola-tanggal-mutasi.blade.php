@@ -20,12 +20,6 @@
     </a>
 </div>
 
-@if(session('sukses'))
-<div class="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-bold shadow-sm flex items-center">
-    <i class="fas fa-check-circle mr-2 text-emerald-500"></i> {{ session('sukses') }}
-</div>
-@endif
-
 <!-- Filter -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
     <form method="GET" action="/riwayat-mutasi/kelola-tanggal" class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">

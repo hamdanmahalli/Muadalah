@@ -20,13 +20,6 @@
     </div>
 </div>
 
-@if(session('sukses'))
-<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-6 flex items-center shadow-sm">
-    <i class="fas fa-check-circle text-xl mr-3"></i>
-    <span class="font-bold text-sm">{{ session('sukses') }}</span>
-</div>
-@endif
-
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
     <!-- KOLOM KIRI: FORM TAMBAH AGENDA -->

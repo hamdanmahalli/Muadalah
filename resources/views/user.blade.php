@@ -17,27 +17,6 @@
         @endrole
     </div>
 
-    @if(session('sukses'))
-        <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm text-sm font-semibold">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('sukses') }}
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm text-sm font-semibold">
-            <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('error') }}
-        </div>
-    @endif
-    @if ($errors->any())
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
-            <strong>Gagal menyimpan:</strong>
-            <ul class="list-disc ml-5 mt-1 text-sm">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     {{-- ================= TABEL DATA USER (gaya Excel) ================= --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-200 bg-gray-50/70 flex items-center gap-2 flex-wrap">

@@ -40,12 +40,6 @@
         </div>
     </div>
 
-    @if(session('sukses'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold px-4 py-3 rounded-2xl mb-4">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('sukses') }}
-        </div>
-    @endif
-
     <!-- FORM FILTER -->
     <div class="bg-white p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-6">
         <form method="GET" action="/monitoring-kehadiran" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
