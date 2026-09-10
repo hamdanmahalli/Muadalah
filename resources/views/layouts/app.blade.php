@@ -191,7 +191,8 @@
         .sb-search-ikon {
             width: 40px; height: 40px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            color: #9ca3af; font-size: 14px; pointer-events: none;
+            color: #9ca3af; font-size: 1.25rem; pointer-events: none;
+            transition: color 0.3s ease;
         }
         .sb-search-input {
             flex: 1; min-width: 0; height: 40px;
@@ -268,18 +269,40 @@
             background: linear-gradient(135deg, #10b981, #059669);
             box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
         }
-        .sb-logout {
+        /* dropdown user: mengikuti gaya menu sidebar */
+        #user-dropdown { background: #ffffff; border-color: #e5e7eb; }
+        html.dark #user-dropdown { background: #161b22; border-color: #1f2937; }
+        .sb-ub-header { border-color: #e5e7eb; }
+        .sb-ub-judul { color: #111827; }
+        .sb-ub-sub { color: #64748b; }
+        html.dark .sb-ub-header { border-color: #1f2937; }
+        html.dark .sb-ub-judul { color: #f9fafb; }
+        html.dark .sb-ub-sub { color: #94a3b8; }
+        .sb-drop-item {
             display: flex; align-items: center; gap: 12px; width: 100%;
-            padding: 8px; border-radius: 12px;
-            color: #ef4444; font-weight: 600; font-size: 13px; cursor: pointer;
-            transition: background 0.2s ease;
+            padding: 6px 8px; margin: 2px 0; border-radius: 12px;
+            color: #6b7280; font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
         }
-        .sb-logout:hover { background: rgba(239, 68, 68, 0.08); }
-        .sb-logout i {
-            width: 40px; height: 40px; flex-shrink: 0;
+        .sb-drop-item:hover { background: #f3f4f6; color: #111827; }
+        .sb-drop-item .sb-drop-ikon {
+            width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1rem;
+            background: #f3f4f6; color: #059669; font-size: 1rem;
         }
+        .sb-drop-item:hover .sb-drop-ikon { background: #d1fae5; color: #047857; }
+        .sb-drop-danger { color: #ef4444; }
+        .sb-drop-danger:hover { background: rgba(239, 68, 68, 0.08); color: #dc2626; }
+        .sb-drop-danger .sb-drop-ikon { background: #fee2e2; color: #ef4444; }
+        .sb-drop-danger:hover .sb-drop-ikon { background: #fecaca; color: #dc2626; }
+        html.dark .sb-drop-item { color: #9ca3af; }
+        html.dark .sb-drop-item:hover { background: #1e2733; color: #f9fafb; }
+        html.dark .sb-drop-item .sb-drop-ikon { background: #1e2733; color: #34d399; }
+        html.dark .sb-drop-item:hover .sb-drop-ikon { background: #123524; color: #10b981; }
+        html.dark .sb-drop-danger { color: #fca5a5; }
+        html.dark .sb-drop-danger:hover { background: rgba(239, 68, 68, 0.12); color: #fecaca; }
+        html.dark .sb-drop-danger .sb-drop-ikon { background: #3b1212; color: #f87171; }
+        html.dark .sb-drop-danger:hover .sb-drop-ikon { background: #4c1d1d; color: #fca5a5; }
 
         /* toggle tema */
         .sb-theme {
@@ -347,10 +370,11 @@
             .sb-sidebar:not(:hover) .sb-item,
             .sb-sidebar:not(:hover) .sb-group-toggle,
             .sb-sidebar:not(:hover) .sb-user-trigger,
-            .sb-sidebar:not(:hover) .sb-logout,
             .sb-sidebar:not(:hover) .sb-theme { justify-content: center; padding: 8px; gap: 0; }
             .sb-sidebar:not(:hover) .sb-chev { display: none; }
             .sb-sidebar:hover .sb-chev { display: inline-block; }
+            .sb-sidebar:not(:hover) .sb-footer-chev { display: none; }
+            .sb-sidebar:hover .sb-footer-chev { display: inline-block; }
 
             .sb-sidebar:not(:hover) .sb-divider { margin: 6px 0; }
             .sb-sidebar:not(:hover) .sb-theme-switch-show { display: none; }
@@ -818,24 +842,13 @@
 
                     <!-- USER: klik -> buka dropdown (Ganti Password + Logout) -->
                     <button id="user-trigger" onclick="toggleUserMenu(this)" type="button" class="sb-user-trigger">
-                        <span class="sb-avatar"><i class="fas fa-user text-sm"></i></span>
+                        <span class="sb-avatar"><i class="fas fa-user text-xl"></i></span>
                         <span class="sb-footer-txt flex-1 text-left min-w-0 overflow-hidden">
                             <span class="block text-[13px] font-bold text-slate-700 truncate">{{ auth()->user()->name ?? 'Nama User' }}</span>
                             <span class="block text-[10px] font-semibold text-slate-400 truncate">{{ auth()->user()->aksesLabel() }}</span>
                         </span>
                         <i class="sb-footer-chev fas fa-chevron-down text-xs text-slate-400 flex-shrink-0"></i>
                     </button>
-
-                    <div class="sb-divider"></div>
-
-                    <!-- LOGOUT -->
-                    <form method="POST" action="/logout" class="px-1">
-                        @csrf
-                        <button type="submit" class="sb-logout">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span class="sb-text">Logout</span>
-                        </button>
-                    </form>
 
                     <div class="sb-divider"></div>
 
@@ -851,27 +864,25 @@
                     </button>
                 </div>
 
-                <!-- DROPDOWN USER (fixed overlay: Ganti Password + Logout) -->
-                <div id="user-dropdown" class="hidden fixed z-[80] w-64 bg-white shadow-2xl border border-slate-100 overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex items-center space-x-3 bg-gradient-to-br from-emerald-500/10 to-emerald-600/10">
-                        <div class="h-11 w-11 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white flex-shrink-0 shadow-md">
-                            <i class="fas fa-user"></i>
-                        </div>
+                <!-- DROPDOWN USER (fixed overlay: identitas + Ganti Password + Logout) -->
+                <div id="user-dropdown" class="hidden fixed z-[80] w-64 rounded-2xl border shadow-2xl overflow-hidden">
+                    <div class="sb-ub-header p-3 border-b flex items-center gap-3 bg-gradient-to-br from-emerald-500/10 to-emerald-600/10">
+                        <span class="sb-avatar !h-11 !w-11"><i class="fas fa-user text-xl"></i></span>
                         <div class="min-w-0">
-                            <p class="text-sm font-black text-slate-700 truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
-                            <p class="text-xs text-slate-500 font-semibold truncate">{{ auth()->user()->aksesLabel() }}</p>
+                            <p class="sb-ub-judul text-sm font-bold truncate">{{ auth()->user()->name ?? 'Nama User' }}</p>
+                            <p class="sb-ub-sub text-[11px] font-semibold truncate">{{ auth()->user()->aksesLabel() }}</p>
                         </div>
                     </div>
-                    <div class="p-2">
-                        <button type="button" onclick="bukaModalGantiPassword()" class="w-full flex items-center px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition text-left cursor-pointer">
-                            <i class="fas fa-key w-6 text-slate-400"></i> Ganti Password
+                    <div class="p-1.5">
+                        <button type="button" onclick="bukaModalGantiPassword()" class="sb-drop-item">
+                            <span class="sb-drop-ikon"><i class="fas fa-key"></i></span>
+                            <span class="text-sm font-semibold">Ganti Password</span>
                         </button>
-                    </div>
-                    <div class="p-3 border-t border-slate-100 bg-slate-50">
                         <form method="POST" action="/logout">
                             @csrf
-                            <button type="submit" class="flex items-center justify-center w-full px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 rounded-lg transition shadow-sm cursor-pointer">
-                                Logout <i class="fas fa-sign-out-alt ml-2"></i>
+                            <button type="submit" class="sb-drop-item sb-drop-danger">
+                                <span class="sb-drop-ikon"><i class="fas fa-sign-out-alt"></i></span>
+                                <span class="text-sm font-semibold">Logout</span>
                             </button>
                         </form>
                     </div>
@@ -1065,6 +1076,19 @@
                 menu.classList.add('hidden');
             }
         });
+
+        // SAAT SIDEBAR TERLIPAT (<200px), tutup otomatis popup user
+        (function() {
+            const side = document.getElementById('sidebar');
+            if (side && typeof ResizeObserver === 'function') {
+                new ResizeObserver(function() {
+                    if (side.getBoundingClientRect().width < 200) {
+                        const menu = document.getElementById('user-dropdown');
+                        if (menu) menu.classList.add('hidden');
+                    }
+                }).observe(side);
+            }
+        })();
 
         // POPUP GANTI PASSWORD
         function bukaModalGantiPassword() {
