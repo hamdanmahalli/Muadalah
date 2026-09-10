@@ -358,8 +358,9 @@
                 visibility: visible; opacity: 1; width: auto;
             }
 
-            /* logo: tutup = kotak logo di tengah rapi */
-            .sb-sidebar:not(:hover) .sb-brand { justify-content: center; padding-left: 8px; padding-right: 8px; }
+            /* logo: tutup = kotak logo di tengah rapi (brand-inner juga dibuat center) */
+            .sb-sidebar:not(:hover) .sb-brand { padding-left: 8px; padding-right: 8px; }
+            .sb-sidebar:not(:hover) .sb-brand-inner { justify-content: center; gap: 0; }
 
             /* pencarian: tutup = chip ikon saja di tengah, sejajar kolom ikon menu */
             .sb-sidebar:not(:hover) .sb-search-wrap { background-color: transparent; justify-content: center; border-color: transparent; }
