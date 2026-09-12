@@ -1375,8 +1375,69 @@
                 })
                 .catch(function() {});
             };
-            setTimeout(mengecekSesi, 15000);
-            setInterval(mengecekSesi, 45000);
+            // Hook untuk menghentikan polling (dipakai detektor idle).
+            window._detakSesi = window._detakSesi || {};
+            window._detakSesi.berhenti = function() {
+                if (window._detakSesi._timer) window.clearTimeout(window._detakSesi._timer);
+                if (window._detakSesi._interval) window.clearInterval(window._detakSesi._interval);
+            };
+            window._detakSesi._timer = window.setTimeout(mengecekSesi, 15000);
+            window._detakSesi._interval = window.setInterval(mengecekSesi, 45000);
+        })();
+    </script>
+
+    <script>
+        // =============================================================
+        // AUTO-LOGOUT IDLE: logout otomatis bila tidak ada interaksi
+        // pengguna (klik/ketik/gulir/touch) melebihi masa sesi (menit).
+        // =============================================================
+        (function() {
+            var menit = {{ (int) config('session.lifetime') }};
+            var IDLE_MS = (menit > 0 ? menit : 30) * 60 * 1000;
+            var idleTimer = null;
+            var terakhir = 0;
+
+            function mulaiWaktuIdle() {
+                if (idleTimer) window.clearTimeout(idleTimer);
+                idleTimer = window.setTimeout(keluarKarenaIdle, IDLE_MS);
+            }
+
+            // De-bounce mousemove/scroll agar tidak terlalu sering reset.
+            function padaInteraksi() {
+                var sekarang = Date.now();
+                if (sekarang - terakhir < 500) return;
+                terakhir = sekarang;
+                mulaiWaktuIdle();
+            }
+
+            function keluarKarenaIdle() {
+                if (window._detakSesi) window._detakSesi.berhenti();
+
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var token = meta ? meta.content : '';
+
+                try {
+                    var body = new FormData();
+                    body.append('_token', token);
+                    if (navigator.sendBeacon) {
+                        navigator.sendBeacon('/logout', body);
+                    } else {
+                        fetch('/logout', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'same-origin'
+                        });
+                    }
+                } catch (e) {}
+
+                window.location.href = '/login?sesi=waktu-habis';
+            }
+
+            ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(function(ev) {
+                document.addEventListener(ev, padaInteraksi, { passive: true });
+            });
+
+            mulaiWaktuIdle();
         })();
     </script>
 

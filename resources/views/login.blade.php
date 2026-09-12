@@ -796,6 +796,8 @@
                 var param = new URLSearchParams(window.location.search);
                 if (param.get('sesi') === 'berpindah') {
                     tampilToast('info', 'Sesi di perangkat ini telah dipindah ke perangkat lain. Silakan login kembali');
+                } else if (param.get('sesi') === 'waktu-habis') {
+                    tampilToast('info', 'Sesi berakhir karena tidak ada aktivitas melebihi batas waktu. Silakan login kembali');
                 }
             } catch (e) {}
         })();
