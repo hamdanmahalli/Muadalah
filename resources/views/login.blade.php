@@ -147,6 +147,32 @@
             overflow-y: auto;
         }
         #modal-intip.buka #box-intip { transform: scale(1) translateY(0); opacity: 1; }
+
+        /* MODAL PILIHAN SATU PERANGKAT */
+        #modal-konflik {
+            position: fixed; inset: 0; z-index: 9999;
+            display: none;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        #modal-konflik.buka { display: flex; }
+        #bg-konflik {
+            position: absolute; inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #modal-konflik.buka #bg-konflik { opacity: 1; }
+        #box-konflik {
+            position: relative; width: 100%; max-width: 400px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 20px;
+            transform: scale(0.94) translateY(10px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        #modal-konflik.buka #box-konflik { transform: scale(1) translateY(0); opacity: 1; }
     </style>
 
     <!-- SPLASH SCREEN OVERLAY -->
@@ -312,10 +338,47 @@
         </div>
     </div>
 
+    <!-- ===== MODAL PILIHAN SATU PERANGKAT ===== -->
+    <div id="modal-konflik">
+        <div id="bg-konflik" onclick="batalKonflik()"></div>
+        <div id="box-konflik">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center"><i class="fas fa-mobile-screen-button text-sm"></i></div>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-800">Akun Dipakai di Perangkat Lain</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Satu perangkat per akun</p>
+                    </div>
+                </div>
+                <button onclick="batalKonflik()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition cursor-pointer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p id="konflik-pesan" class="text-xs font-semibold text-slate-600 leading-relaxed">
+                Akun Anda sedang aktif di perangkat lain. Pilih salah satu:
+            </p>
+
+            <div class="mt-4 space-y-2">
+                <button type="button" onclick="konflikTetapLama()" class="w-full flex items-center gap-3 bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 rounded-2xl p-3.5 text-left transition cursor-pointer">
+                    <div class="w-9 h-9 shrink-0 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center"><i class="fas fa-shield-halved text-sm"></i></div>
+                    <div>
+                        <p class="text-xs font-black text-slate-800">Tetap di Perangkat Lama</p>
+                        <p class="text-[10px] font-semibold text-slate-400 mt-0.5">Batalkan login di perangkat ini.</p>
+                    </div>
+                </button>
+                <button type="button" onclick="konflikPindah()" class="w-full flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl p-3.5 text-left transition cursor-pointer">
+                    <div class="w-9 h-9 shrink-0 rounded-xl bg-white/20 text-white flex items-center justify-center"><i class="fas fa-arrow-right-to-bracket text-sm"></i></div>
+                    <div>
+                        <p class="text-xs font-black text-white">Pindah ke Perangkat Ini</p>
+                        <p class="text-[10px] font-semibold text-emerald-100 mt-0.5">Perangkat lama akan keluar otomatis.</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ==========================================================
-        // INTIP JADWAL HARI INI (Tanpa Login)
-        // ==========================================================
         var SN_USR = 'sn_username';
         var SN_INGAT = 'sn_ingat';
 
@@ -556,6 +619,90 @@
             }, 4000);
         }
 
+        // ==========================================================
+        // PILIHAN SATU PERANGKAT (Tetap di lama / Pindah ke sini)
+        // ==========================================================
+        var _stateKonflik = null;
+
+        function pulihkanTombolLogin() {
+            var btn = document.getElementById('btn-login');
+            var teks = document.getElementById('teks-login');
+            var ikon = document.getElementById('ikon-login');
+            if (!btn) return;
+            btn.classList.remove('opacity-90', 'cursor-wait', 'pointer-events-none');
+            btn.classList.add('hover:bg-emerald-700');
+            btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
+            teks.innerText = 'MASUK';
+            ikon.className = 'fas fa-arrow-right text-sm transition-all duration-300';
+        }
+
+        function bukaModalKonflik(pesan) {
+            _stateKonflik = true;
+            var pelapor = document.getElementById('konflik-pesan');
+            if (pelapor && pesan) pelapor.textContent = pesan;
+            var m = document.getElementById('modal-konflik');
+            if (m) m.classList.add('buka');
+        }
+
+        function tutupModalKonflik() {
+            _stateKonflik = null;
+            var m = document.getElementById('modal-konflik');
+            if (m) m.classList.remove('buka');
+        }
+
+        function batalKonflik() {
+            tutupModalKonflik();
+            pulihkanTombolLogin();
+        }
+
+        function kirimKeputusan(keputusan) {
+            var box = document.getElementById('box-konflik');
+            if (box) box.classList.add('opacity-50', 'pointer-events-none');
+
+            var formData = new FormData();
+            formData.append('keputusan', keputusan);
+
+            fetch('/login/keputusan-device', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            })
+            .then(function(res) { return res.json().catch(function(){ return {}; }).then(function(d){ return { ok: res.ok, data: d }; }); })
+            .then(function(result) {
+                var data = result.data || {};
+                if (box) box.classList.remove('opacity-50', 'pointer-events-none');
+
+                if (result.ok && data.status === 'success') {
+                    window.location.href = data.redirect || '/';
+                    return;
+                }
+                if (result.ok && data.status === 'tetap_lama') {
+                    tutupModalKonflik();
+                    pulihkanTombolLogin();
+                    tampilToast('info', data.message || 'Anda tetap di perangkat lama.');
+                    return;
+                }
+                batalKonflik();
+                tampilToast('error', data.message || 'Terjadi kendala. Silakan coba lagi.');
+            })
+            .catch(function() {
+                if (box) box.classList.remove('opacity-50', 'pointer-events-none');
+                batalKonflik();
+                tampilToast('error', 'Gagal terhubung ke server. Coba lagi.');
+            });
+        }
+
+        function konflikTetapLama() {
+            if (!_stateKonflik) { batalKonflik(); return; }
+            kirimKeputusan('tetap_lama');
+        }
+
+        function konflikPindah() {
+            if (!_stateKonflik) { batalKonflik(); return; }
+            kirimKeputusan('pindah');
+        }
+
         function loadingLoginElegan(event, form) {
             if (form && !form.checkValidity()) {
                 return;
@@ -589,21 +736,18 @@
                     window.location.href = data.redirect || '/';
                     return;
                 }
+                if (result.ok && data.status === 'konflik') {
+                    bukaModalKonflik(data.message || 'Akun ini sedang aktif di perangkat lain.');
+                    pulihkanTombolLogin();
+                    return;
+                }
                 // Gagal: tampilkan pesan, kembalikan tombol tanpa reload
                 tampilToast('error', data.message || 'Login gagal. Silakan coba lagi.');
-                btn.classList.remove('opacity-90', 'cursor-wait', 'pointer-events-none');
-                btn.classList.add('hover:bg-emerald-700');
-                btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
-                teks.innerText = 'MASUK';
-                ikon.className = 'fas fa-arrow-right text-sm transition-all duration-300';
+                pulihkanTombolLogin();
             })
             .catch(function() {
                 tampilToast('error', 'Gagal terhubung ke server. Coba lagi.');
-                btn.classList.remove('opacity-90', 'cursor-wait', 'pointer-events-none');
-                btn.classList.add('hover:bg-emerald-700');
-                btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
-                teks.innerText = 'MASUK';
-                ikon.className = 'fas fa-arrow-right text-sm transition-all duration-300';
+                pulihkanTombolLogin();
             });
         }
 
@@ -635,6 +779,26 @@
         }
 
         renderMasukSebagai();
+
+        // ==========================================================
+        // KONFLIK / PEMINDAHAN SESI DI HALAMAN LOGIN
+        // ==========================================================
+        @if(!empty($penandaKonflikPasskey))
+        tampilToast('info', 'Akun Anda sedang aktif di perangkat lain. Silakan login dengan password untuk memilih perangkat.');
+        @endif
+
+        @if(!empty($konflikDevice))
+        bukaModalKonflik(@json($konflikDevice['message'] ?? 'Akun Anda sedang aktif di perangkat lain.'));
+        @endif
+
+        (function() {
+            try {
+                var param = new URLSearchParams(window.location.search);
+                if (param.get('sesi') === 'berpindah') {
+                    tampilToast('info', 'Sesi di perangkat ini telah dipindah ke perangkat lain. Silakan login kembali');
+                }
+            } catch (e) {}
+        })();
 
         // Toggle tampil/sembunyikan password
         function toggleTampilPassword() {

@@ -40,13 +40,21 @@ use App\Http\Controllers\SiswaSayaController;
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'prosesLogin'])->middleware('throttle:5,1');
 
+// Keputusan konflik "satu perangkat": tetap di perangkat lama / pindah ke sini.
+Route::post('/login/keputusan-device', [AuthController::class, 'keputusanDevice'])
+    ->name('login.keputusan')
+    ->middleware('throttle:10,1');
+
+// Deteksi sesi yang dipindah ke perangkat lain (untuk polling di perangkat lama).
+Route::get('/saya/status-sesi', [AuthController::class, 'statusSesi'])->middleware('throttle:60,30');
+
 // Intip Jadwal Hari Ini (khusus guru, tanpa login)
 Route::get('/login/intip-jadwal', [AuthController::class, 'intipJadwal'])->middleware('throttle:30,1');
 
 // ==========================================================
 // 2. BENTENG UTAMA (Seluruh rute di dalam ini WAJIB LOGIN)
 // ==========================================================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\MenegakkanSatuDevice::class])->group(function () {
         
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::put('/ganti-password', [AuthController::class, 'gantiPassword']);

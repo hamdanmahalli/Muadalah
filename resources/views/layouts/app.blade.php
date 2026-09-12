@@ -1355,6 +1355,31 @@
 
     </script>
 
+    <script>
+        // =============================================================
+        // SATU PERANGKAT: deteksi sesi yang dipindah ke perangkat lain.
+        // Bila device ini bukan pemilik sesi lagi, arahkan ke halaman login.
+        // =============================================================
+        (function() {
+            var mengecekSesi = function() {
+                fetch('/saya/status-sesi', {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                })
+                .then(function(res) { return res.json().catch(function(){ return {}; }); })
+                .then(function(data) {
+                    if (data && data.status && data.status !== 'ok') {
+                        window.location.href = '/login?sesi=berpindah';
+                    }
+                })
+                .catch(function() {});
+            };
+            setTimeout(mengecekSesi, 15000);
+            setInterval(mengecekSesi, 45000);
+        })();
+    </script>
+
     @if(session('sukses'))
     <script>
         window.addEventListener('DOMContentLoaded', function () {

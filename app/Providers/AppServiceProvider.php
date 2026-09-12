@@ -4,7 +4,11 @@ namespace App\Providers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Events\Login;
+
+use App\Listeners\TetapkanSesiAktif;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
@@ -24,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
+        // Aturan satu-perangkat: proses penetapan sesi aktif setelah login
+        // (berlaku juga untuk login sidik jari / passkey).
+        Event::listen(Login::class, TetapkanSesiAktif::class);
+
         // WebAuthn: sesuaikan allowed_origins dengan host & skema yang benar-benar
         // dipakai saat ini, agar tidak bergantung pada nilai APP_URL di server
         // (mencegah error "Invalid origin. Not in the list of allowed origins.").

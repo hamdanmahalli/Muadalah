@@ -32,6 +32,7 @@ class User extends Authenticatable implements PasskeyUser
         'email_verified_at',
         'password',
         'remember_token',
+        'active_session_id',
     ];
 
     protected $hidden = [
