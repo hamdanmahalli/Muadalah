@@ -9,3 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('notifikasi:cek-jadwal')->everyMinute();
+
+Schedule::command('demo:reset')
+    ->dailyAt('03:00')
+    ->when(fn () => config('app.demo') === true);

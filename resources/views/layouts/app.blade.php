@@ -414,7 +414,13 @@
     </script>
     <!-- ============================================= -->
 </head>
-        <body data-turbo="false" class="bg-[#f4f7f6] flex h-[100dvh] overflow-hidden text-sm antialiased p-0">
+        <body data-turbo="false" class="bg-[#f4f7f6] flex flex-col h-[100dvh] overflow-hidden text-sm antialiased p-0">
+
+            @if(config('app.demo'))
+            <div class="shrink-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 text-center flex items-center justify-center gap-2">
+                <i class="fas fa-flask"></i> Mode Demo &middot; data contoh &middot; di-reset otomatis setiap hari pukul 03.00
+            </div>
+            @endif
 
             <!-- CONTAINER-SHELL: full-bleed, tanpa lengkungan & tanpa frame -->
             <div class="sb-shell flex flex-1 overflow-hidden bg-white">

@@ -8,10 +8,12 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('agenda_kaldiks', function (Blueprint $table) {
-            $table->enum('tipe_agenda', ['Penuh', 'Parsial'])->default('Penuh')->after('target_libur');
-            $table->json('jam_diliburkan')->nullable()->after('tipe_agenda');
-        });
+        if (Schema::hasTable('agenda_kaldiks') && !Schema::hasColumn('agenda_kaldiks', 'tipe_agenda')) {
+            Schema::table('agenda_kaldiks', function (Blueprint $table) {
+                $table->enum('tipe_agenda', ['Penuh', 'Parsial'])->default('Penuh')->after('target_libur');
+                $table->json('jam_diliburkan')->nullable()->after('tipe_agenda');
+            });
+        }
     }
 
     public function down()

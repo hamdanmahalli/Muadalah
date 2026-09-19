@@ -252,6 +252,34 @@
                 </div>
             @endif
 
+            @if(config('app.demo'))
+            <div class="mb-5">
+                <div class="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 text-white text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1.5 mb-3">
+                    <i class="fas fa-flask"></i> Mode Demo
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                    <p class="text-[11px] font-black text-amber-800 mb-3"><i class="fas fa-mouse-pointer mr-1.5"></i>Jelajahi aplikasi langsung sebagai:</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach([
+                            'admin'     => ['Administrator', 'fa-user-shield', 'bg-slate-800'],
+                            'bendahara' => ['Bendahara', 'fa-coins', 'bg-emerald-600'],
+                            'guru'      => ['Guru', 'fa-chalkboard-user', 'bg-sky-600'],
+                            'walikelas' => ['Wali Kelas', 'fa-people-roof', 'bg-violet-600'],
+                        ] as $demoRole => $info)
+                        <form method="POST" action="{{ route('login.demo', $demoRole) }}">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-white text-left transition active:scale-[0.97] cursor-pointer {{ $info[2] }}">
+                                <div class="w-8 h-8 shrink-0 rounded-lg bg-white/20 flex items-center justify-center"><i class="fas {{ $info[1] }} text-sm"></i></div>
+                                <span class="text-[11px] font-black leading-tight">{{ $info[0] }}</span>
+                            </button>
+                        </form>
+                        @endforeach
+                    </div>
+                    <p class="text-[9px] font-semibold text-amber-700/80 mt-3"><i class="fas fa-rotate mr-1"></i>Data contoh dan password cepat di-reset otomatis setiap hari pukul 03.00 WIB.</p>
+                </div>
+            </div>
+            @endif
+
             <form method="POST" id="form-login" action="/login" class="space-y-4">
                 @csrf
 
@@ -295,10 +323,12 @@
                         <span id="teks-login">MASUK</span>
                         <i id="ikon-login" class="fas fa-arrow-right text-sm transition-all duration-300"></i>
                     </button>
+                    @if(!config('app.demo'))
                     <button type="button" onclick="loginBiometrik(this)" title="Login Sidik Jari"
                             class="shrink-0 w-[56px] h-[56px] rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white flex items-center justify-center transition-all duration-300 shadow-lg shadow-emerald-200 cursor-pointer">
                         <i class="fas fa-fingerprint text-xl"></i>
                     </button>
+                    @endif
                 </div>
             </form>
         </div>

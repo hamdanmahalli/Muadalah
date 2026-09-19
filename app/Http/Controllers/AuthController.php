@@ -226,6 +226,49 @@ class AuthController extends Controller
         return response()->json(['status' => 'success', 'tema' => $valid['tema']]);
     }
 
+    /**
+     * Masuk instan ke akun demo (HANYA di instance mode demo).
+     *
+     * Dipicu tombol 1-klik di halaman login. Tidak memakai password dan
+     * tidak memicu konflik" satu perangkat" (akun demo boleh digunakan
+     * bergantian oleh pengunjung).
+     */
+    public function masukDemo(string $role)
+    {
+        $username = [
+            'admin'      => 'demo_admin',
+            'bendahara'  => 'demo_bendahara',
+            'staf'       => 'demo_staf',
+            'guru'       => 'demo_guru',
+            'walikelas'  => 'demo_walikelas',
+        ][$role] ?? null;
+
+        // Route ini sudah dibentengi middleware `demo`; jaga ganda bila-kala
+        // dipanggil langsung dari kode lain.
+        if (config('app.demo') !== true || !$username) {
+            abort(404);
+        }
+
+        $user = User::where('username', $username)->first();
+
+        if (!$user || $user->status !== 'Aktif') {
+            return redirect()->route('login')->with('error', 'Akun demo belum siap. Jalankan seeder demo lalu coba lagi.');
+        }
+
+        // Kosongkan kepemilikan sesi dulu agar listener Login tidak menolak,
+        // lalu login + regen + tetapkan sesi final sebagai pemilik.
+        $user->update(['active_session_id' => null]);
+
+        Auth::login($user);
+        $request = request();
+        $request->session()->regenerate();
+        $request->session()->forget('pending_login');
+        $request->session()->forget('sesi_aktif_menunggu');
+        $this->sesi->tetapkan($user, $request->session()->getId());
+
+        return redirect()->intended('/');
+    }
+
     public function logout(Request $request)
     {
         $user = Auth::user();

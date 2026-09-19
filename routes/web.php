@@ -51,6 +51,11 @@ Route::get('/saya/status-sesi', [AuthController::class, 'statusSesi'])->middlewa
 // Intip Jadwal Hari Ini (khusus guru, tanpa login)
 Route::get('/login/intip-jadwal', [AuthController::class, 'intipJadwal'])->middleware('throttle:30,1');
 
+// Login 1-klik MODE DEMO (hanya aktif bila APP_DEMO=true) — masuk langsung ke role demo.
+Route::post('/login/demo/{role}', [AuthController::class, 'masukDemo'])
+    ->name('login.demo')
+    ->middleware(['demo', 'throttle:20,1']);
+
 // ==========================================================
 // 2. BENTENG UTAMA (Seluruh rute di dalam ini WAJIB LOGIN)
 // ==========================================================

@@ -20,6 +20,12 @@ return new class extends Migration
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
+        // 0. Siapkan kunci yang dirujuk migrasi ini (additive & idempotent) agar aman
+        //    dijalankan pada instalasi baru yang PermissionSeeder-nya belum sempat jalan.
+        foreach (array_merge(['akses_honor', 'akses_dashboard'], self::HONOR_SUB) as $perm) {
+            Permission::firstOrCreate(['name' => $perm]);
+        }
+
         // 1. Kunci baru untuk sub-modul honor
         foreach (self::HONOR_SUB as $perm) {
             Permission::firstOrCreate(['name' => $perm]);

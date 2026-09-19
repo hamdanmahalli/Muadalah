@@ -30,6 +30,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo Mode
+    |--------------------------------------------------------------------------
+    |
+    | Saat true (APP_DEMO=true, di instance/subdomain demo saja), aplikasi
+    | berjalan sebagai mode demo: login 1-klik per role, banner "Mode Demo",
+    | dan command `demo:reset` diperbolehkan. Nilai ini harus SELALU false
+    | (default) pada instance produksi.
+    |
+    */
+
+    'demo' => filter_var(env('APP_DEMO', false), FILTER_VALIDATE_BOOLEAN),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |

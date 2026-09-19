@@ -231,3 +231,68 @@ php artisan permission:cache-reset
 php artisan storage:link
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
+
+---
+
+## 9. Instansi Mode Demo (opsional, terpisah dari produksi)
+
+Mode demo adalah **instansi terpisah** (subdomain lain + database PostgreSQL sendiri)
+dengan **data contoh realistis** yang bisa dinikmati pengunjung tanpa password.
+
+Cara kerjanya:
+
+1. Buka **subdomain lain**, mis. `demo.domain.com`, document root → `public_html/demo/public`
+   (clone/pull repo yang sama, branch `main`).
+2. Buat **database demo baru** di cPanel (mis. `demo_smarttu`), **jangan** pakai database
+   produksi.
+3. Buat `.env` dengan **`APP_DEMO=true`** + sesi diperpanjang untuk demo:
+
+   ```env
+   APP_NAME="Smart TU (Demo)"
+   APP_ENV=local
+   APP_DEBUG=true
+   APP_URL=https://demo.domain.com
+   APP_DEMO=true
+
+   DB_CONNECTION=pgsql
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_DATABASE=demo_smarttu
+   DB_USERNAME=demo_smarttu_user
+   DB_PASSWORD=GANTI_DENGAN_PASSWORD_ANDA
+
+   SESSION_DRIVER=file
+   SESSION_LIFETIME=180
+
+   # Nonaktifkan pengingat push di demo (tanpa VAPID)
+   NOTIFIKASI_AKTIF=false
+   ```
+
+4. `php artisan key:generate`.
+5. **Bangun database + isi data demo dalam sekali jalan** (ini aman untuk DB demo karena
+   DB terpisah; **AREA PRODUKSI TIDAK**):
+
+   ```bash
+   php artisan migrate:fresh --force
+   php artisan db:seed --class=PermissionSeeder --force
+   php artisan db:seed --class=DemoSeeder --force
+   php artisan permission:cache-reset
+   ```
+
+   > `DemoSeeder` mengisi: periode aktif, hari operasional, master jam, 10 guru, 6 kelas,
+   > plot & jadwal harian, kehadiran ±20 hari, honor, 36 siswa, tagihan & pembayaran SPP,
+   > RAB final + SPP/LPJ/pemasukan/pinjaman, serta toko buku. Akun demo:
+   > `demo_admin`, `demo_bendahara`, `demo_staf`, `demo_guru`, `demo_walikelas`
+   > (password `demo1234`) — login 1-klik tersedia di halaman login.
+
+6. **Reset otomatis harian 03.00**: tambahkan `* * * * * php artisan schedule:run`
+   ke cron. Ketika `APP_DEMO=true`, scheduler otomatis menjalankan `demo:reset`
+   setiap pukul 03.00 (buang seluruh data demo → isi ulang). Jalankan manual kapan saja
+   dengan `php artisan demo:reset`.
+
+7. Optimasi seperti langkah 6 (fallback tanpa `route:cache` dibolehkan).
+
+> **Keamanan:** command `demo:reset` dan tombol "Masuk Demo" **memeriksa
+> `config('app.demo') === true`** dan akan menolak (404 / FAILURE) bila `APP_DEMO` bukan
+> `true`. Pastikan permanen `APP_DEMO=false` (default) di produksi — data produksi tidak
+> akan pernah disentuh `migrate:fresh`/`DemoSeeder`/`demo:reset`.
