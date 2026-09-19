@@ -54,6 +54,21 @@ class PermissionSeeder extends Seeder
             'akses_honor_proses',
             'akses_honor_final',
             'akses_honor_scan',
+            // === MODUL KEBENDAHARAAN ===
+            'akses_kebendaharaan',
+            'akses_anggaran',
+            'akses_pencairan',
+            'akses_validasi_pencairan',
+            'akses_laporan_kebendaharaan',
+            'akses_validasi_laporan',
+            'akses_pemasukan',
+            'akses_rekap_kebendaharaan',
+            // === MODUL TOKO BUKU ===
+            'akses_toko_buku',
+            'akses_toko_buku_kelola',
+            'akses_toko_buku_distribusi',
+            'akses_toko_buku_penjualan',
+            'akses_toko_buku_setoran',
         ];
 
         // Buat Kunci di Database
@@ -89,22 +104,50 @@ class PermissionSeeder extends Seeder
         // Kepanitiaan: menginput skor UTS/UAS
         $roleKepanitiaan->syncPermissions(['akses_input_nilai']);
 
-// Wali Kelas: dapat melihat data siswa kelasnya (menu Siswa Saya)
-        $roleWaliKelas->syncPermissions(['akses_siswa_saya', 'akses_laporan_siswa']);
+// Wali Kelas: dapat melihat data siswa kelasnya (menu Siswa Saya) + catat distribusi & penjualan buku
+        $roleWaliKelas->syncPermissions([
+            'akses_siswa_saya',
+            'akses_laporan_siswa',
+            'akses_toko_buku',
+            'akses_toko_buku_distribusi',
+            'akses_toko_buku_penjualan',
+        ]);
 
-        // Bendahara: lihat honor + konfigurasi + proses (final HANYA Administrator)
+        // Bendahara: lihat honor + konfigurasi + proses (final HANYA Administrator) + seluruh kebendaharaan
         $roleBendahara->syncPermissions([
             'akses_honor',
             'akses_honor_konfigurasi',
             'akses_honor_proses',
             'akses_dashboard',
+            'akses_kebendaharaan',
+            'akses_anggaran',
+            'akses_pencairan',
+            'akses_validasi_pencairan',
+            'akses_laporan_kebendaharaan',
+            'akses_validasi_laporan',
+            'akses_pemasukan',
+            'akses_rekap_kebendaharaan',
+            'akses_toko_buku',
+            'akses_toko_buku_kelola',
+            'akses_toko_buku_distribusi',
+            'akses_toko_buku_penjualan',
+            'akses_toko_buku_setoran',
         ]);
 
-        // Staf Bendahara: hanya scan penerimaan honor
+        // Staf Bendahara: scan penerimaan honor + mengelola kas harian & toko buku (tanpa validasi)
         $roleStafBendahara->syncPermissions([
             'akses_honor',
             'akses_honor_scan',
             'akses_dashboard',
+            'akses_kebendaharaan',
+            'akses_pencairan',
+            'akses_laporan_kebendaharaan',
+            'akses_rekap_kebendaharaan',
+            'akses_toko_buku',
+            'akses_toko_buku_kelola',
+            'akses_toko_buku_distribusi',
+            'akses_toko_buku_penjualan',
+            'akses_toko_buku_setoran',
         ]);
     }
 }

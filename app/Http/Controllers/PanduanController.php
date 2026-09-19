@@ -35,9 +35,9 @@ class PanduanController extends Controller
             'Tata Usaha'    => ['akses_dashboard', 'akses_meja_kontrol', 'akses_monitoring_kehadiran', 'akses_laporan', 'akses_master_guru', 'akses_master_pelajaran', 'akses_master_kelas', 'akses_riwayat_mutasi'],
             'Dewan Guru'    => ['akses_dashboard_guru', 'akses_jadwal_saya'],
             'Kepanitiaan'   => ['–'],
-            'Wali Kelas'    => ['–'],
-            'Bendahara'     => ['akses_dashboard', 'akses_honor', 'akses_honor_konfigurasi', 'akses_honor_proses'],
-            'Staf Bendahara' => ['akses_dashboard', 'akses_honor', 'akses_honor_scan'],
+            'Wali Kelas'    => ['akses_siswa_saya', 'akses_laporan_siswa', 'akses_toko_buku', 'akses_toko_buku_distribusi', 'akses_toko_buku_penjualan'],
+            'Bendahara'     => ['akses_dashboard', 'akses_honor', 'akses_honor_konfigurasi', 'akses_honor_proses', 'akses_kebendaharaan', 'akses_anggaran', 'akses_pencairan', 'akses_validasi_pencairan', 'akses_laporan_kebendaharaan', 'akses_validasi_laporan', 'akses_pemasukan', 'akses_rekap_kebendaharaan', 'akses_toko_buku', 'akses_toko_buku_kelola', 'akses_toko_buku_distribusi', 'akses_toko_buku_penjualan', 'akses_toko_buku_setoran'],
+            'Staf Bendahara' => ['akses_dashboard', 'akses_honor', 'akses_honor_scan', 'akses_kebendaharaan', 'akses_pencairan', 'akses_laporan_kebendaharaan', 'akses_rekap_kebendaharaan', 'akses_toko_buku', 'akses_toko_buku_kelola', 'akses_toko_buku_distribusi', 'akses_toko_buku_penjualan', 'akses_toko_buku_setoran'],
             'Wali Murid'    => ['–'],
         ];
 

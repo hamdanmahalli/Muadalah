@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-pesantren-v14';
+const CACHE_NAME = 'mumaris-v14';
 const PRECACHE_URLS = [
     '/icons/icon-192x192-v2.png',
     '/icons/icon-512x512-v2.png',
@@ -133,7 +133,7 @@ self.addEventListener('push', function(event) {
         body: data.body,
         icon: data.icon || '/icons/icon-192x192-v2.png',
         badge: data.badge || '/icons/icon-192x192-v2.png',
-        tag: data.tag || 'smart-pesantren',
+        tag: data.tag || 'mumaris',
         renotify: true,
         vibrate: mode === 'silent' ? [] : [200, 100, 200],
         silent: mode === 'silent',

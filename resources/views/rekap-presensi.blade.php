@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Rekap Kehadiran - SmartPesantren')
+@section('title', 'Rekap Kehadiran - Mumaris')
 
 @section('content')
 <style>

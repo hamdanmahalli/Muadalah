@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}"> 
-    <title>@yield('title', 'SmartPesantren')</title>
+    <title>@yield('title', 'Mumaris')</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -463,6 +463,8 @@
                         $gGuru     = request()->is('dashboard-guru', 'jadwal-saya', 'scan-kelas', 'siswa-saya*');
                         $gSiswa    = request()->is('penempatan-siswa*', 'absen-siswa*', 'input-nilai*', 'raport*', 'laporan-siswa*', 'tagihan*');
                         $gSetup    = request()->is('setup-user', 'user*', 'master-import*', 'backup-restore*', 'panduan-aplikasi*');
+                        $gKbendara = request()->is('kebendaharaan', 'kebendaharaan/anggaran*', 'kebendaharaan/pencairan*', 'kebendaharaan/laporan*', 'kebendaharaan/pemasukan*', 'kebendaharaan/pinjaman*');
+                        $gToko     = request()->is('kebendaharaan/toko*');
                     @endphp
 
                     <!-- GRUP: BERANDA & MONITORING -->
@@ -774,6 +776,124 @@
                                 </a>
                             </div>
                             @endcan
+                        </div>
+                    </div>
+                    @endcanany
+
+                    @canany(['akses_kebendaharaan', 'akses_anggaran', 'akses_pencairan', 'akses_laporan_kebendaharaan', 'akses_pemasukan', 'akses_rekap_kebendaharaan'])
+                    <!-- GRUP: KEBENDAHARAAN -->
+                    <div class="sb-group {{ $gKbendara ? 'sb-open' : '' }}">
+                        <div class="relative flex items-center group">
+                            <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-landmark text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Kebendaharaan</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
+                            </button>
+                        </div>
+                        <div class="sb-sub">
+                            @can('akses_kebendaharaan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-gauge-high text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Beranda</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_anggaran')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/anggaran" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/anggaran*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-calculator text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Anggaran (RAB)</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_pencairan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/pencairan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/pencairan*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-hand-holding-dollar text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Pencairan (SPP)</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_laporan_kebendaharaan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/laporan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/laporan*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-receipt text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Laporan Pertanggung Jawaban</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_pemasukan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/pemasukan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/pemasukan*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-cash-register text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Pemasukan</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_kebendaharaan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/pinjaman" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/pinjaman*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-people-carry-box text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Pinjaman</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_rekap_kebendaharaan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/rekap" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/rekap*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-chart-pie text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Rekap &amp; Laporan PDF</span>
+                                </a>
+                            </div>
+                            @endcan
+                        </div>
+                    </div>
+                    @endcanany
+
+                    @canany(['akses_toko_buku', 'akses_toko_buku_kelola', 'akses_toko_buku_distribusi', 'akses_toko_buku_penjualan', 'akses_toko_buku_setoran'])
+                    <!-- GRUP: TOKO BUKU -->
+                    <div class="sb-group {{ $gToko ? 'sb-open' : '' }}">
+                        <div class="relative flex items-center group">
+                            <button type="button" class="sb-group-toggle w-full flex items-center gap-3 p-2 rounded-xl" onclick="sbSelectGroup(this)">
+                                <span class="sb-gicon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-book-open text-xl"></i></span>
+                                <span class="sb-glabel flex-1 text-left text-sm font-bold">Toko Buku</span>
+                                <i class="fas fa-chevron-down sb-chev text-xs ml-auto flex-shrink-0"></i>
+                            </button>
+                        </div>
+                        <div class="sb-sub">
+                            @can('akses_toko_buku')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/toko" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/toko') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-store text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Beranda</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_toko_buku_kelola')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/toko/barang" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/toko/barang*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-boxes-stacked text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Master Barang</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_toko_buku_kelola')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/toko/pembelian" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/toko/pembelian*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-truck text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Pembelian</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @canany(['akses_toko_buku_distribusi','akses_toko_buku_penjualan','akses_toko_buku_setoran'])
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/toko/distribusi" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/toko/distribusi*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-share text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Distribusi &amp; Penjualan</span>
+                                </a>
+                            </div>
+                            @endcanany
                         </div>
                     </div>
                     @endcanany
@@ -1172,6 +1292,7 @@
         document.addEventListener('submit', function(e) {
             let form = e.target;
             if (form.id === 'form-ganti-password' || form.id === 'form-pencarian') return;
+            if (e.defaultPrevented) return; // submit dibatalkan oleh validasi JS halaman
 
             let btnSubmit = form.querySelector('button[type="submit"]');
             if (btnSubmit) {

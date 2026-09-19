@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Biodata & Kelengkapan Guru - SmartPesantren')
+@section('title', 'Biodata & Kelengkapan Guru - Mumaris')
 @section('content')
 <style>
     @media (max-width: 767px) {

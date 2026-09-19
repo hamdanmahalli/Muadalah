@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Menu - SmartPesantren')
+@section('title', 'Menu - Mumaris')
 @section('content')
 <style>
     header, aside { display: none !important; }

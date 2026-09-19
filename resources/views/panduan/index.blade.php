@@ -68,7 +68,7 @@
         <div id="pengenalan" class="pg-section pg-card">
             <h2 class="pg-h2"><i class="fas fa-rocket"></i> 1. Pengenalan Aplikasi</h2>
             <p class="pg-p">
-                Aplikasi ini adalah <strong>Sistem Manajemen Pesantren / Sekolah</strong> (SmartPesantren – Muadalah Wustha / SPM Wustha). Sistem dirancang untuk mengelola operasional harian madrasah secara digital, mencakup penyusunan jadwal pelajaran, pencatatan absensi guru, penggantian guru (mutasi), koordinasi agenda dan kegiatan, hingga pembuatan laporan.
+                Aplikasi ini adalah <strong>Sistem Manajemen Pesantren / Sekolah</strong> (Mumaris – Muadalah Wustha / SPM Wustha). Sistem dirancang untuk mengelola operasional harian madrasah secara digital, mencakup penyusunan jadwal pelajaran, pencatatan absensi guru, penggantian guru (mutasi), koordinasi agenda dan kegiatan, hingga pembuatan laporan.
             </p>
             <p class="pg-p">Beberapa kebutuhan utama yang dijawab sistem ini:</p>
             <ol class="pg-steps">

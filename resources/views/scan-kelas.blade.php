@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Scan Kehadiran Kelas - SmartPesantren')
+@section('title', 'Scan Kehadiran Kelas - Mumaris')
 
 @section('content')
 @push('styles')

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Profil Lengkap - SmartPesantren')
+@section('title', 'Profil Lengkap - Mumaris')
 @section('content')
 <style>
     header, aside { display: none !important; }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Meja Kontrol - SmartPesantren')
+@section('title', 'Meja Kontrol - Mumaris')
 
 @section('content')
     <!-- ==========================================

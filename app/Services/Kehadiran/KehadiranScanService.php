@@ -116,7 +116,7 @@ class KehadiranScanService
     {
         $parts = $qrData ? explode('-', $qrData) : [];
         if (count($parts) != 3 || $parts[0] != 'SP') {
-            return ['status' => 'error', 'pesan' => 'Barcode tidak dikenali / bukan dari SmartPesantren!'];
+            return ['status' => 'error', 'pesan' => 'Barcode tidak dikenali / bukan dari Mumaris!'];
         }
 
         $kelas_id = $parts[1];

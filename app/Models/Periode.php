@@ -21,6 +21,13 @@ class Periode extends Model
     
     protected $table = 'periodes';
 
+    // Tahun kalender awal dari tahun ajaran (mis. '2026/2027' -> 2026).
+    // Dipakai sebagai basis kode transaksi SPP-/LPJ-/dst. agar konsisten.
+    public function getTahunAttribute(): int
+    {
+        return (int) substr((string) $this->tahun_ajaran, 0, 4);
+    }
+
     // Daftar tahun ajaran unik. Karena penempatan kelas siswa cukup per tahun ajaran
     // (tanpa memisahkan Ganjil/Genap), tiap tahun ajaran direpresentasikan oleh satu
     // periode acuan (aktif -> Ganjil -> yang pertama).

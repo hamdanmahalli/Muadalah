@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Kelengkapan Data Guru - SmartPesantren')
+@section('title', 'Kelengkapan Data Guru - Mumaris')
 
 @section('content')
 

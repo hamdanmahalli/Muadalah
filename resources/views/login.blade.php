@@ -119,6 +119,21 @@
         }
     </style>
 
+    <!-- SPLASH DITAMPILKAN SEGERA SEBELUM KONTEN -->
+    <style>
+        html.splash-aktif #splash-screen { display: flex; }
+        html.splash-aktif body { overflow: hidden; }
+    </style>
+    <script>
+        (function() {
+            try {
+                if (!sessionStorage.getItem('splash_shown')) {
+                    document.documentElement.classList.add('splash-aktif');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- MODAL INTIP JADWAL -->
     <style>
         #modal-intip {
@@ -174,8 +189,10 @@
         }
         #modal-konflik.buka #box-konflik { transform: scale(1) translateY(0); opacity: 1; }
     </style>
+</head>
+<body class="flex items-center justify-center min-h-screen relative overflow-hidden antialiased">
 
-    <!-- SPLASH SCREEN OVERLAY -->
+    <!-- SPLASH SCREEN OVERLAY (anak pertama body, tampil sebelum konten) -->
     <div id="splash-screen">
         <div class="splash-particle"></div>
         <div class="splash-particle"></div>
@@ -200,8 +217,6 @@
             <span></span><span></span><span></span>
         </div>
     </div>
-</head>
-<body class="flex items-center justify-center min-h-screen relative overflow-hidden antialiased">
 
     <div class="absolute top-0 w-full h-[45%] bg-gradient-to-b from-emerald-700 to-emerald-500 rounded-b-[3rem] shadow-lg z-0 overflow-hidden">
         <div class="absolute inset-0 islamic-pattern"></div>
@@ -815,16 +830,17 @@
         // ==========================================================
         // SPLASH SCREEN & CLEANUP
         // ==========================================================
-        // Splash default tersembunyi (display:none) agar tidak berkedip
-        // saat reload (mis. login gagal). Hanya tampil sekali per sesi tab.
+        // Splash tampil segera saat HTML di-parse (kelas splash-aktif dari <head>).
+        // Di sini hanya menunggu DOM + CSS siap lalu menjadwalkan fade-out.
         window.addEventListener('load', function() {
             var splash = document.getElementById('splash-screen');
             if (!splash) return;
-            // Sudah pernah ditampilkan -> biarkan tetap tersembunyi
-            if (sessionStorage.getItem('splash_shown')) return;
-            splash.classList.add('show');
+            // Sudah pernah ditampilkan / tidak berkelas aktif -> biarkan tersembunyi
+            if (!document.documentElement.classList.contains('splash-aktif')) return;
             setTimeout(function() {
                 splash.classList.add('fade-out');
+                document.documentElement.classList.remove('splash-aktif');
+                document.body.style.overflow = '';
                 sessionStorage.setItem('splash_shown', '1');
                 setTimeout(function() { splash.remove(); }, 600);
             }, 2500);

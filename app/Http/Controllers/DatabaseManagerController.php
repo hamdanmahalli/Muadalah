@@ -57,7 +57,7 @@ class DatabaseManagerController extends Controller
         $dbPass = config('database.connections.' . config('database.default') . '.password');
 
         // Simpan backup di storage privat (BUKAN public) agar tidak terekspos via symlink
-        $fileName = 'Backup_SmartPesantren_' . date('Y-m-d_H-i-s') . '.backup';
+        $fileName = 'Backup_Mumaris_' . date('Y-m-d_H-i-s') . '.backup';
         $privatePath = storage_path('app/private');
         if (!is_dir($privatePath)) {
             mkdir($privatePath, 0755, true);

@@ -298,6 +298,129 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 // ----------------------------------------------------------
+    // ZONA KEBENDAHARAAN (Bendahara)
+    // akses_kebendaharaan          = beranda modul & pinjaman
+    // akses_rekap_kebendaharaan    = halaman rekap/neraca + PDF
+    // ----------------------------------------------------------
+    Route::middleware(['can:akses_kebendaharaan'])->group(function () {
+        Route::get('/kebendaharaan', [\App\Http\Controllers\KebendaharaanController::class, 'index'])->name('kebendaharaan.index');
+
+        // Pinjaman dana
+        Route::get('/kebendaharaan/pinjaman', [\App\Http\Controllers\PinjamanController::class, 'index'])->name('kebendaharaan.pinjaman.index');
+        Route::get('/kebendaharaan/pinjaman/buat', [\App\Http\Controllers\PinjamanController::class, 'create'])->name('kebendaharaan.pinjaman.create');
+        Route::post('/kebendaharaan/pinjaman', [\App\Http\Controllers\PinjamanController::class, 'store'])->name('kebendaharaan.pinjaman.store');
+        Route::post('/kebendaharaan/pinjaman/{id}/lunasi', [\App\Http\Controllers\PinjamanController::class, 'lunasi'])->name('kebendaharaan.pinjaman.lunasi');
+        Route::post('/kebendaharaan/pinjaman/{id}/aktifkan', [\App\Http\Controllers\PinjamanController::class, 'aktifkan'])->name('kebendaharaan.pinjaman.aktifkan');
+        Route::delete('/kebendaharaan/pinjaman/{id}', [\App\Http\Controllers\PinjamanController::class, 'destroy'])->name('kebendaharaan.pinjaman.destroy');
+    });
+
+    Route::middleware(['can:akses_rekap_kebendaharaan'])->group(function () {
+        Route::get('/kebendaharaan/rekap', [\App\Http\Controllers\KebendaharaanController::class, 'rekap'])->name('kebendaharaan.rekap');
+        Route::get('/kebendaharaan/rekap/pdf', [\App\Http\Controllers\KebendaharaanController::class, 'rekapPdf'])->name('kebendaharaan.rekap.pdf');
+    });
+
+    // Anggaran (RAB)
+    Route::middleware(['can:akses_anggaran'])->group(function () {
+        Route::get('/kebendaharaan/anggaran', [\App\Http\Controllers\AnggaranController::class, 'index'])->name('kebendaharaan.anggaran.index');
+        Route::get('/kebendaharaan/anggaran/buat', [\App\Http\Controllers\AnggaranController::class, 'create'])->name('kebendaharaan.anggaran.create');
+        Route::post('/kebendaharaan/anggaran', [\App\Http\Controllers\AnggaranController::class, 'store'])->name('kebendaharaan.anggaran.store');
+        Route::post('/kebendaharaan/anggaran/import', [\App\Http\Controllers\AnggaranController::class, 'import'])->name('kebendaharaan.anggaran.import');
+        Route::get('/kebendaharaan/anggaran/{id}', [\App\Http\Controllers\AnggaranController::class, 'show'])->name('kebendaharaan.anggaran.show');
+        Route::get('/kebendaharaan/anggaran/{id}/pdf', [\App\Http\Controllers\AnggaranController::class, 'pdf'])->name('kebendaharaan.anggaran.pdf');
+
+        Route::post('/kebendaharaan/anggaran/{id}/kelompok', [\App\Http\Controllers\AnggaranController::class, 'storeKelompok'])->name('kebendaharaan.anggaran.kelompok.store');
+        Route::delete('/kebendaharaan/anggaran/kelompok/{id}', [\App\Http\Controllers\AnggaranController::class, 'destroyKelompok'])->name('kebendaharaan.anggaran.kelompok.destroy');
+
+        Route::post('/kebendaharaan/anggaran/{id}/pos', [\App\Http\Controllers\AnggaranController::class, 'storePos'])->name('kebendaharaan.anggaran.pos.store');
+        Route::put('/kebendaharaan/anggaran/pos/{id}', [\App\Http\Controllers\AnggaranController::class, 'updatePos'])->name('kebendaharaan.anggaran.pos.update');
+        Route::put('/kebendaharaan/anggaran/pos/{id}/detail', [\App\Http\Controllers\AnggaranController::class, 'updateDetail'])->name('kebendaharaan.anggaran.pos.update-detail');
+        Route::put('/kebendaharaan/anggaran/pos/{id}/alokasi-bulan', [\App\Http\Controllers\AnggaranController::class, 'updateAlokasiBulan'])->name('kebendaharaan.anggaran.pos.alokasi-bulan');
+        Route::delete('/kebendaharaan/anggaran/pos/{id}', [\App\Http\Controllers\AnggaranController::class, 'destroyPos'])->name('kebendaharaan.anggaran.pos.destroy');
+
+        Route::post('/kebendaharaan/anggaran/{id}/pemasukan', [\App\Http\Controllers\AnggaranController::class, 'storePemasukanRen'])->name('kebendaharaan.anggaran.pemasukan.store');
+        Route::delete('/kebendaharaan/anggaran/pemasukan/{id}', [\App\Http\Controllers\AnggaranController::class, 'destroyPemasukanRen'])->name('kebendaharaan.anggaran.pemasukan.destroy');
+
+        Route::post('/kebendaharaan/anggaran/{id}/final', [\App\Http\Controllers\AnggaranController::class, 'finalisasi'])->name('kebendaharaan.anggaran.final');
+        Route::post('/kebendaharaan/anggaran/{id}/buka', [\App\Http\Controllers\AnggaranController::class, 'buka'])->name('kebendaharaan.anggaran.buka');
+    });
+
+    // Pencairan (SPP)
+    Route::middleware(['can:akses_pencairan'])->group(function () {
+        Route::get('/kebendaharaan/pencairan', [\App\Http\Controllers\PencairanController::class, 'index'])->name('kebendaharaan.pencairan.index');
+        Route::post('/kebendaharaan/pencairan', [\App\Http\Controllers\PencairanController::class, 'store'])->name('kebendaharaan.pencairan.store');
+    });
+
+    Route::middleware(['can:akses_validasi_pencairan'])->group(function () {
+        Route::post('/kebendaharaan/pencairan/{id}/bayar', [\App\Http\Controllers\PencairanController::class, 'bayar'])->name('kebendaharaan.pencairan.bayar');
+        Route::post('/kebendaharaan/pencairan/{id}/tolak', [\App\Http\Controllers\PencairanController::class, 'tolak'])->name('kebendaharaan.pencairan.tolak');
+    });
+
+    // Laporan Pertanggung Jawaban (LPJ)
+    Route::middleware(['can:akses_laporan_kebendaharaan'])->group(function () {
+        Route::get('/kebendaharaan/laporan', [\App\Http\Controllers\LaporanPengeluaranController::class, 'index'])->name('kebendaharaan.laporan.index');
+        Route::get('/kebendaharaan/laporan/buat', [\App\Http\Controllers\LaporanPengeluaranController::class, 'create'])->name('kebendaharaan.laporan.create');
+        Route::post('/kebendaharaan/laporan', [\App\Http\Controllers\LaporanPengeluaranController::class, 'store'])->name('kebendaharaan.laporan.store');
+    });
+
+    Route::middleware(['can:akses_validasi_laporan'])->group(function () {
+        Route::post('/kebendaharaan/laporan/{id}/validasi', [\App\Http\Controllers\LaporanPengeluaranController::class, 'validasi'])->name('kebendaharaan.laporan.validasi');
+        Route::post('/kebendaharaan/laporan/{id}/tolak', [\App\Http\Controllers\LaporanPengeluaranController::class, 'tolak'])->name('kebendaharaan.laporan.tolak');
+    });
+
+    // Pemasukan dana
+    Route::middleware(['can:akses_pemasukan'])->group(function () {
+        Route::get('/kebendaharaan/pemasukan', [\App\Http\Controllers\PemasukanController::class, 'index'])->name('kebendaharaan.pemasukan.index');
+        Route::get('/kebendaharaan/pemasukan/buat', [\App\Http\Controllers\PemasukanController::class, 'create'])->name('kebendaharaan.pemasukan.create');
+        Route::post('/kebendaharaan/pemasukan', [\App\Http\Controllers\PemasukanController::class, 'store'])->name('kebendaharaan.pemasukan.store');
+        Route::delete('/kebendaharaan/pemasukan/{id}', [\App\Http\Controllers\PemasukanController::class, 'destroy'])->name('kebendaharaan.pemasukan.destroy');
+    });
+
+    // ----------------------------------------------------------
+    // ZONA TOKO BUKU
+    // ----------------------------------------------------------
+    Route::middleware(['can:akses_toko_buku'])->group(function () {
+        Route::get('/kebendaharaan/toko', [\App\Http\Controllers\TokoController::class, 'index'])->name('kebendaharaan.toko.index');
+
+        // Master barang & pembelian (hanya pengelola stok)
+        Route::middleware(['can:akses_toko_buku_kelola'])->group(function () {
+            Route::get('/kebendaharaan/toko/barang', [\App\Http\Controllers\TokoController::class, 'barangIndex'])->name('kebendaharaan.toko.barang.index');
+            Route::post('/kebendaharaan/toko/barang', [\App\Http\Controllers\TokoController::class, 'barangStore'])->name('kebendaharaan.toko.barang.store');
+            Route::put('/kebendaharaan/toko/barang/{id}', [\App\Http\Controllers\TokoController::class, 'barangUpdate'])->name('kebendaharaan.toko.barang.update');
+            Route::post('/kebendaharaan/toko/barang/{id}/toggle', [\App\Http\Controllers\TokoController::class, 'barangToggle'])->name('kebendaharaan.toko.barang.toggle');
+            Route::delete('/kebendaharaan/toko/barang/{id}', [\App\Http\Controllers\TokoController::class, 'barangDestroy'])->name('kebendaharaan.toko.barang.destroy');
+
+            Route::get('/kebendaharaan/toko/pembelian', [\App\Http\Controllers\TokoController::class, 'pembelianIndex'])->name('kebendaharaan.toko.pembelian.index');
+            Route::get('/kebendaharaan/toko/pembelian/buat', [\App\Http\Controllers\TokoController::class, 'pembelianCreate'])->name('kebendaharaan.toko.pembelian.create');
+            Route::post('/kebendaharaan/toko/pembelian', [\App\Http\Controllers\TokoController::class, 'pembelianStore'])->name('kebendaharaan.toko.pembelian.store');
+            Route::get('/kebendaharaan/toko/pembelian/{id}', [\App\Http\Controllers\TokoController::class, 'pembelianShow'])->name('kebendaharaan.toko.pembelian.show');
+        });
+
+        // Distribusi stok ke wali kelas
+        Route::get('/kebendaharaan/toko/distribusi', [\App\Http\Controllers\TokoController::class, 'distribusiIndex'])->name('kebendaharaan.toko.distribusi.index');
+
+        Route::middleware(['can:akses_toko_buku_distribusi'])->group(function () {
+            Route::get('/kebendaharaan/toko/distribusi/buat', [\App\Http\Controllers\TokoController::class, 'distribusiCreate'])->name('kebendaharaan.toko.distribusi.create');
+            Route::post('/kebendaharaan/toko/distribusi', [\App\Http\Controllers\TokoController::class, 'distribusiStore'])->name('kebendaharaan.toko.distribusi.store');
+            Route::delete('/kebendaharaan/toko/distribusi/{id}', [\App\Http\Controllers\TokoController::class, 'distribusiDestroy'])->name('kebendaharaan.toko.distribusi.destroy');
+        });
+
+        // Detail distribusi: didaftarkan SETELAH /buat agar tidak tertelan sebagai {id}="buat"
+        Route::get('/kebendaharaan/toko/distribusi/{id}', [\App\Http\Controllers\TokoController::class, 'distribusiShow'])->name('kebendaharaan.toko.distribusi.show');
+
+        // Penjualan per murid (wali kelas mencatat)
+        Route::middleware(['can:akses_toko_buku_penjualan'])->group(function () {
+            Route::post('/kebendaharaan/toko/penjualan', [\App\Http\Controllers\TokoController::class, 'penjualanStore'])->name('kebendaharaan.toko.penjualan.store');
+            Route::post('/kebendaharaan/toko/penjualan/{id}/lunas', [\App\Http\Controllers\TokoController::class, 'penjualanLunas'])->name('kebendaharaan.toko.penjualan.lunas');
+        });
+
+        // Setoran wali kelas
+        Route::middleware(['can:akses_toko_buku_setoran'])->group(function () {
+            Route::post('/kebendaharaan/toko/setoran', [\App\Http\Controllers\TokoController::class, 'setoranStore'])->name('kebendaharaan.toko.setoran.store');
+            Route::delete('/kebendaharaan/toko/setoran/{id}', [\App\Http\Controllers\TokoController::class, 'setoranDestroy'])->name('kebendaharaan.toko.setoran.destroy');
+        });
+    });
+
+    // ----------------------------------------------------------
     // ZONA SETUP PENGGUNA & HAK AKSES
     // ----------------------------------------------------------
     Route::middleware(['can:akses_manajemen_user'])->group(function () {
