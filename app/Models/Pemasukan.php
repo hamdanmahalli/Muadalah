@@ -11,6 +11,7 @@ class Pemasukan extends Model
         'periode_id',
         'anggaran_pemasukan_id',
         'setoran_barang_id',
+        'pencairan_id',
         'uraian',
         'tanggal',
         'jumlah',
@@ -35,5 +36,11 @@ class Pemasukan extends Model
     public function anggaranPemasukan()
     {
         return $this->belongsTo(AnggaranPemasukan::class, 'anggaran_pemasukan_id');
+    }
+
+    /** SPP asal ketika pemasukan ini adalah pengembalian sisa panjar. */
+    public function pencairan()
+    {
+        return $this->belongsTo(Pencairan::class, 'pencairan_id');
     }
 }

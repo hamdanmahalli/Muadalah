@@ -16,7 +16,7 @@ class Periode extends Model
         'semester', 
         'is_active', 
         'tanggal_mulai', 
-        'tanggal_selesai'
+        'tanggal_selesai',
     ];
     
     protected $table = 'periodes';

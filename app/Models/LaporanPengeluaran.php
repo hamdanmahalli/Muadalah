@@ -15,6 +15,7 @@ class LaporanPengeluaran extends Model
         'tanggal',
         'nominal',
         'keterangan',
+        'nota_foto',
         'status',
         'dibuat_oleh',
         'divalidasi_oleh',

@@ -70,6 +70,11 @@ class Pencairan extends Model
         return $this->hasOne(Pinjaman::class, 'pencairan_id');
     }
 
+    public function bukuKas()
+    {
+        return $this->hasOne(BukuKasBulanan::class, 'pencairan_id');
+    }
+
     public function isLunasPanjar()
     {
         return !$this->pinjaman || $this->pinjaman->status === 'lunas';

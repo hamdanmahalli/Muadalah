@@ -824,16 +824,40 @@
                             @can('akses_laporan_kebendaharaan')
                             <div class="relative flex items-center group">
                                 <a href="/kebendaharaan/laporan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/laporan*') ? 'sb-active' : 'sb-inactive' }}">
-                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-receipt text-xl"></i></div>
-                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Laporan Pertanggung Jawaban</span>
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-right-left text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Transaksi</span>
                                 </a>
                             </div>
                             @endcan
+                            @canany(['akses_validasi_pencairan', 'akses_validasi_buku_kas'])
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/laporan/validasi" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/laporan/validasi*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-file-signature text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Validasi Laporan</span>
+                                </a>
+                            </div>
+                            @endcanany
                             @can('akses_pemasukan')
                             <div class="relative flex items-center group">
                                 <a href="/kebendaharaan/pemasukan" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/pemasukan*') ? 'sb-active' : 'sb-inactive' }}">
                                     <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-cash-register text-xl"></i></div>
                                     <span class="sb-text flex-1 text-left text-sm font-semibold">Pemasukan</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_kebendaharaan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/kas-pemegang" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/kas-pemegang*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-wallet text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Kas per Pemegang</span>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('akses_kebendaharaan')
+                            <div class="relative flex items-center group">
+                                <a href="/kebendaharaan/kas-umum" class="sb-item w-full flex items-center gap-3 p-2 rounded-xl {{ request()->is('kebendaharaan/kas-umum*') ? 'sb-active' : 'sb-inactive' }}">
+                                    <div class="sb-icon h-10 w-10 flex justify-center items-center flex-shrink-0"><i class="fas fa-book-open text-xl"></i></div>
+                                    <span class="sb-text flex-1 text-left text-sm font-semibold">Kas Umum / Buku Besar</span>
                                 </a>
                             </div>
                             @endcan

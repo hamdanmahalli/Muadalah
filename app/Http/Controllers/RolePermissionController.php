@@ -66,6 +66,20 @@ class RolePermissionController extends Controller
         'akses_input_nilai',
         'akses_laporan_siswa',
         'akses_pembayaran',
+        'akses_kebendaharaan',
+        'akses_anggaran',
+        'akses_pencairan',
+        'akses_validasi_pencairan',
+        'akses_laporan_kebendaharaan',
+        'akses_validasi_buku_kas',
+        'akses_validasi_laporan',
+        'akses_pemasukan',
+        'akses_rekap_kebendaharaan',
+        'akses_toko_buku',
+        'akses_toko_buku_kelola',
+        'akses_toko_buku_distribusi',
+        'akses_toko_buku_penjualan',
+        'akses_toko_buku_setoran',
         'akses_manajemen_user',
         'akses_manajemen_akses',
         'akses_import_excel',
@@ -121,6 +135,41 @@ class RolePermissionController extends Controller
             ['perm' => 'akses_laporan_siswa', 'label' => 'Raport & Laporan Siswa'],
             ['perm' => 'akses_pembayaran', 'label' => 'Tagihan & Pembayaran'],
         ],
+        'Kebendaharaan' => [
+            ['perm' => 'akses_kebendaharaan', 'label' => 'Beranda Kebendaharaan'],
+            ['perm' => 'akses_anggaran', 'label' => 'Anggaran (RAB)'],
+            [
+                'perm' => 'akses_pencairan',
+                'label' => 'Pencairan (SPP)',
+                'sub' => [
+                    ['perm' => 'akses_validasi_pencairan', 'label' => 'SPP — Validasi (Setujui/Bayar/Tolak)'],
+                ],
+            ],
+            [
+                'perm' => 'akses_laporan_kebendaharaan',
+                'label' => 'Transaksi (Buku Kas)',
+                'sub' => [
+                    ['perm' => 'akses_validasi_buku_kas', 'label' => 'Buku Kas — Validasi (Bendahara/Pimpinan)'],
+                    ['perm' => 'akses_validasi_laporan', 'label' => 'Catatan — Validasi/Tolak'],
+                ],
+            ],
+            ['perm' => 'akses_pemasukan', 'label' => 'Pemasukan Manual'],
+            ['perm' => 'akses_kebendaharaan', 'label' => 'Kas per Pemegang Uang'],
+            ['perm' => 'akses_kebendaharaan', 'label' => 'Pinjaman / Panjar'],
+            ['perm' => 'akses_rekap_kebendaharaan', 'label' => 'Rekap & Laporan PDF'],
+        ],
+        'Toko Buku' => [
+            [
+                'perm' => 'akses_toko_buku',
+                'label' => 'Beranda Toko Buku',
+                'sub' => [
+                    ['perm' => 'akses_toko_buku_kelola', 'label' => 'Toko — Master Barang & Pembelian'],
+                    ['perm' => 'akses_toko_buku_distribusi', 'label' => 'Toko — Distribusi'],
+                    ['perm' => 'akses_toko_buku_penjualan', 'label' => 'Toko — Penjualan'],
+                    ['perm' => 'akses_toko_buku_setoran', 'label' => 'Toko — Setoran'],
+                ],
+            ],
+        ],
         'Pengaturan Sistem' => [
             ['perm' => 'akses_manajemen_user', 'label' => 'Setup User'],
             ['perm' => 'akses_manajemen_akses', 'label' => 'Hak Akses (Kunci Sistem)'],
@@ -135,6 +184,8 @@ class RolePermissionController extends Controller
         'Jadwal & Kaldik' => 'fa-calendar-alt',
         'Guru (Aplikasi Mobile)' => 'fa-chalkboard-teacher',
         'Siswa' => 'fa-user-graduate',
+        'Kebendaharaan' => 'fa-landmark',
+        'Toko Buku' => 'fa-book-open',
         'Pengaturan Sistem' => 'fa-cog',
     ];
 
@@ -144,6 +195,8 @@ class RolePermissionController extends Controller
         'Jadwal & Kaldik' => 'bg-indigo-50',
         'Guru (Aplikasi Mobile)' => 'bg-violet-50',
         'Siswa' => 'bg-amber-50',
+        'Kebendaharaan' => 'bg-emerald-50',
+        'Toko Buku' => 'bg-sky-50',
         'Pengaturan Sistem' => 'bg-rose-50',
     ];
 
@@ -153,6 +206,8 @@ class RolePermissionController extends Controller
         'Jadwal & Kaldik' => 'text-indigo-700',
         'Guru (Aplikasi Mobile)' => 'text-violet-700',
         'Siswa' => 'text-amber-700',
+        'Kebendaharaan' => 'text-emerald-700',
+        'Toko Buku' => 'text-sky-700',
         'Pengaturan Sistem' => 'text-rose-700',
     ];
 
@@ -168,6 +223,18 @@ class RolePermissionController extends Controller
             'permissions' => $user->getPermissionNames()->values()->all(),
             'status' => $user->status,
             'locked' => $user->hasRole('Administrator'),
+        ]);
+    }
+
+    /** AJAX: pohon menu terbaru (grup + ikon/warna) untuk tombol "Segarkan Menu" pada popup Fasilitas. */
+    public function menuPohon(): JsonResponse
+    {
+        return response()->json([
+            'grup' => self::GRUP_MENU,
+            'ikon' => self::IKON_GRUP,
+            'warna' => self::WARNA_GRUP,
+            'warnaNama' => self::WARNA_NAMA_GRUP,
+            'sistem' => self::SISTEM,
         ]);
     }
 

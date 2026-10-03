@@ -352,19 +352,49 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     // Pencairan (SPP)
     Route::middleware(['can:akses_pencairan'])->group(function () {
         Route::get('/kebendaharaan/pencairan', [\App\Http\Controllers\PencairanController::class, 'index'])->name('kebendaharaan.pencairan.index');
+        Route::get('/kebendaharaan/pencairan/{id}', [\App\Http\Controllers\PencairanController::class, 'show'])->name('kebendaharaan.pencairan.show');
         Route::post('/kebendaharaan/pencairan', [\App\Http\Controllers\PencairanController::class, 'store'])->name('kebendaharaan.pencairan.store');
     });
 
     Route::middleware(['can:akses_validasi_pencairan'])->group(function () {
+        Route::post('/kebendaharaan/pencairan/{id}/setujui', [\App\Http\Controllers\PencairanController::class, 'approve'])->name('kebendaharaan.pencairan.setujui');
         Route::post('/kebendaharaan/pencairan/{id}/bayar', [\App\Http\Controllers\PencairanController::class, 'bayar'])->name('kebendaharaan.pencairan.bayar');
         Route::post('/kebendaharaan/pencairan/{id}/tolak', [\App\Http\Controllers\PencairanController::class, 'tolak'])->name('kebendaharaan.pencairan.tolak');
     });
 
-    // Laporan Pertanggung Jawaban (LPJ)
+    // Kas per pemegang: uang yang dipegang tiap orang (SPP dibayar, belanja, pemasukan manual).
+    Route::middleware(['can:akses_kebendaharaan'])->group(function () {
+        Route::get('/kebendaharaan/kas-pemegang', [\App\Http\Controllers\KasPemegangController::class, 'index'])->name('kebendaharaan.kas-pemegang');
+        Route::get('/kebendaharaan/kas-umum', [\App\Http\Controllers\KasUmumController::class, 'index'])->name('kebendaharaan.kas-umum');
+    });
+
+    // Transaksi (buku kas): uang masuk dari SPP disetujui, uang keluar belanja per pos + foto nota.
+    // Pengaju melaporkan ke bendahara (laporkan), bendahara menerima, pimpinan mengesahkan final.
+    // Tersedia riwayat, cetak PDF, dan pengembalian untuk revisi.
     Route::middleware(['can:akses_laporan_kebendaharaan'])->group(function () {
-        Route::get('/kebendaharaan/laporan', [\App\Http\Controllers\LaporanPengeluaranController::class, 'index'])->name('kebendaharaan.laporan.index');
-        Route::get('/kebendaharaan/laporan/buat', [\App\Http\Controllers\LaporanPengeluaranController::class, 'create'])->name('kebendaharaan.laporan.create');
-        Route::post('/kebendaharaan/laporan', [\App\Http\Controllers\LaporanPengeluaranController::class, 'store'])->name('kebendaharaan.laporan.store');
+        Route::get('/kebendaharaan/laporan', [\App\Http\Controllers\BukuKasController::class, 'index'])->name('kebendaharaan.laporan.index');
+        Route::get('/kebendaharaan/laporan/validasi', [\App\Http\Controllers\BukuKasController::class, 'validasi'])->name('kebendaharaan.laporan.validasi');
+        Route::get('/kebendaharaan/laporan/buat', [\App\Http\Controllers\BukuKasController::class, 'create'])->name('kebendaharaan.laporan.create');
+        Route::post('/kebendaharaan/laporan', [\App\Http\Controllers\BukuKasController::class, 'store'])->name('kebendaharaan.laporan.store');
+        Route::delete('/kebendaharaan/laporan/{id}', [\App\Http\Controllers\BukuKasController::class, 'destroy'])->name('kebendaharaan.laporan.destroy');
+        Route::post('/kebendaharaan/laporan/laporkan', [\App\Http\Controllers\BukuKasController::class, 'laporkan'])->name('kebendaharaan.laporan.laporkan');
+        Route::post('/kebendaharaan/laporan/buku/{buku}/buka-buku', [\App\Http\Controllers\BukuKasController::class, 'bukaBuku'])->name('kebendaharaan.laporan.buka-buku');
+        Route::get('/kebendaharaan/laporan/buku/{buku}/cetak', [\App\Http\Controllers\BukuKasController::class, 'cetak'])->name('kebendaharaan.laporan.cetak');
+        // Validasi tahap bendahara (pengiriman akses dicek di controller).
+        Route::post('/kebendaharaan/laporan/buku/{buku}/terima', [\App\Http\Controllers\BukuKasController::class, 'terimaBendahara'])->name('kebendaharaan.laporan.terima');
+        Route::post('/kebendaharaan/laporan/buku/{buku}/kembalikan', [\App\Http\Controllers\BukuKasController::class, 'kembalikanBendahara'])->name('kebendaharaan.laporan.kembalikan');
+        Route::post('/kebendaharaan/laporan/buku/{buku}/kembalikan-pengesahan', [\App\Http\Controllers\BukuKasController::class, 'kembalikanPengesahan'])->name('kebendaharaan.laporan.kembalikan-pengesahan');
+    });
+
+    // Pengesahan buku kas (approve) — izin terpisah, untuk Pimpinan/Kepala Sekolah.
+    Route::middleware(['can:akses_validasi_buku_kas'])->group(function () {
+        Route::post('/kebendaharaan/laporan/buku/{buku}/sahkan', [\App\Http\Controllers\BukuKasController::class, 'sahkan'])->name('kebendaharaan.laporan.sahkan');
+    });
+
+    // Realisasi lama (legacy; tidak lagi tertaut dari menu).
+    Route::middleware(['can:akses_laporan_kebendaharaan'])->group(function () {
+        Route::get('/kebendaharaan/laporan/pencairan/{pencairan}/realisasi', [\App\Http\Controllers\LaporanPengeluaranController::class, 'realisasi'])->name('kebendaharaan.laporan.realisasi');
+        Route::post('/kebendaharaan/laporan/pencairan/{pencairan}/realisasi', [\App\Http\Controllers\LaporanPengeluaranController::class, 'simpanRealisasi'])->name('kebendaharaan.laporan.realisasi.store');
     });
 
     Route::middleware(['can:akses_validasi_laporan'])->group(function () {
@@ -441,6 +471,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
             // Hak akses per-user (popup "Fasilitas Menu" di halaman Setup User)
             Route::get('/setup-user/akses/{user}', [RolePermissionController::class, 'getUserPermissions'])->name('setup-user.akses');
+            Route::get('/setup-user/menu-pohon', [RolePermissionController::class, 'menuPohon'])->name('setup-user.menu-pohon');
             Route::put('/setup-user/akses/{user}', [RolePermissionController::class, 'simpanAkses'])->name('setup-user.akses.simpan');
             Route::put('/setup-user/akses/{user}/hapus-semua', [RolePermissionController::class, 'hapusSemuaFasilitas'])->name('setup-user.akses.hapus-semua');
         });

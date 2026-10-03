@@ -8,6 +8,7 @@ $final = $anggaran->status === 'final';
 $labelWarna = $final ? 'bg-sky-100 text-sky-700 border-sky-200' : 'bg-amber-100 text-amber-700 border-amber-200';
 $totalPagu = collect($anggaran->kelompok)->sum(fn($k) => $k->pos->sum('jumlah'));
 $totalRencanaPemasukan = $anggaran->pemasukanRencana->sum('jumlah');
+$defisit = (float) $totalPagu - (float) $totalRencanaPemasukan;
 $bulanFiskal = bulan_fiskal_list();
 $kodeMaxPerKelompok = $anggaran->kelompok->mapWithKeys(fn ($k) => [$k->id => ($k->pos->max('kode') ?? $k->kode) + 1])->all();
 $posDetail = [];
@@ -57,6 +58,15 @@ foreach ($anggaran->kelompok as $k) {
         </h2>
         <p class="text-sm font-bold text-slate-400 mt-1 ml-14">
             {{ $anggaran->tahun_ajaran }} &middot; Pagu Belanja Rp {{ number_format($totalPagu, 0, ',', '.') }} &middot; Rencana Pemasukan Rp {{ number_format($totalRencanaPemasukan, 0, ',', '.') }}
+            @if($defisit > 0.5)
+                <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-md border bg-rose-100 text-rose-700 border-rose-200 text-[10px] font-black">
+                    <i class="fas fa-arrow-trend-down"></i> Defisit Rp {{ number_format($defisit, 0, ',', '.') }}
+                </span>
+            @elseif($defisit < -0.5)
+                <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-md border bg-emerald-100 text-emerald-700 border-emerald-200 text-[10px] font-black">
+                    <i class="fas fa-arrow-trend-up"></i> Surplus Rp {{ number_format(abs($defisit), 0, ',', '.') }}
+                </span>
+            @endif
         </p>
     </div>
     <div class="flex gap-2">
@@ -90,6 +100,17 @@ foreach ($anggaran->kelompok as $k) {
         @endforeach
     </ul>
     <p class="text-[11px] font-bold text-rose-400 mt-2">Sebar alokasi tiap pos lewat tombol Edit agar total 12 bulan = jumlah pos.</p>
+</div>
+@endif
+
+@if(session('warning_detail'))
+<div class="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+    <p class="text-sm font-black text-amber-700 flex items-center gap-2 mb-2"><i class="fas fa-triangle-exclamation text-amber-500"></i> {{ session('warning') }}</p>
+    <ul class="list-disc list-inside text-xs font-semibold text-amber-600 space-y-1">
+        @foreach(session('warning_detail') as $detail)
+        <li>{{ $detail }}</li>
+        @endforeach
+    </ul>
 </div>
 @endif
 

@@ -138,6 +138,9 @@
                         <i class="fas fa-list-check mr-1 text-emerald-500"></i> Fasilitas Menu
                     </p>
                     <div class="flex items-center gap-2">
+                        <button type="button" id="btn-refresh-menu" onclick="segarkanMenu(this)" class="px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg text-xs font-bold transition cursor-pointer">
+                            <i class="fas fa-rotate mr-1"></i>Segarkan Menu
+                        </button>
                         <button type="button" onclick="setSemua(true)" class="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg text-xs font-bold transition cursor-pointer">
                             <i class="fas fa-check-double mr-1"></i>Centang Semua
                         </button>
@@ -288,10 +291,24 @@
 
     <script>
         const URL_AKSES = @json(url('setup-user/akses'));
+        const URL_MENU = @json(url('setup-user/menu-pohon'));
         let userAktifId = null;
         let userAktifLocked = false;
 
         // ---------- POPUP FASILITAS MENU ----------
+
+        /** Muat ulang pohon menu dari server tanpa menutup popup, mempertahankan centangan. */
+        function segarkanMenu(btn) {
+            const icon = btn.querySelector('i');
+            const cekSaatIni = Array.from(document.querySelectorAll('#grup-menu input[name="permissions[]"]:checked')).map(c => c.value);
+            btn.disabled = true;
+            icon.classList.add('fa-spin');
+            fetch(URL_MENU, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => { if (!r.ok) throw new Error('respons ' + r.status); return r.json(); })
+                .then(menu => { renderGrup(cekSaatIni, menu); })
+                .catch(e => alert('Gagal memuat menu terbaru (' + e.message + '). Segarkan halaman lalu coba lagi.'))
+                .finally(() => { btn.disabled = false; icon.classList.remove('fa-spin'); });
+        }
         function pilihUser(tr) {
             const dt = tr.dataset;
             userAktifId = dt.id;
@@ -338,14 +355,20 @@
         }
 
         // ---------- RENDER TREE-GRID FASILITAS ----------
-        function renderGrup(permsAktif) {
+        const GRUP_MENU_DEFAULT = @json($grupMenu);
+        const IKON_GRUP_DEFAULT = @json($ikonGrup);
+        const WARNA_GRUP_DEFAULT = @json($warnaGrup);
+        const WARNA_NAMA_GRUP_DEFAULT = @json($warnaNamaGrup);
+        const SISTEM_DEFAULT = @json($daftarSistem);
+
+        function renderGrup(permsAktif, menu) {
             const wadah = document.getElementById('grup-menu');
             wadah.innerHTML = '';
-            const grupMenus = @json($grupMenu);
-            const ikonGrup = @json($ikonGrup);
-            const warnaGrup = @json($warnaGrup);
-            const warnaNamaGrup = @json($warnaNamaGrup);
-            const sistem = @json($daftarSistem);
+            const grupMenus = (menu && menu.grup) ? menu.grup : GRUP_MENU_DEFAULT;
+            const ikonGrup = (menu && menu.ikon) ? menu.ikon : IKON_GRUP_DEFAULT;
+            const warnaGrup = (menu && menu.warna) ? menu.warna : WARNA_GRUP_DEFAULT;
+            const warnaNamaGrup = (menu && menu.warnaNama) ? menu.warnaNama : WARNA_NAMA_GRUP_DEFAULT;
+            const sistem = (menu && menu.sistem) ? menu.sistem : SISTEM_DEFAULT;
 
             Object.keys(grupMenus).forEach(namaGrup => {
                 const items = grupMenus[namaGrup];

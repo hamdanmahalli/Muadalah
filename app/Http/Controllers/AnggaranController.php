@@ -7,6 +7,10 @@ use App\Models\AnggaranKelompok;
 use App\Models\AnggaranPemasukan;
 use App\Models\AnggaranPos;
 use App\Models\AnggaranPosBulan;
+use App\Models\LaporanPengeluaran;
+use App\Models\LaporanPengeluaranItem;
+use App\Models\Pencairan;
+use App\Models\PencairanItem;
 use App\Models\Periode;
 use App\Services\AnggaranImportService;
 use Illuminate\Http\Request;
@@ -127,6 +131,11 @@ class AnggaranController extends Controller
         $kelompok = AnggaranKelompok::with('anggaran')->findOrFail($id);
         abort_if($kelompok->anggaran->status === 'final', 403, 'Anggaran sudah difinalkan.');
 
+        if ($kelompok->pos()->exists()) {
+            return redirect()->route('kebendaharaan.anggaran.show', $kelompok->anggaran_id)
+                ->with('error', 'Kelompok "' . $kelompok->nama . '" masih memiliki pos. Hapus pos di dalamnya terlebih dahulu.');
+        }
+
         $kelompok->delete();
 
         return redirect()->route('kebendaharaan.anggaran.show', $kelompok->anggaran_id)
@@ -148,6 +157,10 @@ class AnggaranController extends Controller
             'satuan_2' => 'nullable|string|max:50',
             'harga_satuan' => 'required|numeric|min:0',
         ]);
+
+        if (!AnggaranKelompok::where('id', $validated['kelompok_id'])->where('anggaran_id', $anggaran->id)->exists()) {
+            return redirect()->back()->with('error', 'Kelompok tidak sesuai dengan anggaran ini.')->withInput();
+        }
 
         $volume = (float) ($validated['volume'] ?? 1);
         $volume2 = $validated['volume_2'] !== null && $validated['volume_2'] !== '' ? (float) $validated['volume_2'] : null;
@@ -274,6 +287,18 @@ class AnggaranController extends Controller
         $pos = AnggaranPos::with('anggaran')->findOrFail($id);
         abort_if($pos->anggaran->status === 'final', 403, 'Anggaran sudah difinalkan.');
 
+        $dipakaiSpp = PencairanItem::where('anggaran_pos_id', $pos->id)->count()
+            + Pencairan::where('pos_id', $pos->id)->count();
+        $dipakaiLpj = LaporanPengeluaranItem::where('anggaran_pos_id', $pos->id)->count()
+            + LaporanPengeluaran::where('pos_id', $pos->id)->count();
+
+        if ($dipakaiSpp > 0 || $dipakaiLpj > 0) {
+            return redirect()->route('kebendaharaan.anggaran.show', $pos->anggaran_id)
+                ->with('error', 'Pos ' . $pos->kode . ' ' . $pos->uraian . ' sudah dipakai pada '
+                    . $dipakaiSpp . ' baris SPP dan ' . $dipakaiLpj . ' baris LPJ/realisasi. '
+                    . 'Hapus/batalkan transaksi terkait dulu, atau biarkan pos ini sebagai arsip.');
+        }
+
         $pos->delete();
 
         return redirect()->route('kebendaharaan.anggaran.show', $pos->anggaran_id)
@@ -348,6 +373,25 @@ class AnggaranController extends Controller
         }
 
         $anggaran->update(['status' => 'final']);
+
+        $totalPagu = (float) $anggaran->pos()->sum('jumlah');
+        $totalPemasukan = (float) $anggaran->pemasukanRencana()->sum('jumlah');
+        $defisit = $totalPagu - $totalPemasukan;
+
+        if ($defisit > 0.5) {
+            return redirect()->route('kebendaharaan.anggaran.show', $anggaran->id)
+                ->with('warning', 'RAB difinalkan DENGAN defisit: rencana belanja Rp '
+                    . number_format($totalPagu, 0, ',', '.') . ' melebihi rencana pemasukan Rp '
+                    . number_format($totalPemasukan, 0, ',', '.') . '.')
+                ->with('warning_detail', [
+                    'Defisit Rp ' . number_format($defisit, 0, ',', '.')
+                        . ' (rencana belanja Rp ' . number_format($totalPagu, 0, ',', '.')
+                        . ' − rencana pemasukan Rp ' . number_format($totalPemasukan, 0, ',', '.') . ').',
+                    $totalPemasukan <= 0
+                        ? 'Belum ada rencana pemasukan yang diisi.'
+                        : 'Lengkapi rencana pemasukan agar RAB seimbang.',
+                ]);
+        }
 
         return redirect()->route('kebendaharaan.anggaran.show', $anggaran->id)
             ->with('sukses', 'RAB difinalkan. Struktur anggaran kini terkunci.');

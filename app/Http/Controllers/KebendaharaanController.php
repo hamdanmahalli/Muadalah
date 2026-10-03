@@ -37,6 +37,7 @@ class KebendaharaanController extends Controller
 
         $dCair = [
             'diajukan' => Pencairan::where('periode_id', $periode->id)->where('status', 'diajukan')->count(),
+            'disetujui' => Pencairan::where('periode_id', $periode->id)->where('status', 'disetujui')->count(),
             'dibayar' => Pencairan::where('periode_id', $periode->id)->where('status', 'dibayar')->count(),
             'ditolak' => Pencairan::where('periode_id', $periode->id)->where('status', 'ditolak')->count(),
         ];

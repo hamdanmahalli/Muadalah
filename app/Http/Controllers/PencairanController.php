@@ -43,7 +43,7 @@ class PencairanController extends Controller
             $terpakaiPerBulan = PencairanItem::selectRaw('anggaran_pos_id, bulan_fiskal, sum(nominal) as total')
                 ->whereIn('anggaran_pos_id', $posIds)
                 ->whereHas('pencairan', fn ($q) => $q->where('periode_id', $periode->id)
-                    ->whereIn('status', ['diajukan', 'dibayar']))
+                    ->whereIn('status', ['diajukan', 'disetujui', 'dibayar']))
                 ->groupBy('anggaran_pos_id', 'bulan_fiskal')
                 ->get()
                 ->groupBy('anggaran_pos_id');
@@ -78,11 +78,58 @@ class PencairanController extends Controller
         ));
     }
 
+    public function show($id)
+    {
+        $pencairan = Pencairan::with(['periode', 'pengaju', 'pinjaman', 'items.pos'])
+            ->findOrFail($id);
+
+        $posIds = $pencairan->items->pluck('anggaran_pos_id')->unique();
+        $terpakai = collect();
+        if ($pencairan->periode && $posIds->isNotEmpty()) {
+            $terpakai = PencairanItem::selectRaw('anggaran_pos_id, sum(nominal) as total')
+                ->whereIn('anggaran_pos_id', $posIds)
+                ->whereHas('pencairan', fn ($q) => $q->where('periode_id', $pencairan->periode_id)
+                    ->whereIn('status', ['diajukan', 'disetujui', 'dibayar']))
+                ->groupBy('anggaran_pos_id')
+                ->get()
+                ->keyBy('anggaran_pos_id');
+        }
+
+        $baris = $pencairan->items->map(function ($it) use ($terpakai) {
+            $alokasi = (float) (AnggaranPosBulan::where('anggaran_pos_id', $it->anggaran_pos_id)->sum('nominal') ?? 0);
+            $dipakai = (float) ($terpakai->get($it->anggaran_pos_id)?->total ?? 0);
+            return [
+                'kode'    => (string) ($it->pos?->kode ?? ''),
+                'uraian'  => (string) ($it->pos?->uraian ?? ''),
+                'nominal' => (float) $it->nominal,
+                'alokasi' => $alokasi,
+                'terpakai' => $dipakai,
+                'sisa'    => $alokasi - $dipakai,
+            ];
+        })->values();
+
+        return view('admin.kebendaharaan.pencairan-detail', compact('pencairan', 'baris'));
+    }
+
     public function store(Request $request)
     {
         $periode = get_periode_aktif();
         if (!$periode) {
             return redirect()->back()->with('error', 'Tidak ada periode aktif.');
+        }
+
+        // Satu buku kas terbuka per pengaju: SPP baru tidak boleh diajukan
+        // sebelum pelaporan SPP rutin milik pengaju ini diselesaikan.
+        $bukuTerbuka = Pencairan::where('periode_id', $periode->id)
+            ->where('jenis', 'rutin')
+            ->where('diajukan_oleh', auth()->id())
+            ->whereIn('status', ['diajukan', 'disetujui', 'dibayar'])
+            ->whereDoesntHave('bukuKas')
+            ->orderBy('id')
+            ->first();
+        if ($bukuTerbuka) {
+            return back()->withInput()->with('error', 'Laporan SPP ' . $bukuTerbuka->kode
+                . ' belum diselesaikan. Kirim laporan ke bendahara dan selesaikan validasinya sebelum mengajukan SPP baru.');
         }
 
         $validated = $request->validate([
@@ -105,7 +152,7 @@ class PencairanController extends Controller
 
     /**
      * SPP rutin: satu SPP = satu bulan anggaran, boleh memuat banyak pos.
-     * Melebihi alokasi bulanan DIPERBOLEHKAN, cukup diberi peringatan.
+     * Melebihi alokasi periode (12 bulan) DIPERBOLEHKAN, cukup diberi peringatan.
      */
     private function storeRutin($periode, array $validated)
     {
@@ -136,17 +183,16 @@ class PencairanController extends Controller
                     ->withInput();
             }
 
-            $alokasi = (float) (AnggaranPosBulan::where('anggaran_pos_id', $posId)
-                ->where('bulan_fiskal', (int) $validated['bulan_fiskal'])->value('nominal') ?? 0);
+            // Alokasi & terpakai selama periode (seluruh bulan fiskal).
+            $alokasi = (float) (AnggaranPosBulan::where('anggaran_pos_id', $posId)->sum('nominal') ?? 0);
             $terpakai = (float) (PencairanItem::where('anggaran_pos_id', $posId)
-                ->where('bulan_fiskal', (int) $validated['bulan_fiskal'])
                 ->whereHas('pencairan', fn ($q) => $q->where('periode_id', $periode->id)
-                    ->whereIn('status', ['diajukan', 'dibayar']))
+                    ->whereIn('status', ['diajukan', 'disetujui', 'dibayar']))
                 ->sum('nominal') ?? 0);
 
             $sisa = $alokasi - $terpakai;
             if ($nominal > $sisa) {
-                $warnings[] = $p->kode . ' ' . $p->uraian . ': alokasi bulan ' . bulan_fiskal_label((int) $validated['bulan_fiskal'])
+                $warnings[] = $p->kode . ' ' . $p->uraian . ': alokasi periode'
                     . ' Rp ' . number_format($alokasi, 0, ',', '.')
                     . ', tersisa Rp ' . number_format(max($sisa, 0), 0, ',', '.')
                     . ', diajukan Rp ' . number_format($nominal, 0, ',', '.') . ' (melebihi alokasi).';
@@ -188,7 +234,7 @@ class PencairanController extends Controller
 
         if ($warnings !== []) {
             return redirect()->route('kebendaharaan.pencairan.index')
-                ->with('warning', 'SPP ' . $pencairan->kode . ' diajukan DENGAN peringatan melebihi alokasi bulan:')
+                ->with('warning', 'SPP ' . $pencairan->kode . ' diajukan DENGAN peringatan melebihi alokasi periode:')
                 ->with('warning_detail', $warnings);
         }
 
@@ -221,22 +267,45 @@ class PencairanController extends Controller
     }
 
     /**
-     * Validasi & pembayaran sekaligus: hanya SPP berstatus Diajukan yang bisa dibayar.
+     * Setujui SPP: hanya SPP berstatus Diajukan yang bisa disetujui bendahara.
      */
-    public function bayar($id)
+    public function approve($id)
     {
         $pencairan = Pencairan::findOrFail($id);
 
         if ($pencairan->status !== 'diajukan') {
             return redirect()->route('kebendaharaan.pencairan.index')
-                ->with('error', 'Hanya SPP berstatus Diajukan yang bisa dibayar.');
+                ->with('error', 'Hanya SPP berstatus Diajukan yang bisa disetujui.');
+        }
+
+        $pencairan->update([
+            'status'         => 'disetujui',
+            'disetujui_oleh' => auth()->id(),
+            'disetujui_at'   => now(),
+        ]);
+
+        return redirect()->route('kebendaharaan.pencairan.index')
+            ->with('sukses', 'SPP ' . $pencairan->kode . ' disetujui. Dana siap dibayarkan ke pengaju.');
+    }
+
+    /**
+     * Pembayaran: hanya SPP berstatus Disetujui yang bisa dibayar.
+     * Uang masuk ke tangan pengaju pada langkah ini.
+     */
+    public function bayar($id)
+    {
+        $pencairan = Pencairan::findOrFail($id);
+
+        if ($pencairan->status !== 'disetujui') {
+            return redirect()->route('kebendaharaan.pencairan.index')
+                ->with('error', 'Hanya SPP berstatus Disetujui yang bisa dibayar.');
         }
 
         DB::transaction(function () use ($pencairan) {
             $pencairan->update([
-                'status'      => 'dibayar',
-                'dibayar_oleh' => auth()->id(),
-                'dibayar_at'  => now(),
+                'status'              => 'dibayar',
+                'dibayar_oleh'        => auth()->id(),
+                'dibayar_at'          => now(),
             ]);
 
             // Pencairan modal toko otomatis menjadi pinjaman (buku belanja).
@@ -255,7 +324,7 @@ class PencairanController extends Controller
         });
 
         return redirect()->route('kebendaharaan.pencairan.index')
-            ->with('sukses', 'SPP ' . $pencairan->kode . ' dibayar dan dicatat sebagai pengeluaran kas.');
+            ->with('sukses', 'SPP ' . $pencairan->kode . ' dibayar ke pengaju dan dicatat sebagai pengeluaran kas.');
     }
 
     public function tolak(Request $request, $id)

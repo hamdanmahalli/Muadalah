@@ -53,8 +53,8 @@
             <a href="{{ route('kebendaharaan.pencairan.index') }}" class="text-xs font-black text-emerald-600 hover:text-emerald-800">Kelola <i class="fas fa-arrow-right ml-1"></i></a>
             @endcan
         </div>
-        <div class="grid grid-cols-3 gap-3 p-5">
-            @foreach(['diajukan' => ['Menunggu', 'bg-amber-50 text-amber-600'], 'dibayar' => ['Dibayar', 'bg-emerald-50 text-emerald-600'], 'ditolak' => ['Ditolak', 'bg-rose-50 text-rose-600']] as $st => $info)
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-5">
+            @foreach(['diajukan' => ['Menunggu', 'bg-amber-50 text-amber-600'], 'disetujui' => ['Disetujui', 'bg-sky-50 text-sky-600'], 'dibayar' => ['Dibayar', 'bg-emerald-50 text-emerald-600'], 'ditolak' => ['Ditolak', 'bg-rose-50 text-rose-600']] as $st => $info)
             <div class="rounded-xl border border-slate-100 p-4 text-center">
                 <p class="text-2xl font-black {{ $info[1] }}">{{ $dCair[$st] }}</p>
                 <p class="text-[11px] font-bold text-slate-500 mt-1">{{ $info[0] }}</p>

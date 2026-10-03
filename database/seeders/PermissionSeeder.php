@@ -61,6 +61,7 @@ class PermissionSeeder extends Seeder
             'akses_validasi_pencairan',
             'akses_laporan_kebendaharaan',
             'akses_validasi_laporan',
+            'akses_validasi_buku_kas',
             'akses_pemasukan',
             'akses_rekap_kebendaharaan',
             // === MODUL TOKO BUKU ===
