@@ -11,6 +11,7 @@ class Pencairan extends Model
         'kode',
         'periode_id',
         'pos_id',
+        'honor_periode_id',
         'bulan_fiskal',
         'jenis',
         'tanggal_aju',
@@ -73,6 +74,11 @@ class Pencairan extends Model
     public function bukuKas()
     {
         return $this->hasOne(BukuKasBulanan::class, 'pencairan_id');
+    }
+
+    public function honorPeriode()
+    {
+        return $this->belongsTo(HonorPeriode::class, 'honor_periode_id');
     }
 
     public function isLunasPanjar()

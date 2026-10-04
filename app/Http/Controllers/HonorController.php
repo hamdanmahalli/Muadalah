@@ -240,6 +240,7 @@ class HonorController extends Controller
 
         try {
             $periodeHonor = $this->service->hitung($request->bulan, $request->tahun, $periodeAktif);
+            $this->service->sinkronSpp($periodeHonor);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -287,32 +288,6 @@ class HonorController extends Controller
         return $pdf->download('Slip_Bisyaroh_' . $namaBulan . '_' . $periode->tahun . '.pdf');
     }
 
-    public function finalisasi($id)
-    {
-        $periodeHonor = HonorPeriode::findOrFail($id);
-
-        if ($periodeHonor->details()->count() === 0) {
-            return redirect()->back()->with('error', 'Tidak bisa difinalkan: belum ada data honor untuk periode ini. Hitung dulu rekapnya.');
-        }
-
-        $periodeHonor->update(['status' => 'final']);
-
-        return redirect()->back()->with('sukses', 'Honor periode ini sudah difinalkan. Barcode penerimaan kini aktif.');
-    }
-
-    public function buka($id)
-    {
-        $periodeHonor = HonorPeriode::findOrFail($id);
-
-        if ($periodeHonor->status !== 'final') {
-            return redirect()->back()->with('error', 'Hanya periode berstatus Final yang bisa dibuka kembali.');
-        }
-
-        $periodeHonor->update(['status' => 'draft']);
-
-        return redirect()->back()->with('sukses', 'Periode dibuka kembali menjadi Draft. Hitung ulang bila perlu, lalu finalkan lagi.');
-    }
-
     public function updateDetail(Request $request, $id)
     {
         $detail = HonorDetail::with(['periode', 'guru'])->findOrFail($id);
@@ -324,7 +299,8 @@ class HonorController extends Controller
                 default => ucfirst($detail->periode->status),
             };
 
-            return redirect()->back()->with('error', 'Periode ini sudah ' . $label . '. Buka kembali ke Draft dulu untuk mengubah nominal honor.');
+            return redirect()->back()->with('error', 'Periode ini sudah ' . $label
+                . ' (SPP honor telah disetujui di modul pencairan). Ubah nominal hanya selama masih Draft.');
         }
 
         $bersihkan = fn ($v) => (int) preg_replace('/[^\d]/', '', (string) $v);
@@ -340,6 +316,7 @@ class HonorController extends Controller
         $nominal['total'] = array_sum($nominal);
 
         $detail->update($nominal);
+        $this->service->sinkronSpp($detail->periode);
 
         return redirect()->back()->with('sukses', 'Nominal honor ' . $detail->guru->nama_guru . ' berhasil diperbarui.');
     }

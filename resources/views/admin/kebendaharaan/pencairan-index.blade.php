@@ -188,7 +188,7 @@
                     <td class="px-5 py-4">
                         <p class="font-black text-slate-800 text-xs">{{ $pc->kode }}</p>
                         <p class="text-[11px] font-bold text-slate-400 mt-0.5">{{ $pc->tanggal_aju->format('d M Y') }}</p>
-                        <p class="text-[10px] font-black {{ $pc->jenis === 'modal_toko' ? 'text-indigo-500' : 'text-emerald-600' }} mt-0.5 uppercase">{{ $pc->jenis === 'modal_toko' ? 'Modal Toko' : 'Rutin' }}</p>
+                        <p class="text-[10px] font-black {{ $pc->jenis === 'modal_toko' ? 'text-indigo-500' : ($pc->jenis === 'honor' ? 'text-violet-600' : 'text-emerald-600') }} mt-0.5 uppercase">{{ $pc->jenis === 'modal_toko' ? 'Modal Toko' : ($pc->jenis === 'honor' ? 'Dari Honor' : 'Rutin') }}</p>
                     </td>
                     <td class="px-3 py-4 max-w-sm">
                         <p class="font-bold text-slate-700 text-xs truncate">{{ $pc->keperluan }}</p>

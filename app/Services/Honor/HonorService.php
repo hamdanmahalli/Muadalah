@@ -12,6 +12,9 @@ use App\Models\KehadiranGuru;
 use App\Models\JadwalHarian;
 use App\Models\AgendaKaldik;
 use App\Models\Kelas;
+use App\Models\Pencairan;
+use App\Models\PencairanItem;
+use App\Models\AnggaranPos;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +39,7 @@ class HonorService
             ->exists();
 
         if ($sudahFinal) {
-            throw new \Exception('Periode ini sudah difinalkan. Buka kembali dulu untuk menghitung ulang.');
+            throw new \Exception('Periode ini sudah difinalkan via persetujuan SPP honor. Tidak bisa dihitung ulang.');
         }
 
         $periodeHonor = HonorPeriode::updateOrCreate(
@@ -334,4 +337,130 @@ class HonorService
 
         return $detail;
     }
+
+    /**
+     * Buat/sinkronkan SPP honor ke modul pencairan sesuai pos anggaran
+     * kelompok HONORIUM DAN TUNJANGAN (dipanggil saat honor dihitung/diubah).
+     *
+     * Pemetaan komponen HonorDetail -> pos:
+     *   honor_pokok + honor_piket  -> 105 Honor Guru Harian
+     *   tunjangan_struktural (jabatan Kepala Sekolah)  -> 101
+     *   tunjangan_struktural (jabatan struktural lain) -> 102
+     *   tunjangan_wali_kelas       -> 103
+     *   transport                  -> 104
+     *
+     * SPP dibuat berstatus 'diajukan' jenis 'honor' (tanpa wajib laporan).
+     * Bila SPP sudah 'disetujui'/'dibayar', SPP dianggap terkunci dan
+     * sinkronisasi tidak melakukan apa-apa.
+     */
+    public function sinkronSpp(HonorPeriode $periodeHonor, ?int $userId = null): ?Pencairan
+    {
+        $config = $periodeHonor->konfigurasi;
+        if (!$config) {
+            return null;
+        }
+
+        $locked = Pencairan::where('honor_periode_id', $periodeHonor->id)
+            ->whereIn('status', ['disetujui', 'dibayar'])
+            ->exists();
+        if ($locked) {
+            return Pencairan::where('honor_periode_id', $periodeHonor->id)->latest('id')->first();
+        }
+
+        $periodeId = $config->periode_id;
+        $tahunFiskal = $config->periode?->tahun ?? (int) $periodeHonor->tahun;
+
+        $pos = AnggaranPos::whereHas('anggaran', fn ($q) => $q->where('periode_id', $periodeId)->where('status', 'final'))
+            ->whereIn('kode', ['101', '102', '103', '104', '105'])
+            ->get()
+            ->keyBy('kode');
+
+        $agregat = ['101' => 0.0, '102' => 0.0, '103' => 0.0, '104' => 0.0, '105' => 0.0];
+
+        $strukturalByJabatan = HonorStrukturalConfig::where('honor_konfigurasi_id', $config->id)
+            ->get()
+            ->keyBy('jabatan_id');
+
+        foreach ($periodeHonor->details->loadMissing('guru.jabatans') as $detail) {
+            $tp = (float) $detail->tunjangan_struktural;
+
+            $cfgKepala = 0.0;
+            $cfgLain = 0.0;
+            foreach (($detail->guru->jabatans ?? collect()) as $jabatan) {
+                $nominal = (float) ($strukturalByJabatan->get($jabatan->id)?->nominal ?? 0);
+                if ($nominal <= 0) {
+                    continue;
+                }
+                if (str_contains(strtolower($jabatan->nama_jabatan), 'kepala')) {
+                    $cfgKepala += $nominal;
+                } else {
+                    $cfgLain += $nominal;
+                }
+            }
+
+            if (($cfgKepala + $cfgLain) > 0) {
+                $agregat['101'] += (float) round($tp * ($cfgKepala / ($cfgKepala + $cfgLain)));
+                $agregat['102'] += (float) round($tp * ($cfgLain / ($cfgKepala + $cfgLain)));
+            } else {
+                $agregat['102'] += $tp;
+            }
+
+            $agregat['103'] += (float) $detail->tunjangan_wali_kelas;
+            $agregat['104'] += (float) $detail->transport;
+            $agregat['105'] += (float) $detail->honor_pokok + (float) $detail->honor_piket;
+        }
+
+        $items = collect();
+        foreach ($agregat as $kode => $nominal) {
+            if ($nominal <= 0 || !$pos->has($kode)) {
+                continue;
+            }
+            $items->push(['pos' => $pos->get($kode), 'nominal' => (int) round($nominal)]);
+        }
+
+        if ($items->isEmpty()) {
+            return null;
+        }
+
+        Pencairan::where('honor_periode_id', $periodeHonor->id)
+            ->whereIn('status', ['diajukan', 'ditolak'])
+            ->get()
+            ->each(function ($p) {
+                $p->items()->delete();
+                $p->delete();
+            });
+
+        $bulanFiskal = fiskal_bulan(Carbon::create((int) $periodeHonor->tahun, (int) $periodeHonor->bulan, 1));
+        $namaBulan = self::BULAN_INDO[$periodeHonor->bulan] ?? $periodeHonor->bulan;
+        $total = (int) round($items->sum('nominal'));
+
+        $pencairan = Pencairan::create([
+            'kode'             => Pencairan::nextKode($tahunFiskal),
+            'periode_id'       => $periodeId,
+            'honor_periode_id' => $periodeHonor->id,
+            'bulan_fiskal'     => $bulanFiskal,
+            'jenis'            => 'honor',
+            'tanggal_aju'      => Carbon::create((int) $periodeHonor->tahun, (int) $periodeHonor->bulan, 1)->toDateString(),
+            'nominal'          => $total,
+            'keperluan'        => 'Honor & Tunjangan Guru ' . $namaBulan . ' ' . $periodeHonor->tahun,
+            'status'           => 'diajukan',
+            'diajukan_oleh'    => $userId ?? auth()->id(),
+        ]);
+
+        foreach ($items as $it) {
+            PencairanItem::create([
+                'pencairan_id'    => $pencairan->id,
+                'anggaran_pos_id' => $it['pos']->id,
+                'bulan_fiskal'    => $bulanFiskal,
+                'nominal'         => $it['nominal'],
+            ]);
+        }
+
+        return $pencairan;
+    }
+
+    private const BULAN_INDO = [
+        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+        7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+    ];
 }

@@ -28,23 +28,13 @@
         </a>
         @endif
         @if($periodeHonor->status === 'draft')
-        @can('akses_honor_final')
-        <form action="{{ route('honor.final', $periodeHonor->id) }}" method="POST" onsubmit="return confirm('Finalkan rekap ini? Setelah difinalkan, QR code muncul dan penerimaan bisa dipindai.');">
-            @csrf
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
-                <i class="fas fa-lock mr-2"></i> Finalkan Rekap
-            </button>
-        </form>
+        @can('akses_pencairan')
+        <a href="{{ route('kebendaharaan.pencairan.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+            <i class="fas fa-hand-holding-dollar mr-2"></i> Lihat SPP Honor (Pencairan)
+        </a>
         @endcan
+        <p class="text-[11px] font-bold text-slate-400">SPP honor otomatis diajukan ke Modul Pencairan sesuai posnya; disetujui di sana = rekap ini final.</p>
         @else
-        @can('akses_honor_final')
-        <form action="{{ route('honor.buka', $periodeHonor->id) }}" method="POST" onsubmit="return confirm('Buka kembali rekap ini menjadi Draft? Perhitungan bisa diubah lalu difinalkan lagi.');">
-            @csrf
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white border border-orange-200 hover:border-orange-600 font-bold text-xs rounded-xl transition-all shadow-sm">
-                <i class="fas fa-lock-open mr-2"></i> Buka Kembali
-            </button>
-        </form>
-        @endcan
         @can('akses_honor_scan')
         <a href="{{ route('honor.scan') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-200 hover:border-emerald-600 font-bold text-xs rounded-xl transition-all shadow-sm">
             <i class="fas fa-qrcode mr-2"></i> Scan Penerimaan

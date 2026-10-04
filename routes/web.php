@@ -291,11 +291,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::post('/honor/detail/{id}', [\App\Http\Controllers\HonorController::class, 'updateDetail'])->name('honor.detail.update');
     });
 
-    Route::middleware(['can:akses_honor_final'])->group(function () {
-        Route::post('/honor/final/{id}', [\App\Http\Controllers\HonorController::class, 'finalisasi'])->name('honor.final');
-        Route::post('/honor/buka/{id}', [\App\Http\Controllers\HonorController::class, 'buka'])->name('honor.buka');
-    });
-
     Route::middleware(['can:akses_honor_scan'])->group(function () {
         Route::get('/honor/scan-penerimaan', [\App\Http\Controllers\HonorController::class, 'scanPenerimaan'])->name('honor.scan');
         Route::post('/honor/proses-scan', [\App\Http\Controllers\HonorController::class, 'prosesScan'])->name('honor.proses-scan');

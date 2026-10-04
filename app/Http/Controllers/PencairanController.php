@@ -284,6 +284,13 @@ class PencairanController extends Controller
             'disetujui_at'   => now(),
         ]);
 
+        // SPP honor yang disetujui = finalisasi honor (menggantikan tombol Finalisasi di modul honor).
+        if ($pencairan->honor_periode_id) {
+            \App\Models\HonorPeriode::where('id', $pencairan->honor_periode_id)
+                ->where('status', '!=', 'final')
+                ->update(['status' => 'final']);
+        }
+
         return redirect()->route('kebendaharaan.pencairan.index')
             ->with('sukses', 'SPP ' . $pencairan->kode . ' disetujui. Dana siap dibayarkan ke pengaju.');
     }
