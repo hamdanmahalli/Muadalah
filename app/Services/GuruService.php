@@ -86,7 +86,6 @@ class GuruService
                 'email'    => $guru->nig . '@pesantren.com',
                 'hp'       => $guru->no_hp,
                 'status'   => 'Aktif',
-                'role'     => null,
                 'password' => Hash::make($sandi),
             ]);
 

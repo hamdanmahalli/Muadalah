@@ -50,7 +50,6 @@ class UserController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'hp'       => $request->hp,
-            'role'     => null,
             'status'   => $request->status ?? 'Aktif',
             'password' => Hash::make($sandi),
         ]);
@@ -88,7 +87,6 @@ class UserController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'hp'       => $request->hp,
-            'role'     => null,
             'status'   => $request->status,
         ]);
 
