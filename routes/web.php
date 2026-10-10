@@ -245,6 +245,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::middleware(['can:akses_jadwal_harian'])->group(function () {
         Route::get('/master-jadwal-harian', [JadwalHarianController::class, 'index']);
+        Route::get('/master-jadwal-harian/cetak', [JadwalHarianController::class, 'cetakPdf']);
         Route::post('/master-jadwal-harian', [JadwalHarianController::class, 'store']);
         Route::delete('/master-jadwal-harian/{id}', [JadwalHarianController::class, 'destroy']);
         Route::post('/master-jadwal-harian/drag-drop', [JadwalHarianController::class, 'prosesDragDrop']);

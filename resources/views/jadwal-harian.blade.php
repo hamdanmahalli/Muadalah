@@ -57,9 +57,15 @@
                 <label for="tanggal-efektif" class="text-[10px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap"><i class="fas fa-calendar-check text-emerald-600 mr-1"></i> Efektif</label>
                 <input type="date" id="tanggal-efektif" value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" class="text-sm font-bold text-gray-700 outline-none bg-transparent">
             </div>
-            <button type="button" class="w-full md:w-auto bg-red-50 text-red-600 border border-red-100 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center shadow-sm cursor-pointer">
-                <i class="fas fa-file-pdf mr-2 text-lg"></i> Cetak PDF
-            </button>
+            @if($mode)
+                <a href="/master-jadwal-harian/cetak?{{ $mode == 'kelas' ? 'kelas_id='.$kelas_id : 'guru_id='.$guru_id }}" class="w-full md:w-auto bg-red-50 text-red-600 border border-red-100 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center shadow-sm cursor-pointer">
+                    <i class="fas fa-file-pdf mr-2 text-lg"></i> Cetak PDF
+                </a>
+            @else
+                <button type="button" disabled title="Pilih Kelas atau Guru terlebih dahulu" class="w-full md:w-auto bg-red-50 text-red-300 border border-red-100 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center shadow-sm opacity-60 cursor-not-allowed">
+                    <i class="fas fa-file-pdf mr-2 text-lg"></i> Cetak PDF
+                </button>
+            @endif
         </div>
         
     </div>

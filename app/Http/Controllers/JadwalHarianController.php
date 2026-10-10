@@ -13,6 +13,8 @@ use App\Models\PlotJadwal;
 use App\Services\Jadwal\JadwalConflictService;
 use App\Services\Jadwal\JadwalScheduleService;
 use App\Services\Jadwal\JadwalDragDropService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class JadwalHarianController extends Controller
 {
@@ -27,6 +29,90 @@ class JadwalHarianController extends Controller
         $kelas_id = $request->kelas_id;
         $guru_id = $request->guru_id;
 
+        [$hari_list, $max_jam_per_hari, $opsiBlokJam] = $this->siapkanHariDanBlokJam();
+
+        $jadwal_matriks = [];
+        $plotAktif = [];
+        $mode = null;
+
+        $periodeAktif = get_periode_aktif();
+        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+
+        $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
+        $gurus = Guru::where('status', 'Aktif')->orderBy('nama_guru', 'asc')->get();
+        $pelajarans = Pelajaran::where('status', 'Aktif')->orderBy('nama_pelajaran', 'asc')->get();
+
+        $kelas_popup = $kelas;
+
+        if ($kelas_id) {
+            $mode = 'kelas';
+            $plotAktif = PlotJadwal::where('kelas_id', $kelas_id)->get()->keyBy('pelajaran_id');
+            $jadwal_matriks = $this->bangunMatriksJadwal('kelas', $kelas_id, $tahunAjaran, $opsiBlokJam);
+        } elseif ($guru_id) {
+            $mode = 'guru';
+            $jadwal_matriks = $this->bangunMatriksJadwal('guru', $guru_id, $tahunAjaran, $opsiBlokJam);
+
+            $plotsGuru = PlotJadwal::with(['kelas', 'pelajaran'])
+                             ->where('guru_id', $guru_id)
+                             ->get();
+
+            $kelas_popup = $plotsGuru->pluck('kelas')->filter()->unique('id')->sortBy('nama_kelas')->values();
+
+            $plotMap = [];
+            foreach ($plotsGuru as $plot) {
+                if ($plot->kelas && $plot->pelajaran) {
+                    $plotMap[$plot->kelas_id][] = [
+                        'id' => $plot->pelajaran->id,
+                        'nama_pelajaran' => $plot->pelajaran->nama_pelajaran,
+                    ];
+                }
+            }
+            $plotAktif = $plotMap;
+        }
+
+        return view('jadwal-harian', compact('kelas', 'kelas_popup', 'gurus', 'kelas_id', 'guru_id', 'mode', 'hari_list', 'max_jam_per_hari', 'opsiBlokJam', 'jadwal_matriks', 'pelajarans', 'plotAktif'));
+    }
+
+    // ==========================================================
+    // CETAK PDF JADWAL HARIAN (per Kelas / per Guru)
+    // ==========================================================
+    public function cetakPdf(Request $request)
+    {
+        $kelas_id = $request->kelas_id;
+        $guru_id = $request->guru_id;
+
+        if (!$kelas_id && !$guru_id) {
+            return redirect('/master-jadwal-harian')->with('error', 'Pilih Kelas atau Guru terlebih dahulu sebelum mencetak PDF.');
+        }
+
+        [$hari_list, $max_jam_per_hari, $opsiBlokJam] = $this->siapkanHariDanBlokJam();
+
+        $periodeAktif = get_periode_aktif();
+        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+
+        if ($kelas_id) {
+            $mode = 'kelas';
+            $judul = 'Jadwal Kelas ' . (Kelas::find($kelas_id)->nama_kelas ?? '-');
+            $jadwal_matriks = $this->bangunMatriksJadwal('kelas', $kelas_id, $tahunAjaran, $opsiBlokJam);
+        } else {
+            $mode = 'guru';
+            $judul = 'Jadwal Guru ' . (Guru::find($guru_id)->nama_guru ?? '-');
+            $jadwal_matriks = $this->bangunMatriksJadwal('guru', $guru_id, $tahunAjaran, $opsiBlokJam);
+        }
+
+        $pdf = Pdf::loadView('pdf.jadwal-harian', compact('hari_list', 'max_jam_per_hari', 'opsiBlokJam', 'jadwal_matriks', 'mode', 'judul', 'tahunAjaran'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Jadwal_Harian_' . Str::slug($judul) . '.pdf');
+    }
+
+    /**
+     * Susun daftar hari aktif + batas jam dan opsi blok jam (dipakai index & cetak PDF).
+     *
+     * @return array{0: array, 1: array, 2: array}
+     */
+    private function siapkanHariDanBlokJam(): array
+    {
         // KECERDASAN SISTEM: Tarik daftar hari aktif dan batas jamnya dari Pengaturan Operasional
         $urutanHari = ['Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
         $hariAktifDB = HariOperasional::where('is_active', true)->get();
@@ -66,71 +152,36 @@ class JadwalHarianController extends Controller
             }
         }
 
-        $jadwal_matriks = [];
-        $plotAktif = [];
-        $mode = null;
+        return [$hari_list, $max_jam_per_hari, $opsiBlokJam];
+    }
 
-        $periodeAktif = get_periode_aktif();
-        $tahunAjaran = $periodeAktif ? $periodeAktif->tahun_ajaran : null;
+    /**
+     * Bangun matriks jadwal [hari][blok] untuk mode kelas / guru.
+     */
+    private function bangunMatriksJadwal(string $mode, $id, ?string $tahunAjaran, array $opsiBlokJam): array
+    {
+        $query = JadwalHarian::with(['pelajaran', 'guru', 'kelas'])
+            ->aktifPada(\Carbon\Carbon::now()->format('Y-m-d'))
+            ->where('tahun_ajaran', $tahunAjaran);
 
-        $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
-        $gurus = Guru::where('status', 'Aktif')->orderBy('nama_guru', 'asc')->get();
-        $pelajarans = Pelajaran::where('status', 'Aktif')->orderBy('nama_pelajaran', 'asc')->get();
-
-        $kelas_popup = $kelas;
-
-        if ($kelas_id) {
-            $mode = 'kelas';
-            $plotAktif = PlotJadwal::where('kelas_id', $kelas_id)->get()->keyBy('pelajaran_id');
-
-            $data_jadwal = JadwalHarian::with(['pelajaran', 'guru'])
-                            ->aktifPada(\Carbon\Carbon::now()->format('Y-m-d'))
-                            ->where('kelas_id', $kelas_id)
-                            ->where('tahun_ajaran', $tahunAjaran)
-                            ->get();
-
-            foreach ($opsiBlokJam as $blok) {
-                foreach ($data_jadwal as $j) {
-                    if (in_array($j->jam_ke, $blok['jam_list'])) {
-                        $jadwal_matriks[$j->hari][$blok['key']] = $j;
-                    }
-                }
-            }
-        } elseif ($guru_id) {
-            $mode = 'guru';
-            $data_jadwal = JadwalHarian::with(['pelajaran', 'kelas'])
-                            ->aktifPada(\Carbon\Carbon::now()->format('Y-m-d'))
-                            ->where('guru_id', $guru_id)
-                            ->where('tahun_ajaran', $tahunAjaran)
-                            ->get();
-
-            foreach ($opsiBlokJam as $blok) {
-                foreach ($data_jadwal as $j) {
-                    if (in_array($j->jam_ke, $blok['jam_list'])) {
-                        $jadwal_matriks[$j->hari][$blok['key']] = $j;
-                    }
-                }
-            }
-
-            $plotsGuru = PlotJadwal::with(['kelas', 'pelajaran'])
-                             ->where('guru_id', $guru_id)
-                             ->get();
-
-            $kelas_popup = $plotsGuru->pluck('kelas')->filter()->unique('id')->sortBy('nama_kelas')->values();
-
-            $plotMap = [];
-            foreach ($plotsGuru as $plot) {
-                if ($plot->kelas && $plot->pelajaran) {
-                    $plotMap[$plot->kelas_id][] = [
-                        'id' => $plot->pelajaran->id,
-                        'nama_pelajaran' => $plot->pelajaran->nama_pelajaran,
-                    ];
-                }
-            }
-            $plotAktif = $plotMap;
+        if ($mode === 'kelas') {
+            $query->where('kelas_id', $id);
+        } else {
+            $query->where('guru_id', $id);
         }
 
-        return view('jadwal-harian', compact('kelas', 'kelas_popup', 'gurus', 'kelas_id', 'guru_id', 'mode', 'hari_list', 'max_jam_per_hari', 'opsiBlokJam', 'jadwal_matriks', 'pelajarans', 'plotAktif'));
+        $data_jadwal = $query->get();
+
+        $jadwal_matriks = [];
+        foreach ($opsiBlokJam as $blok) {
+            foreach ($data_jadwal as $j) {
+                if (in_array($j->jam_ke, $blok['jam_list'])) {
+                    $jadwal_matriks[$j->hari][$blok['key']] = $j;
+                }
+            }
+        }
+
+        return $jadwal_matriks;
     }
 
     public function store(Request $request)
